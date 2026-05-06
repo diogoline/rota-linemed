@@ -72,8 +72,10 @@ button{
 .btn-historico{background:#d35400;color:#fff;padding:8px 14px;border-radius:6px;margin-right:8px;}
 
 .container{padding:15px;}
-.bloco{background:white;border:1px solid #ddd;padding:12px;margin-bottom:12px;border-radius:6px;}
+.bloco{background:white;border:1px solid #ddd;padding:12px;margin-bottom:12px;border-radius:6px;position:relative;padding-left:40px;}
 .bloco.urgente{border-left:6px solid red;background:#fff6f6;}
+.bloco::before{content:'';width:18px;height:18px;border-radius:50%;background:#18b552;position:absolute;left:12px;top:18px;}
+.bloco.urgente::before{background:red;}
 .linha{display:flex;gap:5px;margin-top:5px;}
 .linha input{flex:1;}
 
@@ -87,6 +89,19 @@ button{
 
 @media print{
     .topo,#historico,button{display:none !important;}
+    body{padding-top:0;background:white;font-size:11px;line-height:1.15;}
+    .container{padding:5px;}
+    .bloco{border:none;margin-bottom:8px;padding:6px 6px 6px 35px;page-break-inside:avoid;box-shadow:none;}
+    .bloco::before{left:8px;top:10px;width:16px;height:16px;}
+
+    .container::after{
+        content:'__________________________________________________';
+        display:block;
+        margin-top:20px;
+        padding-top:10px;
+        border-top:1px solid #999;
+    }
+}
     body{padding-top:0;background:white;font-size:12px;line-height:1.2;}
     .bloco{border:none;margin-bottom:8px;padding:6px;page-break-inside:avoid;}
 }
