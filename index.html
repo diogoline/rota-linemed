@@ -149,7 +149,7 @@ button{
         <button class="add" onclick="novoAtendimento()">➕ Atendimento</button>
         <button class="maps" onclick="rotaMaps()">🗺️ Rota</button>
         <button class="save" onclick="salvar()">💾 Salvar</button>
-        <button class="print" onclick="window.print()">🖨️ PDF Atual</button>
+        <button class="print" onclick="imprimirRota()">🖨️ PDF Atual</button>
         <button class="hist-btn" onclick="abrirHistorico()">📊 Histórico</button>
         <button class="excluir" onclick="limparTudo()">🗑️ Limpar</button>
     </div>
@@ -232,6 +232,68 @@ function rotaMaps(){
     document.querySelectorAll('.end').forEach(x=>{if(x.value)e.push(x.value)});
     e.push(base);
     window.open('https://www.google.com/maps/dir/'+e.map(encodeURIComponent).join('/'));
+}
+
+function imprimirRota(){
+    let conteudo = `
+    <html><head><title>Rota Linemed</title>
+    <style>
+        body{font-family:Arial;padding:18px;font-size:11px;color:#000;line-height:1.25;}
+        .cabecalho{text-align:center;margin-bottom:10px;}
+        .info-geral{background:#e9e9e9;padding:6px;font-weight:bold;margin-bottom:12px;text-align:center;font-size:11px;}
+        .item{margin-bottom:10px;padding-left:24px;position:relative;page-break-inside:avoid;}
+        .bola{width:14px;height:14px;border-radius:50%;position:absolute;left:0;top:2px;}
+        .urgente{background:red;}
+        .normal{background:#18b552;}
+        .rodape{margin-top:18px;font-size:10px;border-top:1px solid #999;padding-top:8px;}
+        .motoristas{display:flex;justify-content:space-between;gap:20px;margin-bottom:12px;}
+        .motoristas div{flex:1;}
+        .assinaturas{display:flex;justify-content:space-between;gap:20px;margin-top:14px;}
+        .assinaturas div{flex:1;text-align:center;border-top:1px solid #000;padding-top:3px;}
+        .empresa{text-align:center;margin-top:10px;font-size:9px;color:#444;}
+    </style></head><body>
+    <div class='cabecalho'><h3>ROTAS LINEMED</h3></div>
+    <div class='info-geral'>Rota: ${rota.value} | Data: ${data.value} | Técnico 1: ${tecnico1.value} | Técnico 2: ${tecnico2.value} | Veículo: ${veiculo.value}</div>
+    `;
+
+    document.querySelectorAll('#lista .bloco').forEach((b,index)=>{
+        let urgente = b.classList.contains('urgente');
+        let cliente = b.querySelector('select').value || 'Não informado';
+        let endereco = b.querySelector('.end').value || '';
+
+        conteudo += `<div class='item'>
+            <div class='bola ${urgente ? 'urgente' : 'normal'}'></div>
+            <strong>${String(index+1).padStart(2,'0')} - ${cliente}</strong> - ${endereco}<br>`;
+
+        b.querySelectorAll('.linha').forEach(l=>{
+            let inputs = l.querySelectorAll('input');
+            conteudo += `• ${inputs[0].value || '-'} | OS: ${inputs[1].value || '-'}<br>`;
+        });
+
+        conteudo += `</div>`;
+    });
+
+    conteudo += `
+        <div class='rodape'>
+            <div class='motoristas'>
+                <div><strong>Motorista manhã:</strong> ${tecnico1.value} | Saída: ____ | Retorno: ____</div>
+                <div><strong>Motorista tarde:</strong> ${tecnico2.value} | Saída: ____ | Retorno: ____</div>
+            </div>
+            <div class='assinaturas'>
+                <div>Ass. ${tecnico1.value}</div>
+                <div>Ass. ${tecnico2.value}</div>
+            </div>
+            <div class='empresa'>
+                Linemed Comercio e Manutencao de Equipamentos Hospitalares LTDA<br>
+                Avenida Felipe Carrillo Puerto 35 - Jardim Iae - São Paulo/SP
+            </div>
+        </div>
+    </body></html>`;
+
+    let w = window.open('', '_blank');
+    w.document.write(conteudo);
+    w.document.close();
+    w.print();
 }
 
 function salvar(){alert('Função salvar mantida.');}
