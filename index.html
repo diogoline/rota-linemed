@@ -206,13 +206,30 @@ function novoAtendimento(){
 }
 
 function autoCliente(sel){
-    if(sel.value==='novo') return;
+    if(sel.value==='novo'){
+        let nome=prompt('Nome do cliente:');
+        if(!nome){ sel.value=''; return; }
+
+        let endereco=prompt('Endereço:') || '';
+        let regiao=prompt('Região:') || '';
+
+        clientes[nome]={endereco:endereco,regiao:regiao};
+        localStorage.setItem('clientes', JSON.stringify(clientes));
+
+        let option=document.createElement('option');
+        option.value=nome;
+        option.textContent=nome;
+        sel.insertBefore(option, sel.lastElementChild);
+        sel.value=nome;
+    }
+
     let d=clientes[sel.value];
     let bloco=sel.closest('.bloco');
     if(d){
         bloco.querySelector('.end').value=d.endereco;
         bloco.querySelector('.reg').value=d.regiao;
     }
+}
 }
 
 function toggleUrgente(cb){
@@ -296,8 +313,96 @@ function imprimirRota(){
     w.print();
 }
 
-function salvar(){alert('Função salvar mantida.');}
-function abrirHistorico(){alert('Histórico mantido.');}
+function salvar(){
+    let dados=[];
+
+    document.querySelectorAll('#lista .bloco').forEach(b=>{
+        let obj={
+            rota: rota.value,
+            data: data.value,
+            tecnico1: tecnico1.value,
+            tecnico2: tecnico2.value,
+            veiculo: veiculo.value,
+            cliente: b.querySelector('select').value,
+            endereco: b.querySelector('.end').value,
+            regiao: b.querySelector('.reg').value,
+            urgente: b.classList.contains('urgente') ? 'SIM' : 'NAO',
+            chamados: []
+        };
+
+        b.querySelectorAll('.linha').forEach(l=>{
+            let i=l.querySelectorAll('input');
+            obj.chamados.push({desc:i[0].value, os:i[1].value});
+        });
+
+        dados.push(obj);
+    });
+
+    fetch(URL_API,{method:'POST',mode:'no-cors',body:JSON.stringify(dados)});
+    alert('Rota enviada com sucesso!');
+}
+function abrirHistorico(){
+    fetch(URL_API)
+    .then(r=>r.json())
+    .then(dados=>{
+        let rotas={};
+
+        dados.forEach(item=>{
+            if(!rotas[item.ROTA]) rotas[item.ROTA]=[];
+            rotas[item.ROTA].push(item);
+        });
+
+        let listaRotas=Object.keys(rotas).sort((a,b)=>b-a).slice(0,20);
+
+        let html=`
+            <h2>Histórico</h2>
+            <input id="buscaRota" placeholder="Pesquisar rota">
+            <button class="btn-historico" onclick="buscarRota()">Buscar</button>
+            <button class="btn-historico" onclick="fecharHistorico()">Fechar</button>
+            <br><br>
+        `;
+
+        listaRotas.forEach(r=>{
+            let itens=rotas[r];
+            let primeiro=itens[0];
+
+            html+=`
+            <div class="historico-bloco" data-rota="${r}">
+                <div class="historico-topo" onclick="toggleHistorico('${r}')">
+                    <div class="historico-info">
+                        <strong>ROTA ${r}</strong> | ${primeiro.DATA || ''} | ${primeiro['TECNICO 1'] || ''} / ${primeiro['TECNICO 2'] || ''}
+                    </div>
+                </div>
+                <div class="historico-detalhes" id="detalhe-${r}">
+                    <strong>Veículo:</strong> ${primeiro.VEICULO || ''}<br><br>
+            `;
+
+            itens.forEach(i=>{
+                html+=`• ${i.CLIENTE} - ${i.DESCRICAO} - OS ${i.OS}<br>`;
+            });
+
+            html+=`</div></div>`;
+        });
+
+        historico.innerHTML=html;
+    })
+    .catch(()=>alert('Erro ao carregar histórico'));
+}
+function toggleHistorico(rota){
+    document.getElementById('detalhe-'+rota).classList.toggle('expandido');
+}
+
+function buscarRota(){
+    let termo=document.getElementById('buscaRota').value;
+    document.querySelectorAll('.historico-bloco').forEach(b=>{
+        b.style.display=b.dataset.rota.includes(termo)?'block':'none';
+    });
+}
+
+function fecharHistorico(){
+    historico.innerHTML='';
+}
+
 function limparTudo(){if(confirm('Deseja limpar?')) lista.innerHTML='';}
 </script>
 </body>
