@@ -357,6 +357,7 @@ function abrirHistorico(){
             <h2>Histórico</h2>
             <input id="buscaRota" placeholder="Pesquisar rota">
             <button class="btn-historico" onclick="buscarRota()">Buscar</button>
+            <button class="btn-historico" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
             <button class="btn-historico" onclick="fecharHistorico()">Fechar</button>
             <br><br>
         `;
@@ -370,6 +371,10 @@ function abrirHistorico(){
                 <div class="historico-topo" onclick="toggleHistorico('${r}')">
                     <div class="historico-info">
                         <strong>ROTA ${r}</strong> | ${primeiro.DATA || ''} | ${primeiro['TECNICO 1'] || ''} / ${primeiro['TECNICO 2'] || ''}
+                    </div>
+                    <div class="historico-check">
+                        <input type="checkbox" class="check-impressao" value="${r}" onclick="event.stopPropagation()">
+                    </div>
                     </div>
                 </div>
                 <div class="historico-detalhes" id="detalhe-${r}">
@@ -396,6 +401,28 @@ function buscarRota(){
     document.querySelectorAll('.historico-bloco').forEach(b=>{
         b.style.display=b.dataset.rota.includes(termo)?'block':'none';
     });
+}
+
+function imprimirSelecionados(){
+    let checks=document.querySelectorAll('.check-impressao:checked');
+
+    if(checks.length===0){
+        alert('Selecione pelo menos uma rota.');
+        return;
+    }
+
+    let w=window.open('','_blank');
+    w.document.write('<h2>LINEMED - HISTÓRICO</h2>');
+
+    checks.forEach(c=>{
+        let bloco=c.closest('.historico-bloco').cloneNode(true);
+        let checkArea=bloco.querySelector('.historico-check');
+        if(checkArea) checkArea.remove();
+        w.document.write(bloco.innerHTML+'<hr>');
+    });
+
+    w.document.close();
+    w.print();
 }
 
 function fecharHistorico(){
