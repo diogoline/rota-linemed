@@ -390,7 +390,7 @@ function abrirHistorico(){
 
         let html=`
             <h2>Histórico</h2>
-            <input id="buscaRota" placeholder="Pesquisar rota">
+            <input id="buscaRota" placeholder="Pesquisar rota" oninput="buscarRota()" onkeyup="if(event.key==='Enter') buscarRota()">
             <button class="btn-historico" onclick="buscarRota()">Buscar</button>
             <button class="btn-historico" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
             <button class="btn-historico" onclick="fecharHistorico()">Fechar</button>
