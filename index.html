@@ -330,7 +330,10 @@ function imprimirRota(){
     let w = window.open('', '_blank');
     w.document.write(conteudo);
     w.document.close();
-    w.print();
+    w.onload = function(){
+        w.focus();
+        w.print();
+    };
 }
 
 function salvar(){
