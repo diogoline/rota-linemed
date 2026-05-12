@@ -434,16 +434,37 @@ function imprimirSelecionados(){
         return;
     }
 
-    let w=window.open('','_blank');
-    w.document.write('<h2>LINEMED - HISTÓRICO</h2>');
+    let conteudo=`
+    <html>
+    <head>
+        <title>Histórico Linemed</title>
+        <style>
+            body{font-family:Arial;padding:20px;font-size:12px;color:#000;}
+            .historico-bloco{border:1px solid #ccc;padding:12px;margin-bottom:12px;border-radius:6px;page-break-inside:avoid;}
+            .historico-topo{font-weight:bold;margin-bottom:8px;}
+            .historico-detalhes{display:block !important;margin-top:8px;}
+            hr{margin-top:12px;border:none;border-top:1px solid #ccc;}
+        </style>
+    </head>
+    <body>
+        <h2>LINEMED - HISTÓRICO</h2>
+    `;
 
     checks.forEach(c=>{
         let bloco=c.closest('.historico-bloco').cloneNode(true);
         let checkArea=bloco.querySelector('.historico-check');
         if(checkArea) checkArea.remove();
-        w.document.write(bloco.innerHTML+'<hr>');
+
+        let detalhes=bloco.querySelector('.historico-detalhes');
+        if(detalhes) detalhes.style.display='block';
+
+        conteudo += bloco.outerHTML + '<hr>';
     });
 
+    conteudo += '</body></html>';
+
+    let w=window.open('','_blank');
+    w.document.write(conteudo);
     w.document.close();
     w.print();
 }
