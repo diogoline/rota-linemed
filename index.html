@@ -170,22 +170,31 @@ let clientes = JSON.parse(localStorage.getItem("clientes")) || {
 };
 
 (function(){
+    inicializarRota();
+})();
+
+function inicializarRota(){
+    const rotaInput = document.getElementById('rota');
+    const dataInput = document.getElementById('data');
+
     let rotaSalva = sessionStorage.getItem('rotaAtual');
 
     if(rotaSalva){
-        rota.value = rotaSalva;
+        rotaInput.value = rotaSalva;
     }else{
         let d = new Date();
-        let ym = d.getFullYear()+String(d.getMonth()+1).padStart(2,'0');
-        let seq = localStorage.getItem(ym) || 0;
+        let ym = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0');
+        let seq = parseInt(localStorage.getItem(ym) || '0');
         seq++;
         localStorage.setItem(ym, seq);
-        rota.value = ym + String(seq).padStart(3,'0');
-        sessionStorage.setItem('rotaAtual', rota.value);
+
+        let novaRota = ym + String(seq).padStart(3,'0');
+        rotaInput.value = novaRota;
+        sessionStorage.setItem('rotaAtual', novaRota);
     }
 
-    data.value = new Date().toISOString().split('T')[0];
-})();
+    dataInput.value = new Date().toISOString().split('T')[0];
+}
 
 function ordenarPrioridade(){
     let lista=document.getElementById('lista');
@@ -378,7 +387,7 @@ Deseja salvar e limpar a tela?');
 
     if(limpar){
         sessionStorage.removeItem('rotaAtual');
-        lista.innerHTML='';
+        lista.innerHTML = '';
         location.reload();
     }
 }
