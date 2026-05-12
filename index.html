@@ -182,7 +182,24 @@ let clientes = JSON.parse(localStorage.getItem("clientes")) || {
 function ordenarPrioridade(){
     let lista=document.getElementById('lista');
     let blocos=[...lista.children];
-    blocos.sort((a,b)=>b.classList.contains('urgente')-a.classList.contains('urgente'));
+
+    blocos.sort((a,b)=>{
+        const horaA=a.querySelector('.horario')?.value || '99:99';
+        const horaB=b.querySelector('.horario')?.value || '99:99';
+
+        const ordemA=parseInt(a.querySelector('.ordem')?.value || 999);
+        const ordemB=parseInt(b.querySelector('.ordem')?.value || 999);
+
+        const urgenteA=a.classList.contains('urgente') ? 1 : 0;
+        const urgenteB=b.classList.contains('urgente') ? 1 : 0;
+
+        if(horaA !== '99:99' || horaB !== '99:99') return horaA.localeCompare(horaB);
+        if(ordemA !== ordemB) return ordemA - ordemB;
+        if(urgenteA !== urgenteB) return urgenteB - urgenteA;
+
+        return 0;
+    });
+
     blocos.forEach(b=>lista.appendChild(b));
 }
 
@@ -197,6 +214,10 @@ function novoAtendimento(){
         </select>
         <input class="end" placeholder="Endereço">
         <input class="reg" placeholder="Região">
+        <div style="display:flex;gap:6px;margin-top:6px;">
+            <input class="horario" type="time" onchange="ordenarPrioridade()" style="flex:1;" title="Horário agendado">
+            <input class="ordem" type="number" min="1" placeholder="Ordem" onchange="ordenarPrioridade()" style="width:90px;">
+        </div>
         <label><input type="checkbox" onchange="toggleUrgente(this)"> Urgente</label>
         <div class="chamados"></div>
         <button class="btn-small" onclick="addChamado(this)">+ Chamado</button>
@@ -317,6 +338,8 @@ function salvar(){
 
     document.querySelectorAll('#lista .bloco').forEach(b=>{
         let obj={
+            horario: b.querySelector('.horario')?.value || '',
+            ordemManual: b.querySelector('.ordem')?.value || '',
             rota: rota.value,
             data: data.value,
             tecnico1: tecnico1.value,
