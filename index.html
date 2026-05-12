@@ -416,6 +416,7 @@ function abrirHistorico(){
             <input id="buscaRota" placeholder="Pesquisar rota" oninput="buscarRota()" onkeyup="if(event.key==='Enter') buscarRota()">
             <button class="btn-historico" onclick="buscarRota()">Buscar</button>
             <button class="btn-historico" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
+            <button class="btn-historico" onclick="editarRotaSelecionada()">Editar Rota</button>
             <button class="btn-historico" onclick="fecharHistorico()">Fechar</button>
             <br><br>
         `;
@@ -460,6 +461,85 @@ function buscarRota(){
     let termo=document.getElementById('buscaRota').value;
     document.querySelectorAll('.historico-bloco').forEach(b=>{
         b.style.display=b.dataset.rota.includes(termo)?'block':'none';
+    });
+}
+
+function editarRotaSelecionada(){
+    let checks=document.querySelectorAll('.check-impressao:checked');
+
+    if(checks.length!==1){
+        alert('Selecione apenas 1 rota para editar.');
+        return;
+    }
+
+    let rotaSelecionada=checks[0].value;
+
+    fetch(URL_API)
+    .then(r=>r.json())
+    .then(dados=>{
+        let itens=dados.filter(i=>String(i.ROTA)===String(rotaSelecionada));
+
+        if(itens.length===0){
+            alert('Rota não encontrada.');
+            return;
+        }
+
+        lista.innerHTML='';
+        historico.innerHTML='';
+
+        rota.value=rotaSelecionada;
+        sessionStorage.setItem('rotaAtual', rotaSelecionada);
+        data.value=itens[0].DATA || '';
+        tecnico1.value=itens[0]['TECNICO 1'] || tecnico1.value;
+        tecnico2.value=itens[0]['TECNICO 2'] || tecnico2.value;
+        veiculo.value=itens[0].VEICULO || veiculo.value;
+
+        let agrupado={};
+
+        itens.forEach(item=>{
+            let chave=item.CLIENTE+'_'+item.ENDEREÇO;
+
+            if(!agrupado[chave]){
+                agrupado[chave]={
+                    cliente:item.CLIENTE,
+                    endereco:item.ENDEREÇO,
+                    regiao:item.REGIAO,
+                    urgente:item.URGENTE==='SIM',
+                    chamados:[]
+                };
+            }
+
+            agrupado[chave].chamados.push({
+                desc:item.DESCRIÇÃO || '',
+                os:item.OS || ''
+            });
+        });
+
+        Object.values(agrupado).forEach(atendimento=>{
+            novoAtendimento();
+            let bloco=lista.lastElementChild;
+
+            bloco.querySelector('select').value=atendimento.cliente;
+            bloco.querySelector('.end').value=atendimento.endereco;
+            bloco.querySelector('.reg').value=atendimento.regiao;
+
+            if(atendimento.urgente){
+                bloco.classList.add('urgente');
+                bloco.querySelector('input[type="checkbox"]').checked=true;
+            }
+
+            bloco.querySelector('.chamados').innerHTML='';
+
+            atendimento.chamados.forEach(c=>{
+                addChamado(bloco.querySelector('.btn-small'));
+                let ultimaLinha=bloco.querySelector('.chamados').lastElementChild;
+                let inputs=ultimaLinha.querySelectorAll('input');
+                inputs[0].value=c.desc;
+                inputs[1].value=c.os;
+            });
+        });
+
+        alert('Rota carregada para edição.');
     });
 }
 
