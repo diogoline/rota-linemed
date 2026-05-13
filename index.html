@@ -440,7 +440,7 @@ function abrirHistorico(){
             <div class="historico-bloco" data-rota="${r}">
                 <div class="historico-topo" onclick="toggleHistorico('${r}')">
                     <div class="historico-info">
-                        <strong style="color:#d35400;font-size:18px;">📌 ROTA ${r}</strong> | ${primeiro.DATA || ''} | ${primeiro['TECNICO 1'] || ''} / ${primeiro['TECNICO 2'] || ''}
+                        <strong>ROTA ${r}</strong> | ${primeiro.DATA || ''} | ${primeiro['TECNICO 1'] || ''} / ${primeiro['TECNICO 2'] || ''}
                     </div>
                     <div class="historico-check">
                         <input type="checkbox" class="check-impressao" value="${r}" onclick="event.stopPropagation()">
@@ -451,8 +451,11 @@ function abrirHistorico(){
             `;
 
             itens.forEach(i=>{
-                html += `• ${i.CLIENTE} - ${i.DESCRICAO} - OS ${i.OS}<br>`;
+                html += `• ${i.CLIENTE} - ${i.DESCRICAO || ''} - OS ${i.OS || ''}<br>`;
             });
+
+            html += `</div></div>`;
+        });
 
             html += `</div></div>`;
         });
