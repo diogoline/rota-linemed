@@ -455,10 +455,7 @@ function abrirHistorico(){
             });
 
 
-            html += `</div></div>`;
-        });
-
-        historico.innerHTML = html;
+            historico.innerHTML = html;
 
 setTimeout(()=>{
    let hoje=new Date().toISOString().split('T')[0];
@@ -490,7 +487,6 @@ function buscarRota(){
 
         b.style.display=(rotaOk && dataOk && tecnicoOk)?'block':'none';
     });
-});
 }
 
 function editarRotaSelecionada(){
