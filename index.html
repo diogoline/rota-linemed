@@ -80,8 +80,8 @@ button{
 .linha input{flex:1;}
 
 #historico{margin-top:20px;}
-.historico-bloco{background:white;border:1px solid #ccc;padding:12px;margin-bottom:10px;border-radius:6px;}
-.historico-topo{display:flex;justify-content:space-between;align-items:center;gap:15px;cursor:pointer;}
+.historico-bloco{background:white;border:1px solid #e3e3e3;padding:14px 16px;margin-bottom:12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all .2s ease;}\n.historico-bloco:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.10);}
+.historico-topo{display:flex;justify-content:space-between;align-items:center;gap:15px;cursor:pointer;font-size:15px;}
 .historico-info{flex:1;}
 .historico-check{min-width:30px;text-align:right;}
 .historico-detalhes{display:none;margin-top:10px;padding-top:10px;border-top:1px solid #ddd;}
@@ -412,8 +412,8 @@ function abrirHistorico(){
         let listaRotas=Object.keys(rotas).sort((a,b)=>b-a).slice(0,20);
 
         let html=`
-            <h2>Histórico</h2>
-            <input id="buscaRota" placeholder="Pesquisar rota" oninput="buscarRota()" onkeyup="if(event.key==='Enter') buscarRota()">
+            <h2 style="margin-bottom:10px;color:#333;">📚 Histórico de Rotas</h2>
+            <input id="buscaRota" placeholder="Pesquisar número da rota" oninput="buscarRota()" onkeyup="if(event.key==='Enter') buscarRota()" style="padding:12px;border:1px solid #ccc;border-radius:8px;margin-bottom:10px;">
             <button class="btn-historico" onclick="buscarRota()">Buscar</button>
             <button class="btn-historico" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
             <button class="btn-historico" onclick="editarRotaSelecionada()">Editar Rota</button>
@@ -429,7 +429,7 @@ function abrirHistorico(){
             <div class="historico-bloco" data-rota="${r}">
                 <div class="historico-topo" onclick="toggleHistorico('${r}')">
                     <div class="historico-info">
-                        <strong>ROTA ${r}</strong> | ${primeiro.DATA || ''} | ${primeiro['TECNICO 1'] || ''} / ${primeiro['TECNICO 2'] || ''}
+                        <strong style="color:#d35400;font-size:18px;">📌 ROTA ${r}</strong> | ${primeiro.DATA || ''} | ${primeiro['TECNICO 1'] || ''} / ${primeiro['TECNICO 2'] || ''}
                     </div>
                     <div class="historico-check">
                         <input type="checkbox" class="check-impressao" value="${r}" onclick="event.stopPropagation()">
