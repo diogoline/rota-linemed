@@ -80,7 +80,8 @@ button{
 .linha input{flex:1;}
 
 #historico{margin-top:20px;}
-.historico-bloco{background:white;border:1px solid #e3e3e3;padding:14px 16px;margin-bottom:12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all .2s ease;}\n.historico-bloco:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.10);}
+.historico-bloco{background:white;border:1px solid #e3e3e3;padding:14px 16px;margin-bottom:12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:all .2s ease;}
+.historico-bloco:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.10);}
 .historico-topo{display:flex;justify-content:space-between;align-items:center;gap:15px;cursor:pointer;font-size:15px;}
 .historico-info{flex:1;}
 .historico-check{min-width:30px;text-align:right;}
@@ -413,7 +414,17 @@ function abrirHistorico(){
 
         let html=`
             <h2 style="margin-bottom:10px;color:#333;">📚 Histórico de Rotas</h2>
-            <input id="buscaRota" placeholder="Pesquisar número da rota" oninput="buscarRota()" onkeyup="if(event.key==='Enter') buscarRota()" style="padding:12px;border:1px solid #ccc;border-radius:8px;margin-bottom:10px;">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+<input id="buscaRota" placeholder="Pesquisar número da rota" oninput="buscarRota()" onkeyup="if(event.key==='Enter') buscarRota()" style="padding:12px;border:1px solid #ccc;border-radius:8px;">
+<input id="filtroData" type="date" onchange="buscarRota()" style="padding:12px;border:1px solid #ccc;border-radius:8px;">
+<select id="filtroTecnico" onchange="buscarRota()" style="padding:12px;border:1px solid #ccc;border-radius:8px;">
+<option value="">Todos técnicos</option>
+<option>WESLEY MANOEL</option>
+<option>DIOGO MATOS</option>
+<option>JONATAS DE SOUZA</option>
+<option>DIOGENES DE JESUS</option>
+</select>
+</div>
             <button class="btn-historico" onclick="buscarRota()">Buscar</button>
             <button class="btn-historico" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
             <button class="btn-historico" onclick="editarRotaSelecionada()">Editar Rota</button>
@@ -447,6 +458,15 @@ function abrirHistorico(){
         });
 
         historico.innerHTML = html;
+
+setTimeout(()=>{
+   let hoje=new Date().toISOString().split('T')[0];
+   let filtro=document.getElementById('filtroData');
+   if(filtro){
+      filtro.value=hoje;
+      buscarRota();
+   }
+},100);
     })
     .catch(()=>{
         historico.innerHTML = '<p>Erro ao carregar histórico.</p>';
@@ -458,10 +478,19 @@ function toggleHistorico(rota){
 }
 
 function buscarRota(){
-    let termo=document.getElementById('buscaRota').value;
+    let termo=document.getElementById('buscaRota').value.toLowerCase();
+    let dataFiltro=document.getElementById('filtroData')?.value || '';
+    let tecnicoFiltro=document.getElementById('filtroTecnico')?.value || '';
+
     document.querySelectorAll('.historico-bloco').forEach(b=>{
-        b.style.display=b.dataset.rota.includes(termo)?'block':'none';
+        let texto=b.innerText.toLowerCase();
+        let rotaOk=b.dataset.rota.includes(termo);
+        let dataOk=!dataFiltro || texto.includes(dataFiltro);
+        let tecnicoOk=!tecnicoFiltro || texto.includes(tecnicoFiltro.toLowerCase());
+
+        b.style.display=(rotaOk && dataOk && tecnicoOk)?'block':'none';
     });
+});
 }
 
 function editarRotaSelecionada(){
