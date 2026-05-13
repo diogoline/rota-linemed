@@ -485,7 +485,8 @@ function buscarRota(){
     document.querySelectorAll('.historico-bloco').forEach(b=>{
         let texto=b.innerText.toLowerCase();
         let rotaOk=b.dataset.rota.includes(termo);
-        let dataOk=!dataFiltro || texto.includes(dataFiltro);
+        let dataTexto=(b.innerText.match(/\d{4}-\d{2}-\d{2}/)||[''])[0];
+        let dataOk=!dataFiltro || dataTexto===dataFiltro;
         let tecnicoOk=!tecnicoFiltro || texto.includes(tecnicoFiltro.toLowerCase());
 
         b.style.display=(rotaOk && dataOk && tecnicoOk)?'block':'none';
