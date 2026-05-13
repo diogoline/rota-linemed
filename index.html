@@ -454,20 +454,23 @@ function abrirHistorico(){
                 html += `• ${i.CLIENTE} - ${i.DESCRICAO || ''} - OS ${i.OS || ''}<br>`;
             });
 
+            html += `</div></div>`;
+        });
 
-            historico.innerHTML = html;
+        historico.innerHTML = html;
 
-setTimeout(()=>{
-   let hoje=new Date().toISOString().split('T')[0];
-   let filtro=document.getElementById('filtroData');
-   if(filtro){
-      filtro.value=hoje;
-      buscarRota();
-   }
-},100);
+        setTimeout(()=>{
+           let hoje=new Date().toISOString().split('T')[0];
+           let filtro=document.getElementById('filtroData');
+           if(filtro){
+              filtro.value=hoje;
+              buscarRota();
+           }
+        },100);
     })
     .catch(()=>{
         historico.innerHTML = '<p>Erro ao carregar histórico.</p>';
+    });
 }
 
 function toggleHistorico(rota){
