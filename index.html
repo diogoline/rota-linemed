@@ -454,8 +454,6 @@ function abrirHistorico(){
                 html += `• ${i.CLIENTE} - ${i.DESCRICAO || ''} - OS ${i.OS || ''}<br>`;
             });
 
-            html += `</div></div>`;
-        });
 
             html += `</div></div>`;
         });
@@ -473,7 +471,6 @@ setTimeout(()=>{
     })
     .catch(()=>{
         historico.innerHTML = '<p>Erro ao carregar histórico.</p>';
-    });
 }
 
 function toggleHistorico(rota){
