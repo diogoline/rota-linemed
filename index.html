@@ -413,7 +413,7 @@ function abrirHistorico(){
         let listaRotas=Object.keys(rotas).sort((a,b)=>b-a).slice(0,20);
 
         let html=`
-            <h2 style="margin-bottom:10px;color:#333;">📚 Histórico de Rotas</h2>
+            <h2 style="margin-bottom:10px;color:#d35400;">📚 Histórico de Rotas</h2>
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:12px;">
 <input id="buscaRota" placeholder="Pesquisar número da rota" oninput="buscarRota()" onkeyup="if(event.key==='Enter') buscarRota()" style="padding:12px;border:1px solid #ccc;border-radius:8px;">
 <input id="filtroData" type="date" onchange="buscarRota()" style="padding:12px;border:1px solid #ccc;border-radius:8px;">
@@ -437,7 +437,7 @@ function abrirHistorico(){
             let primeiro=itens[0];
 
             html += `
-            <div class="historico-bloco" data-rota="${r}">
+            <div class="historico-bloco" data-rota="${r}" style="border-left:5px solid #d35400;">
                 <div class="historico-topo" onclick="toggleHistorico('${r}')">
                     <div class="historico-info">
                         <strong>ROTA ${r}</strong> | ${primeiro.DATA || ''} | ${primeiro['TECNICO 1'] || ''} / ${primeiro['TECNICO 2'] || ''}
