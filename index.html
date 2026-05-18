@@ -219,10 +219,39 @@ function abrirHistoricoRotas(){
 }
 
 function abrirTela(menu){
-  ocultarTudo();
-
-  if(menu === 'rotas') document.getElementById('paginaRotas').classList.remove('hidden');
-  else if(menu === 'dashboards') document.getElementById('paginaDashboards').classList.remove('hidden');
+  if(menu === 'rotas'){
+    document.getElementById('conteudoPrincipal').innerHTML = `
+      <div>
+        <h2>📍 Módulo de Rotas</h2>
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3>Nova Rota</h3>
+            <p>Criar rota diária com técnicos, veículo e atendimentos.</p>
+            <button onclick="abrirFormularioRota()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir formulário</button>
+          </div>
+          <div class="card">
+            <h3>Histórico</h3>
+            <p>Consultar rotas anteriores, editar e imprimir PDF.</p>
+            <button onclick="abrirHistoricoRotas()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
+          </div>
+          <div class="card">
+            <h3>Resumo operacional</h3>
+            <p>Visualize rapidamente status das rotas do dia.</p>
+          </div>
+        </div>
+      </div>`;
+  }
+  else if(menu === 'dashboards'){
+    document.getElementById('conteudoPrincipal').innerHTML = `
+      <div>
+        <h2>📊 Dashboards</h2>
+        <div class="dashboard-grid">
+          <div class="card"><h3>Rotas Finalizadas</h3><p>125 no mês</p></div>
+          <div class="card"><h3>Chamados Abertos</h3><p>18 pendentes</p></div>
+          <div class="card"><h3>Clientes Ativos</h3><p>42 contratos</p></div>
+        </div>
+      </div>`;
+  }
   else {
     document.getElementById('conteudoPrincipal').innerHTML = `<div><h2>${menu.toUpperCase()}</h2><p>Módulo em construção.</p></div>`;
   }
