@@ -136,13 +136,13 @@ body{background:#f4f7fb;color:#1e293b;display:flex;min-height:100vh;}
         <div class="card">
           <h3>Nova Rota</h3>
           <p>Criar rota diária com técnicos, veículo e atendimentos.</p>
-          <button onclick="alert('Formulário de rota será integrado aqui')" style="margin-top:12px;background:#2563eb;width:auto;">Abrir formulário</button>
+          <button onclick="abrirFormularioRota()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir formulário</button>
         </div>
 
         <div class="card">
           <h3>Histórico</h3>
           <p>Consultar rotas anteriores, editar e imprimir PDF.</p>
-          <button onclick="alert('Histórico será integrado aqui')" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
+          <button onclick="abrirHistoricoRotas()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
         </div>
 
         <div class="card">
@@ -176,6 +176,46 @@ function ocultarTudo(){
 function voltarInicio(){
   ocultarTudo();
   document.getElementById('inicio').classList.remove('hidden');
+}
+
+function abrirFormularioRota(){
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <h2>📍 Formulário de Rota</h2>
+      <div class="dashboard-grid">
+        <div class="card">
+          <h3>Nova rota diária</h3>
+          <p>Cadastro de técnicos, veículo, data e atendimentos.</p>
+          <button style="margin-top:12px;background:#2563eb;width:auto;">Nova rota</button>
+        </div>
+        <div class="card">
+          <h3>Histórico integrado</h3>
+          <p>Consulta rápida por número, data e técnico.</p>
+          <button onclick="abrirHistoricoRotas()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
+        </div>
+        <div class="card">
+          <h3>Status operacional</h3>
+          <p>Resumo das operações do dia.</p>
+          <ul style="margin-top:10px;padding-left:18px;color:#475569;line-height:1.8;">
+            <li>Rotas abertas: 03</li>
+            <li>Em andamento: 05</li>
+            <li>Finalizadas: 07</li>
+          </ul>
+        </div>
+      </div>
+    </div>`;
+}
+
+function abrirHistoricoRotas(){
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <h2>📚 Histórico de Rotas</h2>
+      <div class="dashboard-grid">
+        <div class="card"><h3>Pesquisar rotas</h3><p>Consulta por número, data e técnico.</p></div>
+        <div class="card"><h3>PDF e edição</h3><p>Impressão e reabertura de rotas salvas.</p></div>
+        <div class="card"><h3>Indicadores</h3><p>Visualização rápida do histórico operacional.</p></div>
+      </div>
+    </div>`;
 }
 
 function abrirTela(menu){
