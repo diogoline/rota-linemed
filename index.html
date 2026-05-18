@@ -238,6 +238,24 @@ function abrirHistoricoRotas(){
     </div>`;
 }
 
+function carregarIndicadoresPatrimonio(){
+  const totalEquipamentos = 0;
+  const totalContratos = 0;
+  const totalDivergencias = 0;
+
+  const elEquip = document.getElementById('totalEquipamentos');
+  const elContratos = document.getElementById('totalContratos');
+  const elDiv = document.getElementById('totalDivergencias');
+
+  if(elEquip) elEquip.innerText = totalEquipamentos;
+  if(elContratos) elContratos.innerText = totalContratos;
+  if(elDiv) elDiv.innerText = totalDivergencias;
+}
+
+function novoContrato(){
+  alert('Próxima etapa: integração com aba CONTRATOS para cadastro automatizado.');
+}
+
 function abrirTela(menu){
   if(menu === 'rotas'){
     document.getElementById('conteudoPrincipal').innerHTML = `
@@ -279,9 +297,9 @@ function abrirTela(menu){
         <div class="dashboard-grid">
           <div class="card">
             <h3>Resumo</h3>
-            <p>Total de equipamentos cadastrados: <strong>128</strong></p>
-            <p>Contratos ativos: <strong>12</strong></p>
-            <p>Divergências encontradas: <strong style="color:#dc2626;">04</strong></p>
+            <p>Total de equipamentos cadastrados: <strong id="totalEquipamentos">0</strong></p>
+            <p>Contratos ativos: <strong id="totalContratos">0</strong></p>
+            <p>Divergências encontradas: <strong id="totalDivergencias" style="color:#dc2626;">0</strong></p>
           </div>
 
           <div class="card" style="grid-column:span 2;">
@@ -289,7 +307,7 @@ function abrirTela(menu){
             <div style="display:flex;gap:10px;margin:15px 0;flex-wrap:wrap;">
               <input type="text" placeholder="Pesquisar cliente ou contrato" style="flex:1;padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
               <button style="background:#2563eb;width:auto;">Pesquisar</button>
-              <button style="background:#16a34a;width:auto;">+ Novo cliente</button>
+              <button onclick="novoContrato()" style="background:#16a34a;width:auto;">+ Novo contrato</button>
             </div>
 
             <table style="width:100%;border-collapse:collapse;font-size:14px;">
@@ -322,7 +340,7 @@ function abrirTela(menu){
 
             <div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
               <h4 style="color:#1565C0;margin-bottom:10px;">Detalhamento do cliente selecionado</h4>
-              <p style="margin-bottom:10px;color:#64748b;">Clique em um contrato para abrir gestão detalhada dos equipamentos.</p>
+              <p style="margin-bottom:10px;color:#64748b;">Dados conectados às abas BASE_NEOVERO, CONTRATOS, INVENTARIO e MOVIMENTACOES.</p>
 
               <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:10px;">
                 <thead>
@@ -371,6 +389,7 @@ function abrirTela(menu){
     document.getElementById('conteudoPrincipal').innerHTML = `<div><h2>${menu.toUpperCase()}</h2><p>Módulo em construção.</p></div>`;
   }
 }
+setTimeout(()=>{carregarIndicadoresPatrimonio();},300);
 </script>
 
 </body>
