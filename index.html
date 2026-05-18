@@ -132,7 +132,29 @@ body{background:#f4f7fb;color:#1e293b;display:flex;min-height:100vh;}
 
     <div id="paginaRotas" class="hidden">
       <h2>📍 Módulo de Rotas</h2>
-      <p>Área reservada para seu formulário atual de rotas.</p>
+      <div class="dashboard-grid">
+        <div class="card">
+          <h3>Nova Rota</h3>
+          <p>Criar rota diária com técnicos, veículo e atendimentos.</p>
+          <button onclick="alert('Formulário de rota será integrado aqui')" style="margin-top:12px;background:#2563eb;width:auto;">Abrir formulário</button>
+        </div>
+
+        <div class="card">
+          <h3>Histórico</h3>
+          <p>Consultar rotas anteriores, editar e imprimir PDF.</p>
+          <button onclick="alert('Histórico será integrado aqui')" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
+        </div>
+
+        <div class="card">
+          <h3>Resumo operacional</h3>
+          <p>Visualize rapidamente status das rotas do dia.</p>
+          <ul style="margin-top:10px;padding-left:18px;color:#475569;line-height:1.8;">
+            <li>Rotas abertas: 03</li>
+            <li>Finalizadas: 07</li>
+            <li>Pendentes: 02</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <div id="paginaDashboards" class="hidden">
