@@ -174,8 +174,28 @@ function ocultarTudo(){
 }
 
 function voltarInicio(){
-  ocultarTudo();
-  document.getElementById('inicio').classList.remove('hidden');
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div id="inicio">
+      <h2>Bem-vindo ao NEXROTA</h2>
+      <div class="dashboard-grid">
+        <div class="card">
+          <h3>📍 Controle de Rotas</h3>
+          <p>Planejamento operacional e acompanhamento diário.</p>
+        </div>
+        <div class="card">
+          <h3>🛠 Gestão de Chamados</h3>
+          <p>Controle de atendimentos técnicos e ordens de serviço.</p>
+        </div>
+        <div class="card">
+          <h3>📦 Patrimônio</h3>
+          <p>Inventário simples por cliente e contrato.</p>
+        </div>
+        <div class="card">
+          <h3>📊 Dashboards</h3>
+          <p>Indicadores operacionais e performance.</p>
+        </div>
+      </div>
+    </div>`;
 }
 
 function abrirFormularioRota(){
