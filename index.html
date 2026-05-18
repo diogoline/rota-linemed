@@ -201,26 +201,45 @@ function voltarInicio(){
 function abrirFormularioRota(){
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
-      <h2>📍 Formulário de Rota</h2>
+      <h2>📍 Nova Rota Operacional</h2>
       <div class="dashboard-grid">
-        <div class="card">
-          <h3>Nova rota diária</h3>
-          <p>Cadastro de técnicos, veículo, data e atendimentos.</p>
-          <button style="margin-top:12px;background:#2563eb;width:auto;">Nova rota</button>
-        </div>
-        <div class="card">
-          <h3>Histórico integrado</h3>
-          <p>Consulta rápida por número, data e técnico.</p>
-          <button onclick="abrirHistoricoRotas()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
-        </div>
-        <div class="card">
-          <h3>Status operacional</h3>
-          <p>Resumo das operações do dia.</p>
-          <ul style="margin-top:10px;padding-left:18px;color:#475569;line-height:1.8;">
-            <li>Rotas abertas: 03</li>
-            <li>Em andamento: 05</li>
-            <li>Finalizadas: 07</li>
-          </ul>
+        <div class="card" style="grid-column:span 2;">
+          <h3>Cadastro de rota diária</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:15px;">
+            <input placeholder="Número da rota" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <input type="date" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <input placeholder="Técnico 1" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <input placeholder="Técnico 2" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <input placeholder="Veículo" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+          </div>
+
+          <div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
+            <h4 style="margin-bottom:10px;color:#1565C0;">Atendimentos da rota</h4>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <thead>
+                <tr style="background:#eef4ff;text-align:left;">
+                  <th style="padding:10px;">Cliente</th>
+                  <th style="padding:10px;">Endereço</th>
+                  <th style="padding:10px;">OS</th>
+                  <th style="padding:10px;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:10px;border-top:1px solid #e2e8f0;">Hospital Exemplo</td>
+                  <td style="padding:10px;border-top:1px solid #e2e8f0;">São Paulo/SP</td>
+                  <td style="padding:10px;border-top:1px solid #e2e8f0;">OS-10258</td>
+                  <td style="padding:10px;border-top:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">Pendente</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+            <button style="background:#16a34a;width:auto;">+ Adicionar atendimento</button>
+            <button onclick="abrirHistoricoRotas()" style="background:#2563eb;width:auto;">Histórico</button>
+            <button style="background:#64748b;width:auto;">Salvar rota</button>
+          </div>
         </div>
       </div>
     </div>`;
