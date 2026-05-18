@@ -177,11 +177,11 @@ button:hover{
 <body>
 
 <div class="sidebar">
-    <h2>⚡ NEXROTA</h2>
+    <h2 onclick="voltarInicio()" style="cursor:pointer;">⚡ NEXROTA</h2>
     <small style="color:#94a3b8;line-height:1.5;display:block;">Painel principal de operações</small>
 
     <div class="sidebar-menu">
-        <button>📍 Rotas</button>
+        <button onclick="abrirModuloRotas()">📍 Rotas</button>
         <button>🏥 Clientes</button>
         <button>🛠 Chamados</button>
         <button>📦 Patrimônio</button>
@@ -230,6 +230,14 @@ button:hover{
         </select>
     </div>
 
+    </div>
+
+<div class="container">
+    <div id="lista"></div>
+    <div id="historico"></div>
+</div>
+
+<div id="moduloRota" style="display:none; margin-left:240px; padding:140px 25px 20px 25px; width:calc(100% - 240px); box-sizing:border-box;">
     <div class="menu">
         <button class="add" onclick="novoAtendimento()">➕ Atendimento</button>
         <button class="maps" onclick="rotaMaps()">🗺️ Rota</button>
@@ -238,11 +246,6 @@ button:hover{
         <button class="hist-btn" onclick="abrirHistorico()">📊 Histórico</button>
         <button class="excluir" onclick="limparTudo()">🗑️ Limpar</button>
     </div>
-</div>
-
-<div class="container">
-    <div id="lista"></div>
-    <div id="historico"></div>
 </div>
 
 <footer style="margin-left:240px;width:calc(100% - 240px);margin-top:40px;padding:25px 20px;background:#ffffff;border-top:1px solid #dde3ea;text-align:center;color:#546E7A;font-size:13px;line-height:1.8;box-shadow:0 -2px 8px rgba(0,0,0,0.04);">
@@ -715,6 +718,7 @@ function fecharHistorico(){
 }
 
 function voltarInicio(){
+    document.getElementById('moduloRota').style.display='none';
     document.getElementById('lista').innerHTML = `
         <div class="home-dashboard">
             <div class="welcome-card">
@@ -728,7 +732,13 @@ function voltarInicio(){
                 </div>
             </div>
         </div>`;
-        document.getElementById('historico').innerHTML = '';
+    document.getElementById('historico').innerHTML='';
+}
+
+function abrirModuloRotas(){
+    document.getElementById('lista').innerHTML='';
+    document.getElementById('historico').innerHTML='';
+    document.getElementById('moduloRota').style.display='block';
 }
 
 function limparTudo(){if(confirm('Deseja limpar?')) lista.innerHTML='';}
