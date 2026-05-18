@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>NEXROTA - Gestão Inteligente de Rotas</title>
+<title><span onclick="voltarInicio()" style="cursor:pointer;">NEXROTA</span> - Gestão Inteligente de Rotas</title>
 
 <style>
 body{
@@ -711,6 +711,23 @@ function imprimirSelecionados(){
 
 function fecharHistorico(){
     historico.innerHTML='';
+}
+
+function voltarInicio(){
+    document.getElementById('lista').innerHTML = `
+        <div class="home-dashboard">
+            <div class="welcome-card">
+                <h2>Bem-vindo ao NEXROTA</h2>
+                <p>Gestão inteligente de rotas, atendimentos e patrimônio em um só lugar.</p>
+                <div class="home-grid">
+                    <div class="mini-card">📍 Controle de Rotas</div>
+                    <div class="mini-card">🛠️ Gestão de Chamados</div>
+                    <div class="mini-card">🏥 Controle Patrimonial</div>
+                    <div class="mini-card">📊 Dashboards Operacionais</div>
+                </div>
+            </div>
+        </div>`;
+        document.getElementById('historico').innerHTML = '';
 }
 
 function limparTudo(){if(confirm('Deseja limpar?')) lista.innerHTML='';}
