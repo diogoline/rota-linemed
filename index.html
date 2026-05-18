@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title><span onclick="voltarInicio()" style="cursor:pointer;">NEXROTA</span> - Gestão Inteligente de Rotas</title>
+<title>NEXROTA - Gestão Inteligente de Rotas</title>
 
 <style>
 body{
@@ -194,7 +194,7 @@ button:hover{
 
 <div class="topo">
     <div class="header">
-        <h2>NEXROTA</h2>
+        <h2 onclick="voltarInicio()" style="cursor:pointer;">NEXROTA</h2>
         <small>
             by DMA Solutions • Gestão inteligente de rotas e atendimentos
         </small>
@@ -263,6 +263,7 @@ let clientes = JSON.parse(localStorage.getItem("clientes")) || {
 
 (function(){
     inicializarRota();
+    voltarInicio();
 })();
 
 function inicializarRota(){
