@@ -272,6 +272,67 @@ function abrirTela(menu){
         </div>
       </div>`;
   }
+  else if(menu === 'patrimonio'){
+    document.getElementById('conteudoPrincipal').innerHTML = `
+      <div>
+        <h2>📦 Controle de Patrimônio</h2>
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3>Resumo</h3>
+            <p>Total de equipamentos cadastrados: <strong>128</strong></p>
+            <p>Contratos ativos: <strong>12</strong></p>
+            <p>Divergências encontradas: <strong style="color:#dc2626;">04</strong></p>
+          </div>
+
+          <div class="card" style="grid-column:span 2;">
+            <h3>Inventário por cliente / contrato</h3>
+            <div style="display:flex;gap:10px;margin:15px 0;flex-wrap:wrap;">
+              <input type="text" placeholder="Pesquisar cliente ou contrato" style="flex:1;padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <button style="background:#2563eb;width:auto;">Pesquisar</button>
+              <button style="background:#16a34a;width:auto;">+ Novo cliente</button>
+            </div>
+
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <thead>
+                <tr style="background:#f8fafc;text-align:left;">
+                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Cliente</th>
+                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Contrato</th>
+                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Qtd. Equip.</th>
+                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Divergências</th>
+                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="alert('Abrir inventário detalhado do cliente')" style="cursor:pointer;">
+                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
+                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;">CTR-001</td>
+                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;">58</td>
+                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;">2</td>
+                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">Pendente</td>
+                </tr>
+                <tr onclick="alert('Abrir inventário detalhado do cliente')" style="cursor:pointer;">
+                  <td style="padding:10px;">UPA Modelo</td>
+                  <td style="padding:10px;">CTR-002</td>
+                  <td style="padding:10px;">34</td>
+                  <td style="padding:10px;">0</td>
+                  <td style="padding:10px;color:#16a34a;font-weight:bold;">OK</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
+              <h4 style="color:#1565C0;margin-bottom:10px;">Detalhamento do cliente selecionado</h4>
+              <p style="margin-bottom:10px;color:#64748b;">Ao selecionar um cliente, aqui será exibida a relação completa de equipamentos.</p>
+              <ul style="padding-left:18px;color:#475569;line-height:1.8;">
+                <li>Bomba de Infusão — Contrato: 25 | Físico: 23 | Divergência</li>
+                <li>Monitor Multiparâmetro — Contrato: 10 | Físico: 10 | OK</li>
+                <li>Cardioversor — Contrato: 03 | Físico: 03 | OK</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
   else {
     document.getElementById('conteudoPrincipal').innerHTML = `<div><h2>${menu.toUpperCase()}</h2><p>Módulo em construção.</p></div>`;
   }
