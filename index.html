@@ -24,6 +24,7 @@ body{
     top:0;
     padding:25px 18px;
     box-sizing:border-box;
+    z-index:10000;
 }
 
 .sidebar h2{
@@ -45,7 +46,7 @@ body{
 }
 
 .topo{
-    position:relative;
+    position:fixed;
     top:0;
     left:240px;
     right:0;
@@ -117,7 +118,12 @@ button:hover{
 .btn-small{background:#555;padding:6px 10px;font-size:12px;}
 .btn-historico{background:#1565C0;color:#fff;padding:10px 16px;border-radius:8px;margin-right:8px;}
 
-.container{padding:20px;max-width:1400px;margin-left:260px;margin-top:20px;}
+.container{
+    padding:220px 25px 30px 25px;
+    margin-left:240px;
+    width:calc(100% - 240px);
+    box-sizing:border-box;
+}
 .bloco{
     background:white;
     border:1px solid #e3ebf3;
@@ -223,7 +229,7 @@ button:hover{
     <div id="historico"></div>
 </div>
 
-<footer style="margin-top:40px;padding:25px 20px;background:#ffffff;border-top:1px solid #dde3ea;text-align:center;color:#546E7A;font-size:13px;line-height:1.8;box-shadow:0 -2px 8px rgba(0,0,0,0.04);">
+<footer style="margin-left:240px;width:calc(100% - 240px);margin-top:40px;padding:25px 20px;background:#ffffff;border-top:1px solid #dde3ea;text-align:center;color:#546E7A;font-size:13px;line-height:1.8;box-shadow:0 -2px 8px rgba(0,0,0,0.04);">
     <strong style="font-size:15px;color:#1565C0;">NEXROTA • by DMA Solutions</strong><br>
     Desenvolvido por <strong>Diogo Matos Amorim</strong><br>
     Especialista em gestão de rotas, operações e automação de processos<br>
