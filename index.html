@@ -322,12 +322,46 @@ function abrirTela(menu){
 
             <div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
               <h4 style="color:#1565C0;margin-bottom:10px;">Detalhamento do cliente selecionado</h4>
-              <p style="margin-bottom:10px;color:#64748b;">Ao selecionar um cliente, aqui será exibida a relação completa de equipamentos.</p>
-              <ul style="padding-left:18px;color:#475569;line-height:1.8;">
-                <li>Bomba de Infusão — Contrato: 25 | Físico: 23 | Divergência</li>
-                <li>Monitor Multiparâmetro — Contrato: 10 | Físico: 10 | OK</li>
-                <li>Cardioversor — Contrato: 03 | Físico: 03 | OK</li>
-              </ul>
+              <p style="margin-bottom:10px;color:#64748b;">Clique em um contrato para abrir gestão detalhada dos equipamentos.</p>
+
+              <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:10px;">
+                <thead>
+                  <tr style="background:#eef4ff;text-align:left;">
+                    <th style="padding:10px;">Equipamento</th>
+                    <th style="padding:10px;">TAG</th>
+                    <th style="padding:10px;">Status</th>
+                    <th style="padding:10px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:10px;border-top:1px solid #e2e8f0;">Bomba de Infusão</td>
+                    <td style="padding:10px;border-top:1px solid #e2e8f0;">TAG-00125</td>
+                    <td style="padding:10px;border-top:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">Divergência</td>
+                    <td style="padding:10px;border-top:1px solid #e2e8f0;">
+                      <button style="background:#2563eb;width:auto;padding:8px 12px;">Editar</button>
+                      <button style="background:#f59e0b;width:auto;padding:8px 12px;">Movimentar</button>
+                      <button style="background:#64748b;width:auto;padding:8px 12px;">Devolver sede</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px;border-top:1px solid #e2e8f0;">Monitor Multiparâmetro</td>
+                    <td style="padding:10px;border-top:1px solid #e2e8f0;">TAG-00310</td>
+                    <td style="padding:10px;border-top:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">OK</td>
+                    <td style="padding:10px;border-top:1px solid #e2e8f0;">
+                      <button style="background:#2563eb;width:auto;padding:8px 12px;">Editar</button>
+                      <button style="background:#f59e0b;width:auto;padding:8px 12px;">Movimentar</button>
+                      <button style="background:#64748b;width:auto;padding:8px 12px;">Devolver sede</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+                <button style="background:#16a34a;width:auto;">+ Adicionar equipamento</button>
+                <button style="background:#7c3aed;width:auto;">Movimentação múltipla</button>
+                <button style="background:#dc2626;width:auto;">Baixa / devolução</button>
+              </div>
             </div>
           </div>
         </div>
