@@ -198,7 +198,32 @@ function voltarInicio(){
     </div>`;
 }
 
+function gerarNumeroRota(){
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth()+1).padStart(2,'0');
+  let contador = localStorage.getItem('contadorRota') || 1;
+  const rota = `${ano}${mes}${String(contador).padStart(3,'0')}`;
+  return rota;
+}
+
+function adicionarAtendimento(){
+  alert('Novo atendimento adicionado. (Próxima etapa: formulário dinâmico completo)');
+}
+
+function salvarRota(){
+  alert('Rota salva com sucesso. Integração com Google Sheets será conectada na próxima etapa.');
+}
+
+function cadastrarNovo(tipo){
+  const nome = prompt(`Cadastrar novo ${tipo}:`);
+  if(nome) alert(`${tipo} cadastrado: ${nome}`);
+}
+
 function abrirFormularioRota(){
+  const numeroRota = gerarNumeroRota();
+  const dataHoje = new Date().toISOString().split('T')[0];
+
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
       <h2>📍 Nova Rota Operacional</h2>
@@ -206,39 +231,45 @@ function abrirFormularioRota(){
         <div class="card" style="grid-column:span 2;">
           <h3>Cadastro de rota diária</h3>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:15px;">
-            <input placeholder="Número da rota" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-            <input type="date" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-            <input placeholder="Técnico 1" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-            <input placeholder="Técnico 2" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-            <input placeholder="Veículo" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <input value="${numeroRota}" readonly style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;">
+            <input type="date" value="${dataHoje}" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+
+            <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <option>DIOGO MATOS</option>
+              <option>WESLEY MANOEL</option>
+              <option>JONATAS DE SOUZA</option>
+              <option>DIOGENES DE JESUS</option>
+            </select>
+
+            <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <option>DIOGO MATOS</option>
+              <option>WESLEY MANOEL</option>
+              <option>JONATAS DE SOUZA</option>
+              <option>DIOGENES DE JESUS</option>
+            </select>
+
+            <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <option>FIAT MOBI</option>
+              <option>FIAT STRADA</option>
+              <option>FIAT FIORINO</option>
+              <option>FIAT ARGO</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+            <button onclick="cadastrarNovo('técnico')" style="background:#7c3aed;width:auto;">+ Novo técnico</button>
+            <button onclick="cadastrarNovo('veículo')" style="background:#f59e0b;width:auto;">+ Novo veículo</button>
           </div>
 
           <div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
             <h4 style="margin-bottom:10px;color:#1565C0;">Atendimentos da rota</h4>
-            <table style="width:100%;border-collapse:collapse;font-size:14px;">
-              <thead>
-                <tr style="background:#eef4ff;text-align:left;">
-                  <th style="padding:10px;">Cliente</th>
-                  <th style="padding:10px;">Endereço</th>
-                  <th style="padding:10px;">OS</th>
-                  <th style="padding:10px;">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding:10px;border-top:1px solid #e2e8f0;">Hospital Exemplo</td>
-                  <td style="padding:10px;border-top:1px solid #e2e8f0;">São Paulo/SP</td>
-                  <td style="padding:10px;border-top:1px solid #e2e8f0;">OS-10258</td>
-                  <td style="padding:10px;border-top:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">Pendente</td>
-                </tr>
-              </tbody>
-            </table>
+            <p style="color:#64748b;">Nenhum atendimento cadastrado.</p>
           </div>
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
-            <button style="background:#16a34a;width:auto;">+ Adicionar atendimento</button>
+            <button onclick="adicionarAtendimento()" style="background:#16a34a;width:auto;">+ Adicionar atendimento</button>
             <button onclick="abrirHistoricoRotas()" style="background:#2563eb;width:auto;">Histórico</button>
-            <button style="background:#64748b;width:auto;">Salvar rota</button>
+            <button onclick="salvarRota()" style="background:#64748b;width:auto;">Salvar rota</button>
           </div>
         </div>
       </div>
