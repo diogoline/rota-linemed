@@ -207,6 +207,38 @@ function gerarNumeroRota(){
   return rota;
 }
 
+const clientesBase = {
+  'Hospital Exemplo': { endereco: 'Rua das Flores, 100 - São Paulo' },
+  'UPA Modelo': { endereco: 'Av. Central, 500 - Guarulhos' },
+  'AMA Central': { endereco: 'Rua Principal, 250 - Santo André' }
+};
+
+function selecionarCliente(select){
+  if(select.value === 'novo'){
+    let novo = prompt('Cadastrar novo cliente:');
+    if(novo){
+      let endereco = prompt('Digite o endereço do cliente:') || '';
+      clientesBase[novo] = { endereco:endereco };
+
+      let option = document.createElement('option');
+      option.text = novo;
+      option.value = novo;
+      select.add(option, select.options[select.options.length-1]);
+      select.value = novo;
+    } else {
+      select.selectedIndex = 0;
+      return;
+    }
+  }
+
+  let linha = select.parentElement;
+  let enderecoInput = linha.querySelector('input[placeholder="Endereço"]');
+
+  if(clientesBase[select.value]){
+    enderecoInput.value = clientesBase[select.value].endereco;
+  }
+}
+
 function adicionarAtendimento(){
   const container = document.getElementById('listaAtendimentos');
   if(!container) return;
@@ -215,8 +247,14 @@ function adicionarAtendimento(){
   linha.style = 'display:grid;grid-template-columns:1.4fr 1.8fr 2fr 1fr 1fr auto;gap:10px;margin-top:10px;align-items:center;';
 
   linha.innerHTML = `
-    <input placeholder="Cliente" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
-    <input placeholder="Endereço" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
+    <select onchange="selecionarCliente(this)" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
+      <option value="">Cliente</option>
+      <option>Hospital Exemplo</option>
+      <option>UPA Modelo</option>
+      <option>AMA Central</option>
+      <option value="novo">+ Cadastrar novo</option>
+    </select>
+    <input placeholder="Endereço" value="" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
     <input placeholder="Descrição do serviço" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
     <input placeholder="OS" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
     <select style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
