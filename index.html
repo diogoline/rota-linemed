@@ -789,10 +789,10 @@ function fazerLogin(){
   const user=document.getElementById('loginUser').value;
   const pass=document.getElementById('loginPass').value;
 
-  if(user && pass){
+  if(user==='admin' && pass==='@181989Di'){
     document.getElementById('loginScreen').style.display='none';
   }else{
-    alert('Preencha usuário e senha');
+    alert('Usuário ou senha inválidos');
   }
 }
 </script>
