@@ -266,18 +266,29 @@ function adicionarSubChamado(){
 
   const subLinha = document.createElement('div');
   subLinha.className = 'sub-chamado';
-  subLinha.style = 'display:grid;width:100%;max-width:100%;overflow:hidden;grid-template-columns:50px minmax(180px,2fr) 90px 120px 50px;gap:10px;margin-top:8px;margin-left:20px;padding:8px;background:#f8fafc;border-left:3px solid #2563eb;border-radius:8px;align-items:center;';
+  subLinha.style = `
+    display:grid;
+    grid-template-columns:40px 1.2fr 1fr auto;
+    gap:8px;
+    margin-top:8px;
+    margin-left:12px;
+    padding:8px;
+    background:#f8fafc;
+    border-left:3px solid #2563eb;
+    border-radius:8px;
+    align-items:center;
+    width:calc(100% - 12px);
+  `;
 
   subLinha.innerHTML = `
     <div style="font-weight:bold;color:#2563eb;text-align:center;">${contador}</div>
-    
-    <input placeholder="OS" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
-    <select style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+    <input placeholder="OS" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;min-width:0;">
+    <select style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;min-width:0;">
       <option>Pendente</option>
       <option>Urgente</option>
       <option>Concluído</option>
     </select>
-    <button onclick="this.parentElement.remove()" style="background:#dc2626;padding:8px 12px;border:none;border-radius:8px;color:white;cursor:pointer;">X</button>
+    <button onclick="this.parentElement.remove()" style="background:#dc2626;padding:8px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">X</button>
   `;
 
   ultimoBloco.appendChild(subLinha);
