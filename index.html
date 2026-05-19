@@ -255,7 +255,7 @@ function selecionarCliente(select){
 }
 
 function adicionarSubChamado(){
-  const linhas = document.querySelectorAll('#listaAtendimentos > div');
+  const linhas = document.querySelectorAll('#listaAtendimentos > .atendimento-bloco');
   if(linhas.length === 0){
     alert('Adicione primeiro um atendimento.');
     return;
@@ -268,27 +268,26 @@ function adicionarSubChamado(){
   subLinha.className = 'sub-chamado';
   subLinha.style = `
     display:grid;
-    grid-template-columns:40px 1.2fr 1fr auto;
-    gap:8px;
-    margin-top:8px;
-    margin-left:12px;
-    padding:8px;
+    grid-template-columns:50px 1fr 140px 50px;
+    gap:12px;
+    margin-top:10px;
+    padding:10px;
     background:#f8fafc;
-    border-left:3px solid #2563eb;
-    border-radius:8px;
+    border:1px solid #dbeafe;
+    border-radius:10px;
     align-items:center;
-    width:calc(100% - 12px);
+    width:100%;
   `;
 
   subLinha.innerHTML = `
-    <div style="font-weight:bold;color:#2563eb;text-align:center;">${contador}</div>
-    <input placeholder="OS" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;min-width:0;">
-    <select style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;min-width:0;">
+    <div style="font-weight:bold;color:#2563eb;text-align:center;">OS ${contador}</div>
+    <input placeholder="Número da OS" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;width:100%;">
+    <select style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;width:100%;">
       <option>Pendente</option>
       <option>Urgente</option>
       <option>Concluído</option>
     </select>
-    <button onclick="this.parentElement.remove()" style="background:#dc2626;padding:8px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">X</button>
+    <button onclick="this.parentElement.remove()" style="background:#dc2626;padding:10px;border:none;border-radius:8px;color:white;cursor:pointer;">X</button>
   `;
 
   ultimoBloco.appendChild(subLinha);
@@ -298,29 +297,27 @@ function adicionarAtendimento(){
   const container = document.getElementById('listaAtendimentos');
   if(!container) return;
 
-  const linha = document.createElement('div');
-  linha.style = 'display:grid;grid-template-columns:1.4fr 1.8fr 2fr 1fr 1fr auto;gap:10px;margin-top:10px;align-items:center;';
+  const bloco = document.createElement('div');
+  bloco.className = 'atendimento-bloco';
+  bloco.style = 'margin-top:16px;padding:14px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;';
 
-  linha.innerHTML = `
-    <select onchange="selecionarCliente(this)" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
-      <option value="">Cliente</option>
-      <option>Hospital Exemplo</option>
-      <option>UPA Modelo</option>
-      <option>AMA Central</option>
-      <option value="novo">+ Cadastrar novo</option>
-    </select>
-    <input placeholder="Endereço" value="" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
-    <input placeholder="Descrição do serviço" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
-    <input placeholder="OS" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
-    <select style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
-      <option>Pendente</option>
-      <option>Urgente</option>
-      <option>Concluído</option>
-    </select>
-    <button onclick="this.parentElement.remove()" style="background:#dc2626;padding:10px 12px;border:none;border-radius:8px;color:white;cursor:pointer;font-size:12px;">X</button>
+  bloco.innerHTML = `
+    <div style="display:grid;grid-template-columns:1.2fr 1.8fr auto;gap:12px;align-items:center;">
+      <select onchange="selecionarCliente(this)" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+        <option value="">Cliente</option>
+        <option>Hospital Exemplo</option>
+        <option>UPA Modelo</option>
+        <option>AMA Central</option>
+        <option value="novo">+ Cadastrar novo</option>
+      </select>
+
+      <input placeholder="Endereço" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+
+      <button onclick="this.closest('.atendimento-bloco').remove()" style="background:#dc2626;padding:10px 14px;border:none;border-radius:8px;color:white;cursor:pointer;">Excluir</button>
+    </div>
   `;
 
-  container.appendChild(linha);
+  container.appendChild(bloco);
 }
 
 function salvarRota(){
