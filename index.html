@@ -415,7 +415,63 @@ function carregarIndicadoresPatrimonio(){
 }
 
 function novoContrato(){
-  alert('Próxima etapa: integração com aba CONTRATOS para cadastro automatizado.');
+  alert('Novo contrato criado. Próxima etapa: vincular cliente e equipamentos da BASE_NEOVERO.');
+}
+
+function abrirDetalheContrato(cliente, contrato){
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <h2>📦 Contrato ${contrato}</h2>
+      <p style="color:#64748b;margin-bottom:20px;">Cliente: <strong>${cliente}</strong> | Controle integrado BASE_NEOVERO</p>
+
+      <div class="dashboard-grid">
+        <div class="card" style="grid-column:span 3;">
+          <h3>Equipamentos vinculados</h3>
+
+          <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:15px;">
+            <thead>
+              <tr style="background:#f8fafc;text-align:left;">
+                <th style="padding:10px;">TAG</th>
+                <th style="padding:10px;">Equipamento</th>
+                <th style="padding:10px;">Modelo</th>
+                <th style="padding:10px;">Status</th>
+                <th style="padding:10px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;">TAG-00125</td>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;">Bomba de Infusão</td>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;">Samtronic ST1000</td>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">Ativo</td>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;">
+                  <button style="background:#2563eb;width:auto;padding:8px 12px;">Editar</button>
+                  <button style="background:#f59e0b;width:auto;padding:8px 12px;">Movimentar</button>
+                  <button style="background:#64748b;width:auto;padding:8px 12px;">Devolver sede</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;">TAG-00310</td>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;">Monitor Multiparâmetro</td>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;">Dixtal DX2023</td>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">Divergência</td>
+                <td style="padding:10px;border-top:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;">
+                  <button style="background:#2563eb;width:auto;padding:8px 12px;">Editar</button>
+                  <button style="background:#f59e0b;width:auto;padding:8px 12px;">Movimentar</button>
+                  <button style="background:#dc2626;width:auto;padding:8px 12px;">Baixa</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+            <button style="background:#16a34a;width:auto;">+ Adicionar equipamento</button>
+            <button style="background:#7c3aed;width:auto;">Movimentação múltipla</button>
+            <button onclick="abrirTela('patrimonio')" style="background:#334155;width:auto;">← Voltar contratos</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
 }
 
 function abrirTela(menu){
@@ -483,14 +539,14 @@ function abrirTela(menu){
                 </tr>
               </thead>
               <tbody>
-                <tr onclick="alert('Abrir inventário detalhado do cliente')" style="cursor:pointer;">
+                <tr onclick="abrirDetalheContrato('Hospital Exemplo','CTR-001')" style="cursor:pointer;">
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;">CTR-001</td>
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;">58</td>
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;">2</td>
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">Pendente</td>
                 </tr>
-                <tr onclick="alert('Abrir inventário detalhado do cliente')" style="cursor:pointer;">
+                <tr onclick="abrirDetalheContrato('Hospital Exemplo','CTR-001')" style="cursor:pointer;">
                   <td style="padding:10px;">UPA Modelo</td>
                   <td style="padding:10px;">CTR-002</td>
                   <td style="padding:10px;">34</td>
