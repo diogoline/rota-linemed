@@ -427,48 +427,57 @@ function abrirDetalheContrato(cliente, contrato){
       <div class="dashboard-grid">
         <div class="card" style="grid-column:span 3;">
           <h3>Equipamentos vinculados</h3>
+          <p style="margin-bottom:15px;color:#64748b;">Visualização detalhada dos ativos do contrato.</p>
+        </div>
+      </div>
 
-          <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:15px;">
-            <thead>
-              <tr style="background:#f8fafc;text-align:left;">
-                <th style="padding:10px;">TAG</th>
-                <th style="padding:10px;">Equipamento</th>
-                <th style="padding:10px;">Modelo</th>
-                <th style="padding:10px;">Status</th>
-                <th style="padding:10px;">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;">TAG-00125</td>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;">Bomba de Infusão</td>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;">Samtronic ST1000</td>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">Ativo</td>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;">
-                  <button style="background:#2563eb;width:auto;padding:8px 12px;">Editar</button>
-                  <button style="background:#f59e0b;width:auto;padding:8px 12px;">Movimentar</button>
-                  <button style="background:#64748b;width:auto;padding:8px 12px;">Devolver sede</button>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;">TAG-00310</td>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;">Monitor Multiparâmetro</td>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;">Dixtal DX2023</td>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">Divergência</td>
-                <td style="padding:10px;border-top:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;">
-                  <button style="background:#2563eb;width:auto;padding:8px 12px;">Editar</button>
-                  <button style="background:#f59e0b;width:auto;padding:8px 12px;">Movimentar</button>
-                  <button style="background:#dc2626;width:auto;padding:8px 12px;">Baixa</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+        <button onclick="abrirTelaMovimentacao()" style="background:#f59e0b;width:auto;">Movimentar equipamento</button>
+        <button onclick="abrirTela('patrimonio')" style="background:#334155;width:auto;">← Voltar contratos</button>
+      </div>
+    </div>`;
+}
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
-            <button style="background:#16a34a;width:auto;">+ Adicionar equipamento</button>
-            <button style="background:#7c3aed;width:auto;">Movimentação múltipla</button>
-            <button onclick="abrirTela('patrimonio')" style="background:#334155;width:auto;">← Voltar contratos</button>
+function abrirTelaMovimentacao(){
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <h2>🔄 Movimentação de Equipamento</h2>
+      <div class="dashboard-grid">
+        <div class="card" style="grid-column:span 2;">
+          <h3>Dados da movimentação</h3>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;">
+            <input placeholder="TAG do equipamento" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <input placeholder="Equipamento" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+
+            <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <option>Transferência</option>
+              <option>Devolução sede</option>
+              <option>Baixa</option>
+              <option>Manutenção externa</option>
+            </select>
+
+            <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <option>Selecionar destino</option>
+              <option>Hospital Exemplo</option>
+              <option>UPA Modelo</option>
+              <option>Sede Linemed</option>
+            </select>
           </div>
+
+          <textarea placeholder="Observação da movimentação" style="margin-top:14px;width:100%;height:110px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;"></textarea>
+
+          <div style="display:flex;gap:10px;margin-top:18px;">
+            <button style="background:#16a34a;width:auto;">Salvar movimentação</button>
+            <button onclick="abrirTela('patrimonio')" style="background:#334155;width:auto;">Cancelar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Resumo</h3>
+          <p>Origem atual: Hospital Exemplo</p>
+          <p>Status: Ativo</p>
+          <p>Última movimentação: 10/05/2026</p>
         </div>
       </div>
     </div>`;
