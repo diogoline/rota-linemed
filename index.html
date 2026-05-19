@@ -208,7 +208,25 @@ function gerarNumeroRota(){
 }
 
 function adicionarAtendimento(){
-  alert('Novo atendimento adicionado. (Próxima etapa: formulário dinâmico completo)');
+  const container = document.getElementById('listaAtendimentos');
+  if(!container) return;
+
+  const linha = document.createElement('div');
+  linha.style = 'display:grid;grid-template-columns:2fr 2fr 1fr 1fr auto;gap:10px;margin-top:10px;align-items:center;';
+
+  linha.innerHTML = `
+    <input placeholder="Cliente" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+    <input placeholder="Endereço" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+    <input placeholder="OS" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+    <select style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+      <option>Pendente</option>
+      <option>Urgente</option>
+      <option>Concluído</option>
+    </select>
+    <button onclick="this.parentElement.remove()" style="background:#dc2626;padding:10px 14px;border:none;border-radius:8px;color:white;cursor:pointer;">X</button>
+  `;
+
+  container.appendChild(linha);
 }
 
 function salvarRota(){
@@ -265,13 +283,13 @@ function abrirFormularioRota(){
 
           <div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
             <h4 style="margin-bottom:10px;color:#1565C0;">Atendimentos da rota</h4>
-            <p style="color:#64748b;">Nenhum atendimento cadastrado.</p>
+            <div id="listaAtendimentos"></div>
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
-            <button onclick="adicionarAtendimento()" style="background:#16a34a;width:auto;">+ Adicionar atendimento</button>
-            <button onclick="abrirHistoricoRotas()" style="background:#2563eb;width:auto;">Histórico</button>
-            <button onclick="salvarRota()" style="background:#64748b;width:auto;">Salvar rota</button>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
+            <button onclick="adicionarAtendimento()" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);padding:12px 18px;border:none;border-radius:10px;color:white;font-weight:bold;box-shadow:0 4px 10px rgba(37,99,235,.25);">+ Adicionar atendimento</button>
+            <button onclick="abrirHistoricoRotas()" style="background:linear-gradient(135deg,#0f172a,#334155);padding:12px 18px;border:none;border-radius:10px;color:white;font-weight:bold;">Histórico</button>
+            <button onclick="salvarRota()" style="background:linear-gradient(135deg,#16a34a,#15803d);padding:12px 18px;border:none;border-radius:10px;color:white;font-weight:bold;box-shadow:0 4px 10px rgba(22,163,74,.25);">Salvar rota</button>
           </div>
         </div>
       </div>
