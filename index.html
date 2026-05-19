@@ -234,25 +234,28 @@ function abrirFormularioRota(){
             <input value="${numeroRota}" readonly style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;">
             <input type="date" value="${dataHoje}" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
 
-            <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <select onchange="if(this.value==='novo'){alert('Cadastro de novo item será feito futuramente pela tela administrativa.');this.selectedIndex=0;}" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
               <option>DIOGO MATOS</option>
               <option>WESLEY MANOEL</option>
               <option>JONATAS DE SOUZA</option>
               <option>DIOGENES DE JESUS</option>
+              <option value="novo">+ Cadastrar novo</option>
             </select>
 
-            <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <select onchange="if(this.value==='novo'){alert('Cadastro de novo item será feito futuramente pela tela administrativa.');this.selectedIndex=0;}" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
               <option>DIOGO MATOS</option>
               <option>WESLEY MANOEL</option>
               <option>JONATAS DE SOUZA</option>
               <option>DIOGENES DE JESUS</option>
+              <option value="novo">+ Cadastrar novo</option>
             </select>
 
-            <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <select onchange="if(this.value==='novo'){alert('Cadastro de novo item será feito futuramente pela tela administrativa.');this.selectedIndex=0;}" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
               <option>FIAT MOBI</option>
               <option>FIAT STRADA</option>
               <option>FIAT FIORINO</option>
               <option>FIAT ARGO</option>
+              <option value="novo">+ Cadastrar novo</option>
             </select>
           </div>
 
