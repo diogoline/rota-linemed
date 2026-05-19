@@ -612,6 +612,42 @@ function abrirTela(menu){
         </div>
       </div>`;
   }
+  else if(menu === 'clientes'){
+    document.getElementById('conteudoPrincipal').innerHTML = `
+      <div>
+        <h2>🏥 Cadastro de Clientes</h2>
+        <div class="dashboard-grid">
+          <div class="card" style="grid-column:span 2;">
+            <h3>Novo cliente / contrato</h3>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;">
+              <input placeholder="Nome do cliente" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <input placeholder="CNPJ" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+
+              <input placeholder="Contato responsável" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <input placeholder="Telefone / WhatsApp" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+
+              <input placeholder="Email" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <input placeholder="Número do contrato" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            </div>
+
+            <textarea placeholder="Endereço completo" style="margin-top:14px;width:100%;height:90px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;"></textarea>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+              <button style="background:#16a34a;width:auto;">Salvar cliente</button>
+              <button style="background:#2563eb;width:auto;">Novo contrato</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Resumo cadastral</h3>
+            <p>Clientes ativos: 42</p>
+            <p>Contratos vigentes: 18</p>
+            <p>Último cadastro: Hospital Exemplo</p>
+          </div>
+        </div>
+      </div>`;
+  }
   else {
     document.getElementById('conteudoPrincipal').innerHTML = `<div><h2>${menu.toUpperCase()}</h2><p>Módulo em construção.</p></div>`;
   }
