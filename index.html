@@ -507,6 +507,34 @@ function abrirTelaMovimentacao(){
     </div>`;
 }
 
+function abrirMovimentacaoEquipamento(){
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <h2>🔄 Movimentação de Equipamento</h2>
+
+      <div class="card" style="max-width:800px;">
+        <h3 style="margin-bottom:15px;">Dados da movimentação</h3>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <input type="text" value="TAG001" readonly style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+          <input type="text" value="Bomba de Infusão" readonly style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+
+          <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <option>Retorno para sede</option>
+            <option>Transferência entre contratos</option>
+            <option>Manutenção externa</option>
+            <option>Baixa definitiva</option>
+            <option>Devolução cliente</option>
+          </select>
+
+          <input type="text" placeholder="Destino / observação" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+        </div>
+
+        <button style="margin-top:15px;background:#2563eb;width:auto;">Salvar movimentação</button>
+      </div>
+    </div>`;
+}
+
 function abrirContratoDetalhe(){
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
@@ -549,7 +577,7 @@ function abrirContratoDetalhe(){
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
                 <button onclick="alert('Abrir edição de cadastro do cliente')" style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
-                <button style="background:#ea580c;width:auto;font-size:12px;padding:8px 12px;">Movimentar</button>
+                <button onclick="abrirMovimentacaoEquipamento()" style="background:#ea580c;width:auto;font-size:12px;padding:8px 12px;">Movimentar</button>
               </td>
             </tr>
           </tbody>
