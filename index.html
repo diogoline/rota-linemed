@@ -465,7 +465,7 @@ function abrirDetalheContrato(cliente, contrato){
 function abrirTelaMovimentacao(){
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
-      <h2>🔄 Movimentação de Equipamento</h2>
+      <h2>↔ Movimentação de Equipamento</h2>
       <div class="dashboard-grid">
         <div class="card" style="grid-column:span 2;">
           <h3>Dados da movimentação</h3>
@@ -527,7 +527,13 @@ function abrirMovimentacaoEquipamento(){
             <option>Devolução cliente</option>
           </select>
 
-          <input type="text" placeholder="Destino / observação" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+          <select onchange="if(this.value==='novoDestino'){alert('Abrir cadastro de novo destino')}" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <option>Selecione destino</option>
+            <option>Sede Linemed</option>
+            <option>Hospital Exemplo</option>
+            <option>Assistência Técnica</option>
+            <option value="novoDestino">+ Adicionar novo destino</option>
+          </select>
         </div>
 
         <button style="margin-top:15px;background:#2563eb;width:auto;">Salvar movimentação</button>
