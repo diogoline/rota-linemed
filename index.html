@@ -507,6 +507,57 @@ function abrirTelaMovimentacao(){
     </div>`;
 }
 
+function abrirContratoDetalhe(){
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <h2>📄 Detalhamento do Contrato</h2>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h3>Dados do contrato</h3>
+          <p><strong>Cliente:</strong> Hospital Exemplo</p>
+          <p><strong>Contrato:</strong> CTR-001</p>
+          <p><strong>Status:</strong> ATIVO</p>
+          <p><strong>Responsável:</strong> João Silva</p>
+        </div>
+
+        <div class="card">
+          <h3>Resumo operacional</h3>
+          <p>Total equipamentos: <strong>58</strong></p>
+          <p>Divergências: <strong style="color:#dc2626;">2</strong></p>
+          <p>Última movimentação: 14/05/2026</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <h3 style="margin-bottom:15px;">Equipamentos vinculados</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <thead>
+            <tr style="background:#f8fafc;text-align:left;">
+              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Equipamento</th>
+              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Tag</th>
+              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Status</th>
+              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Destino</th>
+              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:12px;border-bottom:1px solid #e2e8f0;">Bomba de Infusão</td>
+              <td style="padding:12px;border-bottom:1px solid #e2e8f0;">TAG001</td>
+              <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">LOCADO</td>
+              <td style="padding:12px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
+              <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
+                <button style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
+                <button style="background:#ea580c;width:auto;font-size:12px;padding:8px 12px;">Movimentar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
 function abrirTela(menu){
   if(menu === 'rotas'){
     document.getElementById('conteudoPrincipal').innerHTML = `
@@ -672,7 +723,7 @@ function abrirTela(menu){
                 <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">ATIVO</td>
                 <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
                   <button style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
-                  <button style="background:#2563eb;width:auto;font-size:12px;padding:8px 12px;">Contrato</button>
+                  <button onclick="abrirContratoDetalhe()" style="background:#2563eb;width:auto;font-size:12px;padding:8px 12px;">Contrato</button>
                   <button style="background:#7c3aed;width:auto;font-size:12px;padding:8px 12px;">Patrimônio</button>
                 </td>
               </tr>
