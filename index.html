@@ -266,11 +266,11 @@ function adicionarSubChamado(){
 
   const subLinha = document.createElement('div');
   subLinha.className = 'sub-chamado';
-  subLinha.style = 'display:grid;width:100%;max-width:100%;overflow:hidden;grid-template-columns:50px minmax(180px,2fr) 90px 120px 50px;left:20px;padding:8px;background:#f8fafc;border-left:3px solid #2563eb;border-radius:8px;align-items:center;';
+  subLinha.style = 'display:grid;width:100%;max-width:100%;overflow:hidden;grid-template-columns:50px minmax(180px,2fr) 90px 120px 50px;gap:10px;margin-top:8px;margin-left:20px;padding:8px;background:#f8fafc;border-left:3px solid #2563eb;border-radius:8px;align-items:center;';
 
   subLinha.innerHTML = `
     <div style="font-weight:bold;color:#2563eb;text-align:center;">${contador}</div>
-    <input placeholder="Descrição do serviço" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+    
     <input placeholder="OS" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
     <select style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
       <option>Pendente</option>
