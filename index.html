@@ -239,6 +239,38 @@ function selecionarCliente(select){
   }
 }
 
+function adicionarChamadoMesmoCliente(){
+  const linhas = document.querySelectorAll('#listaAtendimentos > div');
+  if(linhas.length === 0){
+    alert('Adicione primeiro um atendimento completo.');
+    return;
+  }
+
+  const ultimaLinha = linhas[linhas.length - 1];
+  const clienteSelecionado = ultimaLinha.querySelector('select').value;
+  const enderecoAtual = ultimaLinha.querySelector('input[placeholder="Endereço"]').value;
+
+  const novaLinha = document.createElement('div');
+  novaLinha.style = 'display:grid;grid-template-columns:1.4fr 1.8fr 2fr 1fr 1fr auto;gap:10px;margin-top:10px;align-items:center;';
+
+  novaLinha.innerHTML = `
+    <select style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#f8fafc;pointer-events:none;">
+      <option>${clienteSelecionado}</option>
+    </select>
+    <input placeholder="Endereço" value="${enderecoAtual}" style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#f8fafc;" readonly>
+    <input placeholder="Descrição do serviço" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+    <input placeholder="OS" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+    <select style="padding:10px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
+      <option>Pendente</option>
+      <option>Urgente</option>
+      <option>Concluído</option>
+    </select>
+    <button onclick="this.parentElement.remove()" style="background:#dc2626;padding:10px 12px;border:none;border-radius:8px;color:white;cursor:pointer;font-size:12px;">X</button>
+  `;
+
+  document.getElementById('listaAtendimentos').appendChild(novaLinha);
+}
+
 function adicionarAtendimento(){
   const container = document.getElementById('listaAtendimentos');
   if(!container) return;
@@ -323,6 +355,7 @@ function abrirFormularioRota(){
           <div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
             <h4 style="margin-bottom:10px;color:#1565C0;">Atendimentos da rota</h4>
             <div id="listaAtendimentos"></div>
+            <button onclick="adicionarChamadoMesmoCliente()" style="margin-top:12px;background:#0f766e;padding:10px 16px;border:none;border-radius:8px;color:white;font-weight:bold;cursor:pointer;">+ Adicionar chamado no mesmo cliente</button>
           </div>
 
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
