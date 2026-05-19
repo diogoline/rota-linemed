@@ -548,7 +548,7 @@ function abrirContratoDetalhe(){
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">LOCADO</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
-                <button style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
+                <button onclick="alert('Abrir edição de cadastro do cliente')" style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
                 <button style="background:#ea580c;width:auto;font-size:12px;padding:8px 12px;">Movimentar</button>
               </td>
             </tr>
@@ -696,7 +696,7 @@ function abrirTela(menu){
           <div style="display:grid;grid-template-columns:2fr 1.2fr auto;gap:12px;align-items:end;">
             <input type="text" placeholder="Pesquisar cliente por nome" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
             <input type="text" placeholder="Consultar por CNPJ" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-            <button style="background:#2563eb;width:auto;">+ Novo Cliente</button>
+            <button onclick="alert('Abrir formulário de novo cliente')" style="background:#2563eb;width:auto;">+ Novo Cliente</button>
           </div>
         </div>
 
@@ -724,7 +724,7 @@ function abrirTela(menu){
                 <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
                   <button style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
                   <button onclick="abrirContratoDetalhe()" style="background:#2563eb;width:auto;font-size:12px;padding:8px 12px;">Contrato</button>
-                  <button style="background:#7c3aed;width:auto;font-size:12px;padding:8px 12px;">Patrimônio</button>
+                  <button onclick="abrirTela('patrimonio')" style="background:#7c3aed;width:auto;font-size:12px;padding:8px 12px;">Patrimônio</button>
                 </td>
               </tr>
             </tbody>
