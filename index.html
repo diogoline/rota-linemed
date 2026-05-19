@@ -636,7 +636,17 @@ function abrirTela(menu){
               <input placeholder="Número do contrato" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
             </div>
 
-            <textarea placeholder="Endereço completo" style="margin-top:14px;width:100%;height:90px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;"></textarea>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:14px;">
+              <input placeholder="CEP" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <button style="background:#0ea5e9;width:auto;">Buscar CEP</button>
+            </div>
+
+            <input placeholder="Logradouro" style="margin-top:12px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;width:100%;">
+            <div style="display:grid;grid-template-columns:1fr 180px;gap:10px;margin-top:12px;">
+              <input placeholder="Cidade" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+              <input placeholder="UF" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            </div>
+            <textarea placeholder="Complemento / observações" style="margin-top:12px;width:100%;height:90px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;"></textarea>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
               <button style="background:#16a34a;width:auto;">Salvar cliente</button>
