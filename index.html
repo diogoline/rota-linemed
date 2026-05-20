@@ -222,6 +222,113 @@ button:hover{
 </div>
 
 <script>
+
+// =========================
+// SESSÃO LOGIN
+// =========================
+window.addEventListener('load', ()=>{
+  const usuarioLogado = localStorage.getItem('orizonUsuarioLogado');
+
+  if(usuarioLogado){
+    const loginScreen = document.getElementById('loginScreen');
+
+    if(loginScreen){
+      loginScreen.style.display = 'none';
+    }
+  }
+});
+
+function logout(){
+  localStorage.removeItem('orizonUsuarioLogado');
+  location.reload();
+}
+
+// =========================
+// CLIENTES
+// =========================
+let clientesSalvos = JSON.parse(localStorage.getItem('orizonClientes')) || [
+  {
+    nome:'Hospital Exemplo',
+    endereco:'Av. Paulista, 1500 - São Paulo/SP'
+  },
+  {
+    nome:'UPA Central',
+    endereco:'Rua das Flores, 200 - Jaboticabal/SP'
+  }
+];
+
+function gerarOptionsClientes(){
+  let options = '<option value="">Selecionar cliente</option>';
+
+  clientesSalvos.forEach(cliente=>{
+    options += `<option value="${cliente.nome}">${cliente.nome}</option>`;
+  });
+
+  options += '<option value="novo">+ Cadastrar novo cliente</option>';
+
+  return options;
+}
+
+function atualizarSelectsClientes(){
+  document.querySelectorAll('.selectCliente').forEach(select=>{
+    const valorAtual = select.value;
+    select.innerHTML = gerarOptionsClientes();
+
+    if(valorAtual){
+      select.value = valorAtual;
+    }
+  });
+}
+
+function alterarCliente(select){
+
+  const card = select.closest('.card');
+  const endereco = card.querySelector('.enderecoCliente');
+
+  if(select.value === 'novo'){
+
+    const nome = prompt('Digite o nome do cliente:');
+
+    if(!nome){
+      select.value = '';
+      return;
+    }
+
+    const enderecoNovo = prompt('Digite o endereço do cliente:');
+
+    clientesSalvos.push({
+      nome:nome,
+      endereco:enderecoNovo || 'Endereço não informado'
+    });
+
+    localStorage.setItem('orizonClientes', JSON.stringify(clientesSalvos));
+
+    atualizarSelectsClientes();
+
+    select.value = nome;
+
+    endereco.innerHTML = enderecoNovo || 'Endereço não informado';
+
+    return;
+  }
+
+  const clienteEncontrado = clientesSalvos.find(cliente=>cliente.nome === select.value);
+
+  if(clienteEncontrado){
+    endereco.innerHTML = clienteEncontrado.endereco;
+  }else{
+    endereco.innerHTML = 'Endereço do cliente aparecerá automaticamente';
+  }
+}
+
+function excluirCliente(botao){
+  const card = botao.closest('.card');
+
+  if(confirm('Deseja remover este cliente da rota?')){
+    card.remove();
+  }
+}
+
 function ocultarTudo(){
   document.querySelectorAll('#conteudoPrincipal > div').forEach(el=>el.classList.add('hidden'));
 }
@@ -430,14 +537,13 @@ function abrirFormularioRota(){
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px;flex-wrap:wrap;">
             <div style="flex:1;min-width:260px;">
               <label style="font-size:12px;color:#64748b;">Cliente</label>
-              <select style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:4px;">
-                <option>Selecionar cliente</option>
-                <option>+ Cadastrar novo cliente</option>
-              </select>
+              <select onchange="alterarCliente(this)" class="selectCliente" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:4px;">
+  ${gerarOptionsClientes()}
+</select>
 
               <div style="margin-top:12px;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
                 <div style="font-size:12px;color:#64748b;margin-bottom:4px;">📍 Endereço</div>
-                <div style="font-size:14px;color:#334155;">Endereço do cliente aparecerá automaticamente</div>
+                <div class="enderecoCliente" style="font-size:14px;color:#334155;">Endereço do cliente aparecerá automaticamente</div>
               </div>
             </div>
 
@@ -446,9 +552,9 @@ function abrirFormularioRota(){
                 + Adicionar OS
               </button>
 
-              <button style="background:#dc2626;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
-                Excluir Cliente
-              </button>
+              <button onclick="excluirCliente(this)" style="background:#dc2626;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
+Excluir Cliente
+</button>
             </div>
           </div>
 
@@ -875,6 +981,7 @@ function fazerLogin(){
   const pass=document.getElementById('loginPass').value;
 
   if((user==='admin' && pass==='@181989Di') || (user==='visitante' && pass==='123')){
+    localStorage.setItem('orizonUsuarioLogado', user);
     document.getElementById('loginScreen').style.display='none';
   }else{
     alert('Usuário ou senha inválidos');
@@ -929,14 +1036,13 @@ function adicionarClienteRota(){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px;flex-wrap:wrap;">
         <div style="flex:1;min-width:260px;">
           <label style="font-size:12px;color:#64748b;">Cliente ${totalClientes}</label>
-          <select style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:4px;">
-            <option>Selecionar cliente</option>
-            <option>+ Cadastrar novo cliente</option>
-          </select>
+          <select onchange="alterarCliente(this)" class="selectCliente" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:4px;">
+  ${gerarOptionsClientes()}
+</select>
 
           <div style="margin-top:12px;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
             <div style="font-size:12px;color:#64748b;margin-bottom:4px;">📍 Endereço</div>
-            <div style="font-size:14px;color:#334155;">Endereço do cliente aparecerá automaticamente</div>
+            <div class="enderecoCliente" style="font-size:14px;color:#334155;">Endereço do cliente aparecerá automaticamente</div>
           </div>
         </div>
 
@@ -945,9 +1051,9 @@ function adicionarClienteRota(){
             + Adicionar OS
           </button>
 
-          <button style="background:#dc2626;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
-            Excluir Cliente
-          </button>
+          <button onclick="excluirCliente(this)" style="background:#dc2626;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
+Excluir Cliente
+</button>
         </div>
       </div>
 
