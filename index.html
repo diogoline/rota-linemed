@@ -193,7 +193,7 @@ button:hover{
         </div>
 
         <div class="card">
-          <h3>Histórico</h3>
+          <h3>📋 Histórico</h3>
           <p>Consultar rotas anteriores, editar e imprimir PDF.</p>
           <button onclick="abrirHistoricoRotas()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
         </div>
@@ -484,8 +484,8 @@ function abrirFormularioRota(){
         </div>
 
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
-          <button style="background:#16a34a;color:white;border:none;padding:12px 18px;border-radius:10px;font-weight:bold;cursor:pointer;">💾 Salvar Rota</button>
-          <button onclick="abrirHistoricoRotas()" style="background:#334155;color:white;border:none;padding:12px 18px;border-radius:10px;font-weight:bold;cursor:pointer;">📚 Histórico</button>
+          <button style="background:#16a34a;color:white;border:none;padding:12px 18px;border-radius:10px;font-weight:bold;cursor:pointer;">💾 💾 Salvar Rota</button>
+          <button onclick="abrirHistoricoRotas()" style="background:#334155;color:white;border:none;padding:12px 18px;border-radius:10px;font-weight:bold;cursor:pointer;">📚 📋 Histórico</button>
         </div>
       </div>
 
@@ -549,11 +549,11 @@ function abrirFormularioRota(){
 
             <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
               <button onclick="adicionarOS(this)" style="background:#2563eb;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
-                + Adicionar OS
+                + + Adicionar OS
               </button>
 
               <button onclick="excluirCliente(this)" style="background:#dc2626;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
-Excluir Cliente
+🗑 Excluir Cliente
 </button>
             </div>
           </div>
@@ -564,9 +564,9 @@ Excluir Cliente
                 <tr style="background:#f8fafc;">
                   <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">#</th>
                   <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">OS</th>
-                  <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Equipamento</th>
+                  <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
                   <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço</th>
-                  <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Status</th>
+                  <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Prioridade</th>
                   <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Observação</th>
                 </tr>
               </thead>
@@ -579,7 +579,7 @@ Excluir Cliente
                   </td>
 
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-                    <input placeholder="Equipamento" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+                    <input placeholder="Serviço / Atividade" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
                   </td>
 
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
@@ -605,6 +605,15 @@ Excluir Cliente
                 </tr>
               </tbody>
             </table>
+
+<div style="margin-top:25px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;">
+  <div style="font-size:14px;font-weight:bold;color:#334155;margin-bottom:10px;">
+    Observações Gerais da Rota
+  </div>
+
+  <textarea placeholder="Informações gerais, pendências, retorno ao cliente, observações operacionais..."
+  style="width:100%;min-height:120px;border:1px solid #cbd5e1;border-radius:12px;padding:14px;font-size:14px;resize:vertical;"></textarea>
+</div>
           </div>
         </div>
       </div>
@@ -620,7 +629,7 @@ Excluir Cliente
 function abrirHistoricoRotas(){
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
-      <h2>📚 Histórico de Rotas</h2>
+      <h2>📚 📋 Histórico de Rotas</h2>
       <div class="dashboard-grid">
         <div class="card"><h3>Pesquisar rotas</h3><p>Consulta por número, data e técnico.</p></div>
         <div class="card"><h3>PDF e edição</h3><p>Impressão e reabertura de rotas salvas.</p></div>
@@ -630,15 +639,15 @@ function abrirHistoricoRotas(){
 }
 
 function carregarIndicadoresPatrimonio(){
-  const totalEquipamentos = 0;
+  const totalServiço / Atividades = 0;
   const totalContratos = 0;
   const totalDivergencias = 0;
 
-  const elEquip = document.getElementById('totalEquipamentos');
+  const elEquip = document.getElementById('totalServiço / Atividades');
   const elContratos = document.getElementById('totalContratos');
   const elDiv = document.getElementById('totalDivergencias');
 
-  if(elEquip) elEquip.innerText = totalEquipamentos;
+  if(elEquip) elEquip.innerText = totalServiço / Atividades;
   if(elContratos) elContratos.innerText = totalContratos;
   if(elDiv) elDiv.innerText = totalDivergencias;
 }
@@ -655,7 +664,7 @@ function abrirDetalheContrato(cliente, contrato){
 
       <div class="dashboard-grid">
         <div class="card" style="grid-column:span 3;">
-          <h3>Equipamentos vinculados</h3>
+          <h3>Serviço / Atividades vinculados</h3>
           <p style="margin-bottom:15px;color:#64748b;">Visualização detalhada dos ativos do contrato.</p>
         </div>
       </div>
@@ -670,14 +679,14 @@ function abrirDetalheContrato(cliente, contrato){
 function abrirTelaMovimentacao(){
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
-      <h2>↔ Movimentação de Equipamento</h2>
+      <h2>↔ Movimentação de Serviço / Atividade</h2>
       <div class="dashboard-grid">
         <div class="card" style="grid-column:span 2;">
           <h3>Dados da movimentação</h3>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;">
             <input placeholder="TAG do equipamento" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-            <input placeholder="Equipamento" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
+            <input placeholder="Serviço / Atividade" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
 
             <select style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
               <option>Transferência</option>
@@ -705,17 +714,17 @@ function abrirTelaMovimentacao(){
         <div class="card">
           <h3>Resumo</h3>
           <p>Origem atual: Hospital Exemplo</p>
-          <p>Status: Ativo</p>
+          <p>Prioridade: Ativo</p>
           <p>Última movimentação: 10/05/2026</p>
         </div>
       </div>
     </div>`;
 }
 
-function abrirMovimentacaoEquipamento(){
+function abrirMovimentacaoServiço / Atividade(){
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
-      <h2>🔄 Movimentação de Equipamento</h2>
+      <h2>🔄 Movimentação de Serviço / Atividade</h2>
 
       <div class="card" style="max-width:800px;">
         <h3 style="margin-bottom:15px;">Dados da movimentação</h3>
@@ -756,7 +765,7 @@ function abrirContratoDetalhe(){
           <h3>Dados do contrato</h3>
           <p><strong>Cliente:</strong> Hospital Exemplo</p>
           <p><strong>Contrato:</strong> CTR-001</p>
-          <p><strong>Status:</strong> ATIVO</p>
+          <p><strong>Prioridade:</strong> ATIVO</p>
           <p><strong>Responsável:</strong> João Silva</p>
         </div>
 
@@ -769,13 +778,13 @@ function abrirContratoDetalhe(){
       </div>
 
       <div class="card" style="margin-top:20px;">
-        <h3 style="margin-bottom:15px;">Equipamentos vinculados</h3>
+        <h3 style="margin-bottom:15px;">Serviço / Atividades vinculados</h3>
         <table style="width:100%;border-collapse:collapse;font-size:14px;">
           <thead>
             <tr style="background:#f8fafc;text-align:left;">
-              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Equipamento</th>
+              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
               <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Tag</th>
-              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Status</th>
+              <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Prioridade</th>
               <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Destino</th>
               <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Ações</th>
             </tr>
@@ -788,7 +797,7 @@ function abrirContratoDetalhe(){
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
                 <button onclick="alert('Abrir edição de cadastro do cliente')" style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
-                <button onclick="abrirMovimentacaoEquipamento()" style="background:#ea580c;width:auto;font-size:12px;padding:8px 12px;">Movimentar</button>
+                <button onclick="abrirMovimentacaoServiço / Atividade()" style="background:#ea580c;width:auto;font-size:12px;padding:8px 12px;">Movimentar</button>
               </td>
             </tr>
           </tbody>
@@ -809,7 +818,7 @@ function abrirTela(menu){
             <button onclick="abrirFormularioRota()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir formulário</button>
           </div>
           <div class="card">
-            <h3>Histórico</h3>
+            <h3>📋 Histórico</h3>
             <p>Consultar rotas anteriores, editar e imprimir PDF.</p>
             <button onclick="abrirHistoricoRotas()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
           </div>
@@ -838,7 +847,7 @@ function abrirTela(menu){
         <div class="dashboard-grid">
           <div class="card">
             <h3>Resumo</h3>
-            <p>Total de equipamentos cadastrados: <strong id="totalEquipamentos">0</strong></p>
+            <p>Total de equipamentos cadastrados: <strong id="totalServiço / Atividades">0</strong></p>
             <p>Contratos ativos: <strong id="totalContratos">0</strong></p>
             <p>Divergências encontradas: <strong id="totalDivergencias" style="color:#dc2626;">0</strong></p>
           </div>
@@ -858,7 +867,7 @@ function abrirTela(menu){
                   <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Contrato</th>
                   <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Qtd. Equip.</th>
                   <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Divergências</th>
-                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Status</th>
+                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Prioridade</th>
                 </tr>
               </thead>
               <tbody>
@@ -886,9 +895,9 @@ function abrirTela(menu){
               <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:10px;">
                 <thead>
                   <tr style="background:#eef4ff;text-align:left;">
-                    <th style="padding:10px;">Equipamento</th>
+                    <th style="padding:10px;">Serviço / Atividade</th>
                     <th style="padding:10px;">TAG</th>
-                    <th style="padding:10px;">Status</th>
+                    <th style="padding:10px;">Prioridade</th>
                     <th style="padding:10px;">Ações</th>
                   </tr>
                 </thead>
@@ -949,7 +958,7 @@ function abrirTela(menu){
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Contrato</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Cidade</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Responsável</th>
-                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Status</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Prioridade</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Ações</th>
               </tr>
             </thead>
@@ -1000,7 +1009,7 @@ function adicionarOS(botao){
       </td>
 
       <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-        <input placeholder="Equipamento" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+        <input placeholder="Serviço / Atividade" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
       </td>
 
       <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
@@ -1048,11 +1057,11 @@ function adicionarClienteRota(){
 
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
           <button onclick="adicionarOS(this)" style="background:#2563eb;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
-            + Adicionar OS
+            + + Adicionar OS
           </button>
 
           <button onclick="excluirCliente(this)" style="background:#dc2626;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
-Excluir Cliente
+🗑 Excluir Cliente
 </button>
         </div>
       </div>
@@ -1063,9 +1072,9 @@ Excluir Cliente
             <tr style="background:#f8fafc;">
               <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">#</th>
               <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">OS</th>
-              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Equipamento</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
               <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço</th>
-              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Status</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Prioridade</th>
               <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Observação</th>
             </tr>
           </thead>
@@ -1079,7 +1088,7 @@ Excluir Cliente
               </td>
 
               <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-                <input placeholder="Equipamento" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+                <input placeholder="Serviço / Atividade" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
               </td>
 
               <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
