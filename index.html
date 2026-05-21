@@ -407,7 +407,7 @@ function abrirFormularioRota(){
         </div>
 
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn-success">💾 Salvar Rota</button>
+          <button onclick="salvarRota()" class="btn-success">💾 Salvar Rota</button>
           <button onclick="abrirHistoricoRotas()" class="btn-secondary">📋 Histórico</button>
         </div>
       </div>
@@ -933,6 +933,101 @@ function alterarCliente(select){
   else{
     endereco.innerHTML = 'Endereço do cliente aparecerá automaticamente';
   }
+}
+
+function coletarDadosRota(){
+  const numeroRota = document.querySelector('input[value="#000125"]')?.value || '';
+  const data = document.querySelector('input[type="date"]')?.value || '';
+
+  const selectsTecnicos = document.querySelectorAll('.select-padrao');
+
+  const tecnico1 = selectsTecnicos[0]?.value || '';
+  const tecnico2 = selectsTecnicos[1]?.value || '';
+  const veiculo = selectsTecnicos[2]?.value || '';
+
+  const clientes = [];
+
+  document.querySelectorAll('#clientesRotaContainer .card').forEach(card=>{
+
+    const cliente = card.querySelector('.selectCliente')?.value || '';
+    const endereco = card.querySelector('.enderecoCliente')?.innerText || '';
+    const observacao = card.querySelector('textarea')?.value || '';
+
+    const chamados = [];
+
+    card.querySelectorAll('tbody tr').forEach(linha=>{
+      const inputs = linha.querySelectorAll('input');
+      const selects = linha.querySelectorAll('select');
+
+      chamados.push({
+        os: inputs[0]?.value || '',
+        atividade: inputs[1]?.value || '',
+        tipo: selects[0]?.value || '',
+        prioridade: selects[1]?.value || ''
+      });
+    });
+
+    clientes.push({
+      cliente,
+      endereco,
+      observacao,
+      chamados
+    });
+  });
+
+  return {
+    numeroRota,
+    data,
+    tecnico1,
+    tecnico2,
+    veiculo,
+    clientes,
+    dataRegistro:new Date().toISOString()
+  };
+}
+
+function validarRota(dados){
+
+  if(!dados.data){
+    mostrarAlerta('Preencha a data da rota');
+    return false;
+  }
+
+  if(dados.tecnico1 === 'Selecionar técnico' || !dados.tecnico1){
+    mostrarAlerta('Selecione o Técnico 1');
+    return false;
+  }
+
+  if(dados.veiculo === 'Selecionar veículo' || !dados.veiculo){
+    mostrarAlerta('Selecione o veículo');
+    return false;
+  }
+
+  if(dados.clientes.length === 0){
+    mostrarAlerta('Adicione ao menos um cliente na rota');
+    return false;
+  }
+
+  return true;
+}
+
+function salvarRota(){
+
+  const dadosRota = coletarDadosRota();
+
+  console.log('[ROTA] Dados coletados', dadosRota);
+
+  if(!validarRota(dadosRota)){
+    return;
+  }
+
+  appState.rotas.push(dadosRota);
+
+  salvarLocalStorage('orizonRotas', appState.rotas);
+
+  mostrarAlerta('Rota salva com sucesso!');
+
+  console.log('[ROTA] Rota salva');
 }
 
 function adicionarClienteRota(){
