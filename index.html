@@ -1189,9 +1189,69 @@ function adicionarOS(botao){
 
 function adicionarClienteRota(){
   const container = document.getElementById('clientesRotaContainer');
-  const totalClientes = container.querySelectorAll('.card').length + 1;
 
-  container.insertAdjacentHTML('beforeend', `$1</div>`);
+  const novoClienteHTML = `
+    <div class="card" style="margin-bottom:18px;border-left:6px solid #2563eb;">
+
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;">
+          <label style="font-size:12px;color:#64748b;">Cliente</label>
+
+          <select onchange="alterarCliente(this)" class="selectCliente select-padrao" style="margin-top:4px;">
+            ${gerarOptionsClientes()}
+          </select>
+
+          <div style="margin-top:12px;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
+            <div style="font-size:12px;color:#64748b;margin-bottom:4px;">📍 Endereço</div>
+            <div class="enderecoCliente" style="font-size:14px;color:#334155;">
+              Endereço do cliente aparecerá automaticamente
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
+
+          <button onclick="adicionarOS(this)" style="background:#2563eb;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
+            + + Adicionar OS
+          </button>
+
+          <button onclick="excluirCliente(this)" style="background:#dc2626;color:white;border:none;padding:12px 16px;border-radius:10px;font-weight:bold;cursor:pointer;">
+            🗑 Excluir Cliente
+          </button>
+
+        </div>
+      </div>
+
+      <div style="margin-top:18px;overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;min-width:850px;">
+          <thead>
+            <tr style="background:#f8fafc;">
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">#</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">OS</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Tipo</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Prioridade</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Ações</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${gerarLinhaOS(1)}
+          </tbody>
+        </table>
+
+        <div style="margin-top:25px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;">
+          <div style="font-size:14px;font-weight:bold;color:#334155;margin-bottom:10px;">
+            Observações Gerais da Rota
+          </div>
+
+          <textarea placeholder="Informações gerais, pendências, retorno ao cliente, observações operacionais..."
+          style="width:100%;min-height:120px;border:1px solid #cbd5e1;border-radius:12px;padding:14px;font-size:14px;resize:vertical;"></textarea>
+        </div>
+      </div>
+    </div>`;
+
+  container.insertAdjacentHTML('beforeend', novoClienteHTML);
 }
 </script>
 
