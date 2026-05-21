@@ -1113,13 +1113,34 @@ function abrirTela(menu){
   }
 }
 setTimeout(()=>{carregarIndicadoresPatrimonio();},300);
+// =========================
+// LOGIN SISTEMA
+// =========================
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  console.log('[ORIZON] Sistema carregado');
+
+  const btnLogin = document.querySelector('#loginScreen button');
+
+  if(btnLogin){
+    console.log('[LOGIN] Botão localizado');
+  }
+});
+
 function fazerLogin(){
   const user=document.getElementById('loginUser').value;
   const pass=document.getElementById('loginPass').value;
 
+  console.log('[LOGIN] Tentativa de login');
+
   if((user==='admin' && pass==='@181989Di') || (user==='visitante' && pass==='123')){
     localStorage.setItem('orizonUsuarioLogado', user);
-    document.getElementById('loginScreen').style.display='none';
+    const telaLogin = document.getElementById('loginScreen');
+
+    if(telaLogin){
+      telaLogin.style.display='none';
+      console.log('[LOGIN] Login realizado com sucesso');
+    }
   }else{
     alert('Usuário ou senha inválidos');
   }
