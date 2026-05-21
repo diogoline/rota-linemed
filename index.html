@@ -6,6 +6,55 @@
 <title>ORIZON - Gestão Inteligente</title>
 
 <style>
+
+/* =========================
+   PADRONIZAÇÃO GLOBAL
+========================= */
+:root{
+  --cor-primaria:#2563eb;
+  --cor-secundaria:#334155;
+  --cor-sucesso:#16a34a;
+  --cor-perigo:#dc2626;
+  --cor-alerta:#f59e0b;
+  --borda:#cbd5e1;
+  --bg-claro:#f8fafc;
+}
+
+.input-padrao,
+.select-padrao,
+.textarea-padrao{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--borda);
+  border-radius:10px;
+  background:white;
+  font-size:14px;
+}
+
+.btn-primary{
+  background:var(--cor-primaria);
+}
+
+.btn-danger{
+  background:var(--cor-perigo);
+}
+
+.btn-success{
+  background:var(--cor-sucesso);
+}
+
+.btn-secondary{
+  background:var(--cor-secundaria);
+}
+
+.card-padrao{
+  background:#fff;
+  border-radius:16px;
+  padding:22px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  border:1px solid #e2e8f0;
+}
+
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
 body{background:#f4f7fb;color:#1e293b;display:flex;min-height:100vh;}
 
@@ -222,6 +271,91 @@ button:hover{
 </div>
 
 <script>
+
+// =========================
+// ESTADO GLOBAL APLICAÇÃO
+// =========================
+const appState = {
+  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
+  tecnicos: JSON.parse(localStorage.getItem('orizonTecnicos')) || ['Diogo'],
+  veiculos: JSON.parse(localStorage.getItem('orizonVeiculos')) || ['Spin'],
+  rotas: JSON.parse(localStorage.getItem('orizonRotas')) || []
+};
+
+// =========================
+// UTILITÁRIOS GLOBAIS
+// =========================
+function mostrarAlerta(msg){
+  alert(msg);
+}
+
+function salvarLocalStorage(chave,dados){
+  localStorage.setItem(chave, JSON.stringify(dados));
+}
+
+function gerarOptionsTecnicos(){
+  let html = '<option>Selecionar técnico</option>';
+
+  appState.tecnicos.forEach(tecnico=>{
+    html += `<option>${tecnico}</option>`;
+  });
+
+  html += '<option>+ Cadastrar novo técnico</option>';
+
+  return html;
+}
+
+function gerarOptionsVeiculos(){
+  let html = '<option>Selecionar veículo</option>';
+
+  appState.veiculos.forEach(veiculo=>{
+    html += `<option>${veiculo}</option>`;
+  });
+
+  html += '<option>+ Cadastrar novo veículo</option>';
+
+  return html;
+}
+
+function gerarLinhaOS(numero=1){
+  return `
+    <tr>
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${numero}</td>
+
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+        <input placeholder="Nº OS" class="input-padrao">
+      </td>
+
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+        <input placeholder="Serviço / Atividade" class="input-padrao">
+      </td>
+
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+        <select class="select-padrao">
+          <option>Preventiva</option>
+          <option>Corretiva</option>
+          <option>Instalação</option>
+          <option>Calibração</option>
+        </select>
+      </td>
+
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+        <select class="select-padrao">
+          <option>🟢 Baixa</option>
+          <option>🟡 Média</option>
+          <option>🔴 Alta</option>
+          <option>🚨 Crítico</option>
+        </select>
+      </td>
+
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+        <button onclick="this.closest('tr').remove()" class="btn-danger">
+          🗑 Excluir
+        </button>
+      </td>
+    </tr>`;
+}
+
 
 // =========================
 // SESSÃO LOGIN
@@ -506,26 +640,17 @@ function abrirFormularioRota(){
 
             <div>
               <label style="font-size:12px;color:#64748b;">Técnico 1</label>
-              <select style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;">
-                <option>Selecionar técnico</option>
-                <option>+ Cadastrar novo técnico</option>
-              </select>
+              <select class="select-padrao">${gerarOptionsTecnicos()}</select>
             </div>
 
             <div>
               <label style="font-size:12px;color:#64748b;">Técnico 2</label>
-              <select style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;">
-                <option>Selecionar técnico</option>
-                <option>+ Cadastrar novo técnico</option>
-              </select>
+              <select class="select-padrao">${gerarOptionsTecnicos()}</select>
             </div>
 
             <div>
               <label style="font-size:12px;color:#64748b;">Veículo</label>
-              <select style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;">
-                <option>Selecionar veículo</option>
-                <option>+ Cadastrar novo veículo</option>
-              </select>
+              <select class="select-padrao">${gerarOptionsVeiculos()}</select>
             </div>
           </div>
         </div>
@@ -1045,7 +1170,7 @@ function adicionarClienteRota(){
   const container = document.getElementById('clientesRotaContainer');
   const totalClientes = container.querySelectorAll('.card').length + 1;
 
-  container.innerHTML += `
+  container.insertAdjacentHTML('beforeend', `
     <div class="card" style="margin-bottom:18px;border-left:6px solid #2563eb;">
 
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:15px;flex-wrap:wrap;">
