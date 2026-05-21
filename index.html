@@ -565,9 +565,9 @@ function abrirFormularioRota(){
                   <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">#</th>
                   <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">OS</th>
                   <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
-                  <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço</th>
+                  <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Tipo</th>
                   <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Prioridade</th>
-                  <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Observação</th>
+                  <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Ações</th>
                 </tr>
               </thead>
 
@@ -593,14 +593,17 @@ function abrirFormularioRota(){
 
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
                     <select style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
-                      <option>🟡 Em andamento</option>
-                      <option>🟢 Concluído</option>
-                      <option>🔴 Pendente</option>
+                      <option>🟢 Baixa</option>
+                      <option>🟡 Média</option>
+                      <option>🔴 Alta</option>
+                      <option>🚨 Crítico</option>
                     </select>
                   </td>
 
                   <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-                    <input placeholder="Observações" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+                    <button onclick="this.closest('tr').remove()" style="background:#dc2626;color:white;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer;">
+🗑 Excluir
+</button>
                   </td>
                 </tr>
               </tbody>
@@ -1000,7 +1003,7 @@ function adicionarOS(botao){
   const tabela = botao.closest('.card').querySelector('tbody');
   const linhas = tabela.querySelectorAll('tr').length + 1;
 
-  tabela.innerHTML += `
+  tabela.insertAdjacentHTML('beforeend', `
     <tr>
       <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${linhas}</td>
 
@@ -1023,16 +1026,19 @@ function adicionarOS(botao){
 
       <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
         <select style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
-          <option>🟡 Em andamento</option>
-          <option>🟢 Concluído</option>
-          <option>🔴 Pendente</option>
+          <option>🟢 Baixa</option>
+                      <option>🟡 Média</option>
+                      <option>🔴 Alta</option>
+                      <option>🚨 Crítico</option>
         </select>
       </td>
 
       <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-        <input placeholder="Observações" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+        <button onclick="this.closest('tr').remove()" style="background:#dc2626;color:white;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer;">
+🗑 Excluir
+</button>
       </td>
-    </tr>`;
+    </tr>`);
 }
 
 function adicionarClienteRota(){
@@ -1073,9 +1079,9 @@ function adicionarClienteRota(){
               <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">#</th>
               <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">OS</th>
               <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
-              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Tipo</th>
               <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Prioridade</th>
-              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Observação</th>
+              <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Ações</th>
             </tr>
           </thead>
 
@@ -1102,14 +1108,17 @@ function adicionarClienteRota(){
 
               <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
                 <select style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
-                  <option>🟡 Em andamento</option>
-                  <option>🟢 Concluído</option>
-                  <option>🔴 Pendente</option>
+                  <option>🟢 Baixa</option>
+                      <option>🟡 Média</option>
+                      <option>🔴 Alta</option>
+                      <option>🚨 Crítico</option>
                 </select>
               </td>
 
               <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-                <input placeholder="Observações" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+                <button onclick="this.closest('tr').remove()" style="background:#dc2626;color:white;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer;">
+🗑 Excluir
+</button>
               </td>
             </tr>
           </tbody>
