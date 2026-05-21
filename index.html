@@ -361,23 +361,105 @@ function gerarLinhaOS(numero=1){
 // =========================
 function gerarTabelaOS(){
   return `
-    ${gerarTabelaOS()}
+    <table style="width:100%;border-collapse:collapse;min-width:850px;">
+      <thead>
+        <tr style="background:#f8fafc;">
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">#</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">OS</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Tipo</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Prioridade</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Ações</th>
+        </tr>
+      </thead>
 
-${gerarObservacaoRota()}
+      <tbody>
+        ${gerarLinhaOS(1)}
+      </tbody>
+    </table>`;
+}
 
-  <textarea placeholder="Informações gerais, pendências, retorno ao cliente, observações operacionais..."
-  style="width:100%;min-height:120px;border:1px solid #cbd5e1;border-radius:12px;padding:14px;font-size:14px;resize:vertical;"></textarea>
-</div>
+function gerarObservacaoRota(){
+  return `
+    <div style="margin-top:25px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;">
+      <div style="font-size:14px;font-weight:bold;color:#334155;margin-bottom:10px;">
+        Observações Gerais da Rota
+      </div>
+
+      <textarea
+        class="textarea-padrao"
+        placeholder="Informações gerais, pendências, retorno ao cliente, observações operacionais..."
+        style="min-height:120px;resize:vertical;">
+      </textarea>
+    </div>`;
+}
+
+// =========================
+// FORMULÁRIO ROTA
+// =========================
+function abrirFormularioRota(){
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+        <div>
+          <h2 style="color:#2563eb;">📍 Nova Rota Operacional</h2>
+          <p style="color:#64748b;margin-top:4px;">Gestão inteligente de atendimentos técnicos</p>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-success">💾 Salvar Rota</button>
+          <button onclick="abrirHistoricoRotas()" class="btn-secondary">📋 Histórico</button>
+        </div>
+      </div>
+
+      <div class="card-padrao" style="margin-bottom:18px;">
+        <h3 style="margin-bottom:18px;color:#2563eb;">📄 Dados da rota</h3>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+          <div>
+            <label style="font-size:12px;color:#64748b;">Nº Rota</label>
+            <input value="#000125" class="input-padrao">
+          </div>
+
+          <div>
+            <label style="font-size:12px;color:#64748b;">Data</label>
+            <input type="date" class="input-padrao">
+          </div>
+
+          <div>
+            <label style="font-size:12px;color:#64748b;">Técnico 1</label>
+            <select class="select-padrao">
+              ${gerarOptionsTecnicos()}
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:12px;color:#64748b;">Técnico 2</label>
+            <select class="select-padrao">
+              ${gerarOptionsTecnicos()}
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:12px;color:#64748b;">Veículo</label>
+            <select class="select-padrao">
+              ${gerarOptionsVeiculos()}
+            </select>
           </div>
         </div>
       </div>
 
+      <div id="clientesRotaContainer">
+      </div>
+
       <div style="margin-top:20px;display:flex;justify-content:center;">
-        <button onclick="adicionarClienteRota()" style="background:#0f172a;color:white;border:none;padding:14px 24px;border-radius:12px;font-weight:bold;font-size:15px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.15);">
-          + Adicionar Cliente na Rota
+        <button onclick="adicionarClienteRota()" style="background:#0f172a;color:white;">
+          ➕ Adicionar Cliente na Rota
         </button>
       </div>
     </div>`;
+
+    adicionarClienteRota();
 }
 
 function abrirHistoricoRotas(){
