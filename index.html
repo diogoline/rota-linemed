@@ -642,15 +642,15 @@ function abrirHistoricoRotas(){
 }
 
 function carregarIndicadoresPatrimonio(){
-  const totalServiço / Atividades = 0;
+  const totalEquipamentos = 0;
   const totalContratos = 0;
   const totalDivergencias = 0;
 
-  const elEquip = document.getElementById('totalServiço / Atividades');
+  const elEquip = document.getElementById('totalEquipamentos');
   const elContratos = document.getElementById('totalContratos');
   const elDiv = document.getElementById('totalDivergencias');
 
-  if(elEquip) elEquip.innerText = totalServiço / Atividades;
+  if(elEquip) elEquip.innerText = totalEquipamentos;
   if(elContratos) elContratos.innerText = totalContratos;
   if(elDiv) elDiv.innerText = totalDivergencias;
 }
@@ -724,7 +724,7 @@ function abrirTelaMovimentacao(){
     </div>`;
 }
 
-function abrirMovimentacaoServiço / Atividade(){
+function abrirMovimentacaoEquipamento(){
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
       <h2>🔄 Movimentação de Serviço / Atividade</h2>
@@ -800,7 +800,7 @@ function abrirContratoDetalhe(){
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
                 <button onclick="alert('Abrir edição de cadastro do cliente')" style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
-                <button onclick="abrirMovimentacaoServiço / Atividade()" style="background:#ea580c;width:auto;font-size:12px;padding:8px 12px;">Movimentar</button>
+                <button onclick="abrirMovimentacaoEquipamento()" style="background:#ea580c;width:auto;font-size:12px;padding:8px 12px;">Movimentar</button>
               </td>
             </tr>
           </tbody>
@@ -850,7 +850,7 @@ function abrirTela(menu){
         <div class="dashboard-grid">
           <div class="card">
             <h3>Resumo</h3>
-            <p>Total de equipamentos cadastrados: <strong id="totalServiço / Atividades">0</strong></p>
+            <p>Total de equipamentos cadastrados: <strong id="totalEquipamentos">0</strong></p>
             <p>Contratos ativos: <strong id="totalContratos">0</strong></p>
             <p>Divergências encontradas: <strong id="totalDivergencias" style="color:#dc2626;">0</strong></p>
           </div>
