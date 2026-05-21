@@ -895,6 +895,46 @@ function adicionarOS(botao){
     </tr>`);
 }
 
+function gerarOptionsClientes(){
+  let html = '<option>Selecionar cliente</option>';
+
+  if(appState.clientes.length === 0){
+    html += '<option>Hospital Exemplo</option>';
+    html += '<option>UPA Modelo</option>';
+  }
+
+  appState.clientes.forEach(cliente=>{
+    html += `<option>${cliente.CLIENTE || cliente.nome || cliente}</option>`;
+  });
+
+  return html;
+}
+
+function excluirCliente(botao){
+  const card = botao.closest('.card');
+
+  if(card){
+    card.remove();
+  }
+}
+
+function alterarCliente(select){
+  const card = select.closest('.card');
+  const endereco = card.querySelector('.enderecoCliente');
+
+  const clienteSelecionado = select.value;
+
+  if(clienteSelecionado === 'Hospital Exemplo'){
+    endereco.innerHTML = 'Av. Paulista, 1500 - São Paulo/SP';
+  }
+  else if(clienteSelecionado === 'UPA Modelo'){
+    endereco.innerHTML = 'Rua Central, 250 - Santo André/SP';
+  }
+  else{
+    endereco.innerHTML = 'Endereço do cliente aparecerá automaticamente';
+  }
+}
+
 function adicionarClienteRota(){
   const container = document.getElementById('clientesRotaContainer');
 
