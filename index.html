@@ -1319,23 +1319,29 @@ async function salvarRota(){
 
       method:'POST',
 
-      
+      mode:'no-cors',
+
+      headers:{
+        'Content-Type':'application/json'
+      },
 
       body: JSON.stringify(dadosRota)
 
     });
 
-    console.log('[SHEETS] Dados enviados');
+    console.log('[SHEETS] Dados enviados com sucesso');
+
+    mostrarAlerta('Rota salva com sucesso!');
 
   }catch(erro){
 
     console.error('[ERRO SHEETS]', erro);
 
+    mostrarAlerta('Rota salva localmente, mas ocorreu erro no envio.');
+
   }
 
-  mostrarAlerta('Rota salva com sucesso!');
-
-  console.log('[ROTA] Rota salva');
+  console.log('[ROTA] Processo finalizado');
 }
 
 function adicionarClienteRota(){
