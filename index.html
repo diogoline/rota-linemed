@@ -1292,7 +1292,7 @@ function validarRota(dados){
   return true;
 }
 
-function salvarRota(){
+async function salvarRota(){
 
   const dadosRota = coletarDadosRota();
 
@@ -1302,11 +1302,40 @@ function salvarRota(){
     return;
   }
 
+  // SALVA LOCALMENTE
   appState.rotas.push(dadosRota);
 
   salvarUltimoNumeroRota(dadosRota.numeroRota);
 
   salvarLocalStorage('orizonRotas', appState.rotas);
+
+  // =========================
+  // INTEGRAÇÃO GOOGLE SHEETS
+  // =========================
+  // ENVIA PARA GOOGLE SHEETS
+  try{
+
+    const resposta = await fetch('https://script.google.com/macros/s/AKfycbwF6mnKEjk_KB-BiXC55YBMK9qyhr-_iyqaTs0rQAh0CQQw9Q-Ab9erLY3djbAcLKL48w/exec',{
+
+      method:'POST',
+
+      headers:{
+        'Content-Type':'application/json'
+      },
+
+      body: JSON.stringify(dadosRota)
+
+    });
+
+    const resultado = await resposta.json();
+
+    console.log('[SHEETS]', resultado);
+
+  }catch(erro){
+
+    console.error('[ERRO SHEETS]', erro);
+
+  }
 
   mostrarAlerta('Rota salva com sucesso!');
 
