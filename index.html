@@ -279,7 +279,24 @@ const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   tecnicos: JSON.parse(localStorage.getItem('orizonTecnicos')) || ['Diogo'],
   veiculos: JSON.parse(localStorage.getItem('orizonVeiculos')) || ['Spin'],
-  rotas: JSON.parse(localStorage.getItem('orizonRotas')) || []
+  rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
+
+  usuarios: JSON.parse(localStorage.getItem('orizonUsuarios')) || [
+    {
+      login:'admin',
+      senha:'@181989Di',
+      perfil:'ADMIN',
+      nome:'Administrador'
+    },
+    {
+      login:'visitante',
+      senha:'123',
+      perfil:'VISUALIZADOR',
+      nome:'Visitante'
+    }
+  ],
+
+  usuarioLogado:null
 };
 
 // =========================
@@ -828,6 +845,8 @@ setTimeout(()=>{carregarIndicadoresPatrimonio();},300);
 window.addEventListener('DOMContentLoaded', ()=>{
   console.log('[ORIZON] Sistema carregado');
 
+  verificarSessao();
+
   const btnLogin = document.querySelector('#loginScreen button');
 
   if(btnLogin){
@@ -835,23 +854,67 @@ window.addEventListener('DOMContentLoaded', ()=>{
   }
 });
 
+function verificarSessao(){
+
+  const usuarioSalvo = localStorage.getItem('orizonUsuarioLogado');
+
+  if(!usuarioSalvo){
+    return;
+  }
+
+  const usuario = appState.usuarios.find(u => u.login === usuarioSalvo);
+
+  if(usuario){
+
+    appState.usuarioLogado = usuario;
+
+    const telaLogin = document.getElementById('loginScreen');
+
+    if(telaLogin){
+      telaLogin.style.display = 'none';
+    }
+
+    console.log('[SESSAO] Sessão restaurada');
+  }
+}
+
 function fazerLogin(){
-  const user=document.getElementById('loginUser').value;
-  const pass=document.getElementById('loginPass').value;
+
+  const user = document.getElementById('loginUser').value;
+  const pass = document.getElementById('loginPass').value;
 
   console.log('[LOGIN] Tentativa de login');
 
-  if((user==='admin' && pass==='@181989Di') || (user==='visitante' && pass==='123')){
-    localStorage.setItem('orizonUsuarioLogado', user);
+  const usuario = appState.usuarios.find(u =>
+    u.login === user && u.senha === pass
+  );
+
+  if(usuario){
+
+    appState.usuarioLogado = usuario;
+
+    localStorage.setItem('orizonUsuarioLogado', usuario.login);
+    localStorage.setItem('orizonUsuarios', JSON.stringify(appState.usuarios));
+
     const telaLogin = document.getElementById('loginScreen');
 
     if(telaLogin){
       telaLogin.style.display='none';
       console.log('[LOGIN] Login realizado com sucesso');
     }
+
   }else{
-    alert('Usuário ou senha inválidos');
+    mostrarAlerta('Usuário ou senha inválidos');
   }
+}
+
+function logout(){
+
+  localStorage.removeItem('orizonUsuarioLogado');
+
+  appState.usuarioLogado = null;
+
+  location.reload();
 }
 function adicionarOS(botao){
   const tabela = botao.closest('.card').querySelector('tbody');
