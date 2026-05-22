@@ -480,15 +480,200 @@ function abrirFormularioRota(){
 }
 
 function abrirHistoricoRotas(){
+
+  let htmlRotas = '';
+
+  if(appState.rotas.length === 0){
+    htmlRotas = `
+      <div class="card-padrao">
+        <h3>Nenhuma rota salva</h3>
+        <p style="margin-top:10px;color:#64748b;">
+          As rotas salvas aparecerão aqui.
+        </p>
+      </div>`;
+  }
+  else{
+
+    appState.rotas.forEach((rota,index)=>{
+
+      htmlRotas += `
+        <div class="card-padrao" style="margin-bottom:18px;border-left:6px solid #2563eb;">
+
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;">
+
+            <div>
+              <div style="font-size:13px;color:#64748b;">ROTA</div>
+              <div style="font-size:24px;font-weight:bold;color:#0f172a;">
+                ${rota.numeroRota || 'SEM NÚMERO'}
+              </div>
+
+              <div style="margin-top:12px;color:#475569;line-height:1.8;">
+                📅 ${rota.data || '-'}<br>
+                👨‍🔧 ${rota.tecnico1 || '-'}<br>
+                🚗 ${rota.veiculo || '-'}<br>
+                👥 ${rota.clientes.length} cliente(s)
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
+
+              <button onclick="visualizarRota(${index})" class="btn-primary">
+                👁 Visualizar
+              </button>
+
+              <button onclick="duplicarRota(${index})" style="background:#7c3aed;">
+                📄 Duplicar
+              </button>
+
+              <button onclick="excluirRota(${index})" class="btn-danger">
+                🗑 Excluir
+              </button>
+
+            </div>
+
+          </div>
+        </div>`;
+    });
+  }
+
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
-      <h2>📋 Histórico de Rotas</h2>
-      <div class="dashboard-grid">
-        <div class="card"><h3>Pesquisar rotas</h3><p>Consulta por número, data e técnico.</p></div>
-        <div class="card"><h3>PDF e edição</h3><p>Impressão e reabertura de rotas salvas.</p></div>
-        <div class="card"><h3>Indicadores</h3><p>Visualização rápida do histórico operacional.</p></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+        <div>
+          <h2>📋 Histórico de Rotas</h2>
+          <p style="color:#64748b;margin-top:4px;">
+            Histórico operacional salvo localmente
+          </p>
+        </div>
+
+        <button onclick="abrirFormularioRota()" class="btn-success">
+          ➕ Nova Rota
+        </button>
       </div>
+
+      ${htmlRotas}
+
     </div>`;
+}
+
+function visualizarRota(index){
+
+  const rota = appState.rotas[index];
+
+  if(!rota){
+    mostrarAlerta('Rota não encontrada');
+    return;
+  }
+
+  let htmlClientes = '';
+
+  rota.clientes.forEach(cliente=>{
+
+    let htmlChamados = '';
+
+    cliente.chamados.forEach(chamado=>{
+      htmlChamados += `
+        <tr>
+          <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.os || '-'}</td>
+          <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.atividade || '-'}</td>
+          <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.tipo || '-'}</td>
+          <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.prioridade || '-'}</td>
+        </tr>`;
+    });
+
+    htmlClientes += `
+      <div class="card-padrao" style="margin-bottom:18px;border-left:6px solid #2563eb;">
+
+        <h3>${cliente.cliente}</h3>
+
+        <p style="margin-top:10px;color:#475569;">
+          📍 ${cliente.endereco}
+        </p>
+
+        <div style="overflow-x:auto;margin-top:18px;">
+          <table style="width:100%;border-collapse:collapse;min-width:700px;">
+            <thead>
+              <tr style="background:#f8fafc;">
+                <th style="padding:10px;text-align:left;">OS</th>
+                <th style="padding:10px;text-align:left;">Atividade</th>
+                <th style="padding:10px;text-align:left;">Tipo</th>
+                <th style="padding:10px;text-align:left;">Prioridade</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${htmlChamados}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:18px;background:#f8fafc;padding:14px;border-radius:12px;">
+          <strong>Observação:</strong><br>
+          ${cliente.observacao || 'Sem observações'}
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+
+        <div>
+          <h2>📍 ${rota.numeroRota}</h2>
+          <p style="color:#64748b;margin-top:4px;">
+            ${rota.data} • ${rota.tecnico1}
+          </p>
+        </div>
+
+        <button onclick="abrirHistoricoRotas()" class="btn-secondary">
+          ← Voltar
+        </button>
+
+      </div>
+
+      ${htmlClientes}
+
+    </div>`;
+}
+
+function excluirRota(index){
+
+  const confirmar = confirm('Deseja realmente excluir esta rota?');
+
+  if(!confirmar){
+    return;
+  }
+
+  appState.rotas.splice(index,1);
+
+  salvarLocalStorage('orizonRotas', appState.rotas);
+
+  abrirHistoricoRotas();
+
+  mostrarAlerta('Rota excluída com sucesso');
+}
+
+function duplicarRota(index){
+
+  const rotaOriginal = appState.rotas[index];
+
+  if(!rotaOriginal){
+    return;
+  }
+
+  const novaRota = JSON.parse(JSON.stringify(rotaOriginal));
+
+  novaRota.numeroRota = `${rotaOriginal.numeroRota}-COPIA`;
+  novaRota.dataRegistro = new Date().toISOString();
+
+  appState.rotas.push(novaRota);
+
+  salvarLocalStorage('orizonRotas', appState.rotas);
+
+  abrirHistoricoRotas();
+
+  mostrarAlerta('Rota duplicada com sucesso');
 }
 
 function carregarIndicadoresPatrimonio(){
