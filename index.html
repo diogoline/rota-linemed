@@ -414,6 +414,39 @@ function gerarObservacaoRota(){
 // =========================
 // FORMULÁRIO ROTA
 // =========================
+function obterUltimoNumeroRota(){
+
+  const ultimoNumero = localStorage.getItem('orizonUltimaRota');
+
+  if(!ultimoNumero){
+    return 0;
+  }
+
+  return parseInt(ultimoNumero);
+}
+
+function gerarNumeroRota(){
+
+  const ano = new Date().getFullYear();
+
+  let ultimoNumero = obterUltimoNumeroRota();
+
+  ultimoNumero++;
+
+  const numeroFormatado = String(ultimoNumero).padStart(4,'0');
+
+  return `ROT-${ano}-${numeroFormatado}`;
+}
+
+function salvarUltimoNumeroRota(numeroRota){
+
+  const partes = numeroRota.split('-');
+
+  const numero = partes[2];
+
+  localStorage.setItem('orizonUltimaRota', numero);
+}
+
 function abrirFormularioRota(){
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
@@ -435,7 +468,7 @@ function abrirFormularioRota(){
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
           <div>
             <label style="font-size:12px;color:#64748b;">Nº Rota</label>
-            <input value="#000125" class="input-padrao">
+            <input id="numeroRota" value="${gerarNumeroRota()}" readonly class="input-padrao" style="background:#f1f5f9;font-weight:bold;color:#2563eb;">
           </div>
 
           <div>
@@ -1184,7 +1217,7 @@ function alterarCliente(select){
 }
 
 function coletarDadosRota(){
-  const numeroRota = document.querySelector('input[value="#000125"]')?.value || '';
+  const numeroRota = document.getElementById('numeroRota')?.value || '';
   const data = document.querySelector('input[type="date"]')?.value || '';
 
   const selectsTecnicos = document.querySelectorAll('.select-padrao');
@@ -1270,6 +1303,8 @@ function salvarRota(){
   }
 
   appState.rotas.push(dadosRota);
+
+  salvarUltimoNumeroRota(dadosRota.numeroRota);
 
   salvarLocalStorage('orizonRotas', appState.rotas);
 
