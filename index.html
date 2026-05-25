@@ -1109,6 +1109,84 @@ function abrirTela(menu){
         </div>
       </div>`;
   }
+  else if(menu === 'usuarios'){
+
+    let tabelaUsuarios = '';
+
+    if(appState.usuarios.length === 0){
+
+      tabelaUsuarios = `
+        <tr>
+          <td colspan="6" style="padding:25px;text-align:center;color:#64748b;">
+            Nenhum usuário cadastrado
+          </td>
+        </tr>`;
+
+    }else{
+
+      appState.usuarios.forEach((usuario,index)=>{
+
+        tabelaUsuarios += `
+          <tr>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${usuario.nome}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${usuario.login}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${usuario.perfil}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">ATIVO</td>
+
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;">
+
+              <button onclick="editarUsuario(${index})" style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">
+                ✏ Editar
+              </button>
+
+              <button onclick="excluirUsuario(${index})" style="background:#dc2626;width:auto;font-size:12px;padding:8px 12px;">
+                🗑 Excluir
+              </button>
+
+            </td>
+          </tr>`;
+
+      });
+
+    }
+
+    document.getElementById('conteudoPrincipal').innerHTML = `
+      <div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+          <div>
+            <h2>👤 Gestão de Usuários</h2>
+            <p style="color:#64748b;margin-top:4px;">
+              Controle de técnicos e acessos do sistema
+            </p>
+          </div>
+
+          <button onclick="abrirModalUsuario()" style="background:#2563eb;width:auto;">
+            ➕ Novo Usuário
+          </button>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:15px;">Usuários cadastrados</h3>
+
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead>
+              <tr style="background:#f8fafc;text-align:left;">
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Nome</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Login</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Perfil</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Status</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tabelaUsuarios}
+            </tbody>
+          </table>
+        </div>
+
+      </div>`;
+  }
   else {
     document.getElementById('conteudoPrincipal').innerHTML = `<div><h2>${menu.toUpperCase()}</h2><p>Módulo em construção.</p></div>`;
   }
@@ -1389,6 +1467,140 @@ function excluirClienteCadastro(index){
   abrirTela('clientes');
 
   mostrarAlerta('Cliente excluído com sucesso');
+}
+
+function abrirModalUsuario(index=null){
+
+  const usuario = index !== null
+    ? appState.usuarios[index]
+    : {};
+
+  const modalExistente = document.getElementById('modalUsuario');
+
+  if(modalExistente){
+    modalExistente.remove();
+  }
+
+  document.body.insertAdjacentHTML('beforeend',`
+
+    <div id="modalUsuario" style="position:fixed;inset:0;background:rgba(15,23,42,.65);display:flex;align-items:center;justify-content:center;z-index:999999;padding:20px;">
+
+      <div style="background:white;width:100%;max-width:700px;border-radius:18px;padding:25px;">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 style="color:#2563eb;">👤 ${index !== null ? 'Editar Usuário' : 'Novo Usuário'}</h2>
+
+          <button onclick="fecharModalUsuario()" style="background:#dc2626;">
+            ✕
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+          <input id="usuarioNome" value="${usuario.nome || ''}" placeholder="Nome completo" class="input-padrao">
+
+          <input id="usuarioLogin" value="${usuario.login || ''}" placeholder="Login" class="input-padrao">
+
+          <input id="usuarioSenha" value="${usuario.senha || ''}" placeholder="Senha" class="input-padrao">
+
+          <select id="usuarioPerfil" class="select-padrao">
+            <option ${usuario.perfil === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+            <option ${usuario.perfil === 'TECNICO' ? 'selected' : ''}>TECNICO</option>
+            <option ${usuario.perfil === 'VISUALIZADOR' ? 'selected' : ''}>VISUALIZADOR</option>
+          </select>
+
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+
+          <button onclick="fecharModalUsuario()" class="btn-secondary">
+            Cancelar
+          </button>
+
+          <button onclick="salvarUsuario(${index})" class="btn-success">
+            💾 Salvar Usuário
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>`);
+}
+
+function fecharModalUsuario(){
+
+  const modal = document.getElementById('modalUsuario');
+
+  if(modal){
+    modal.remove();
+  }
+}
+
+function salvarUsuario(index=null){
+
+  const nome = document.getElementById('usuarioNome').value.trim();
+  const login = document.getElementById('usuarioLogin').value.trim();
+  const senha = document.getElementById('usuarioSenha').value.trim();
+  const perfil = document.getElementById('usuarioPerfil').value;
+
+  if(!nome || !login || !senha){
+    mostrarAlerta('Preencha todos os campos do usuário');
+    return;
+  }
+
+  const dadosUsuario = {
+    nome,
+    login,
+    senha,
+    perfil
+  };
+
+  if(index !== null){
+    appState.usuarios[index] = dadosUsuario;
+  }
+  else{
+    appState.usuarios.push(dadosUsuario);
+  }
+
+  appState.tecnicos = appState.usuarios
+    .filter(u=>u.perfil === 'TECNICO' || u.perfil === 'ADMIN')
+    .map(u=>u.nome);
+
+  salvarLocalStorage('orizonUsuarios', appState.usuarios);
+  salvarLocalStorage('orizonTecnicos', appState.tecnicos);
+
+  fecharModalUsuario();
+
+  abrirTela('usuarios');
+
+  mostrarAlerta('Usuário salvo com sucesso');
+}
+
+function editarUsuario(index){
+  abrirModalUsuario(index);
+}
+
+function excluirUsuario(index){
+
+  const confirmar = confirm('Deseja excluir este usuário?');
+
+  if(!confirmar){
+    return;
+  }
+
+  appState.usuarios.splice(index,1);
+
+  appState.tecnicos = appState.usuarios
+    .filter(u=>u.perfil === 'TECNICO' || u.perfil === 'ADMIN')
+    .map(u=>u.nome);
+
+  salvarLocalStorage('orizonUsuarios', appState.usuarios);
+  salvarLocalStorage('orizonTecnicos', appState.tecnicos);
+
+  abrirTela('usuarios');
+
+  mostrarAlerta('Usuário excluído com sucesso');
 }
 
 function coletarDadosRota(){
