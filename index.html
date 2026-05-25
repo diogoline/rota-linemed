@@ -200,6 +200,7 @@ button:hover{
   <button onclick="abrirTela('movimentacoes')">🔄 Movimentações</button>
   <button onclick="abrirTela('dashboards')">📊 Dashboards</button>
   <button onclick="abrirTela('usuarios')">👤 Usuários</button>
+  <button onclick="abrirTela('veiculos')">🚗 Veículos</button>
   <button onclick="abrirTela('config')">⚙ Configurações</button>
 </div>
 
@@ -279,6 +280,7 @@ const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   tecnicos: JSON.parse(localStorage.getItem('orizonTecnicos')) || ['Diogo'],
   veiculos: JSON.parse(localStorage.getItem('orizonVeiculos')) || ['Spin'],
+  veiculosDetalhes: JSON.parse(localStorage.getItem('orizonVeiculosDetalhes')) || [],
   rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
 
   usuarios: JSON.parse(localStorage.getItem('orizonUsuarios')) || [
@@ -1109,6 +1111,83 @@ function abrirTela(menu){
         </div>
       </div>`;
   }
+  else if(menu === 'veiculos'){
+
+    let tabelaVeiculos = '';
+
+    if(appState.veiculosDetalhes && appState.veiculosDetalhes.length > 0){
+
+      appState.veiculosDetalhes.forEach((veiculo,index)=>{
+
+        tabelaVeiculos += `
+          <tr>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${veiculo.modelo}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${veiculo.placa}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${veiculo.tipo}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">ATIVO</td>
+
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;">
+
+              <button onclick="editarVeiculo(${index})" style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">
+                ✏ Editar
+              </button>
+
+              <button onclick="excluirVeiculo(${index})" style="background:#dc2626;width:auto;font-size:12px;padding:8px 12px;">
+                🗑 Excluir
+              </button>
+
+            </td>
+          </tr>`;
+
+      });
+
+    }else{
+
+      tabelaVeiculos = `
+        <tr>
+          <td colspan="5" style="padding:25px;text-align:center;color:#64748b;">
+            Nenhum veículo cadastrado
+          </td>
+        </tr>`;
+    }
+
+    document.getElementById('conteudoPrincipal').innerHTML = `
+      <div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+          <div>
+            <h2>🚗 Gestão de Veículos</h2>
+            <p style="color:#64748b;margin-top:4px;">
+              Controle operacional da frota
+            </p>
+          </div>
+
+          <button onclick="abrirModalVeiculo()" style="background:#2563eb;width:auto;">
+            ➕ Novo Veículo
+          </button>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:15px;">Veículos cadastrados</h3>
+
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead>
+              <tr style="background:#f8fafc;text-align:left;">
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Modelo</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Placa</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Tipo</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Status</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tabelaVeiculos}
+            </tbody>
+          </table>
+        </div>
+
+      </div>`;
+  }
   else if(menu === 'usuarios'){
 
     let tabelaUsuarios = '';
@@ -1601,6 +1680,132 @@ function excluirUsuario(index){
   abrirTela('usuarios');
 
   mostrarAlerta('Usuário excluído com sucesso');
+}
+
+function abrirModalVeiculo(index=null){
+
+  const veiculo = index !== null
+    ? appState.veiculosDetalhes[index]
+    : {};
+
+  const modalExistente = document.getElementById('modalVeiculo');
+
+  if(modalExistente){
+    modalExistente.remove();
+  }
+
+  document.body.insertAdjacentHTML('beforeend',`
+
+    <div id="modalVeiculo" style="position:fixed;inset:0;background:rgba(15,23,42,.65);display:flex;align-items:center;justify-content:center;z-index:999999;padding:20px;">
+
+      <div style="background:white;width:100%;max-width:700px;border-radius:18px;padding:25px;">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 style="color:#2563eb;">🚗 ${index !== null ? 'Editar Veículo' : 'Novo Veículo'}</h2>
+
+          <button onclick="fecharModalVeiculo()" style="background:#dc2626;">
+            ✕
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+          <input id="veiculoModelo" value="${veiculo.modelo || ''}" placeholder="Modelo do veículo" class="input-padrao">
+
+          <input id="veiculoPlaca" value="${veiculo.placa || ''}" placeholder="Placa" class="input-padrao">
+
+          <select id="veiculoTipo" class="select-padrao">
+            <option ${veiculo.tipo === 'CARRO' ? 'selected' : ''}>CARRO</option>
+            <option ${veiculo.tipo === 'MOTO' ? 'selected' : ''}>MOTO</option>
+            <option ${veiculo.tipo === 'UTILITARIO' ? 'selected' : ''}>UTILITARIO</option>
+          </select>
+
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+
+          <button onclick="fecharModalVeiculo()" class="btn-secondary">
+            Cancelar
+          </button>
+
+          <button onclick="salvarVeiculo(${index})" class="btn-success">
+            💾 Salvar Veículo
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>`);
+}
+
+function fecharModalVeiculo(){
+
+  const modal = document.getElementById('modalVeiculo');
+
+  if(modal){
+    modal.remove();
+  }
+}
+
+function salvarVeiculo(index=null){
+
+  const modelo = document.getElementById('veiculoModelo').value.trim();
+  const placa = document.getElementById('veiculoPlaca').value.trim();
+  const tipo = document.getElementById('veiculoTipo').value;
+
+  if(!modelo || !placa){
+    mostrarAlerta('Preencha os dados do veículo');
+    return;
+  }
+
+  const dadosVeiculo = {
+    modelo,
+    placa,
+    tipo
+  };
+
+  if(index !== null){
+    appState.veiculosDetalhes[index] = dadosVeiculo;
+  }
+  else{
+    appState.veiculosDetalhes.push(dadosVeiculo);
+  }
+
+  appState.veiculos = appState.veiculosDetalhes.map(v=>v.modelo);
+
+  salvarLocalStorage('orizonVeiculosDetalhes', appState.veiculosDetalhes);
+  salvarLocalStorage('orizonVeiculos', appState.veiculos);
+
+  fecharModalVeiculo();
+
+  abrirTela('veiculos');
+
+  mostrarAlerta('Veículo salvo com sucesso');
+}
+
+function editarVeiculo(index){
+  abrirModalVeiculo(index);
+}
+
+function excluirVeiculo(index){
+
+  const confirmar = confirm('Deseja excluir este veículo?');
+
+  if(!confirmar){
+    return;
+  }
+
+  appState.veiculosDetalhes.splice(index,1);
+
+  appState.veiculos = appState.veiculosDetalhes.map(v=>v.modelo);
+
+  salvarLocalStorage('orizonVeiculosDetalhes', appState.veiculosDetalhes);
+  salvarLocalStorage('orizonVeiculos', appState.veiculos);
+
+  abrirTela('veiculos');
+
+  mostrarAlerta('Veículo excluído com sucesso');
 }
 
 function coletarDadosRota(){
