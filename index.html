@@ -1033,16 +1033,59 @@ function abrirTela(menu){
       </div>`;
   }
   else if(menu === 'clientes'){
+
+    let tabelaClientes = '';
+
+    if(appState.clientes.length === 0){
+
+      tabelaClientes = `
+        <tr>
+          <td colspan="6" style="padding:25px;text-align:center;color:#64748b;">
+            Nenhum cliente cadastrado
+          </td>
+        </tr>`;
+
+    }else{
+
+      appState.clientes.forEach((cliente,index)=>{
+
+        tabelaClientes += `
+          <tr>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${cliente.nome}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${cliente.contrato || '-'}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${cliente.cidade || '-'}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${cliente.responsavel || '-'}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">ATIVO</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;flex-wrap:wrap;">
+
+              <button onclick="editarCliente(${index})" style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">
+                ✏ Editar
+              </button>
+
+              <button onclick="excluirClienteCadastro(${index})" style="background:#dc2626;width:auto;font-size:12px;padding:8px 12px;">
+                🗑 Excluir
+              </button>
+
+            </td>
+          </tr>`;
+
+      });
+
+    }
+
     document.getElementById('conteudoPrincipal').innerHTML = `
       <div>
-        <h2>🏥 Gestão de Clientes</h2>
-
-        <div class="card" style="margin-bottom:20px;">
-          <div style="display:grid;grid-template-columns:2fr 1.2fr auto;gap:12px;align-items:end;">
-            <input type="text" placeholder="Pesquisar cliente por nome" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-            <input type="text" placeholder="Consultar por CNPJ" style="padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-            <button onclick="alert('Abrir formulário de novo cliente')" style="background:#2563eb;width:auto;">+ Novo Cliente</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+          <div>
+            <h2>🏥 Gestão de Clientes</h2>
+            <p style="color:#64748b;margin-top:4px;">
+              Cadastro operacional integrado às rotas
+            </p>
           </div>
+
+          <button onclick="abrirModalCliente()" style="background:#2563eb;width:auto;">
+            ➕ Novo Cliente
+          </button>
         </div>
 
         <div class="card">
@@ -1055,23 +1098,12 @@ function abrirTela(menu){
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Contrato</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Cidade</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Responsável</th>
-                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Prioridade</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Status</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Ações</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td style="padding:12px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
-                <td style="padding:12px;border-bottom:1px solid #e2e8f0;">CTR-001</td>
-                <td style="padding:12px;border-bottom:1px solid #e2e8f0;">São Paulo</td>
-                <td style="padding:12px;border-bottom:1px solid #e2e8f0;">João Silva</td>
-                <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">ATIVO</td>
-                <td style="padding:12px;border-bottom:1px solid #e2e8f0;">
-                  <button style="background:#0f766e;width:auto;font-size:12px;padding:8px 12px;">Editar</button>
-                  <button onclick="abrirContratoDetalhe()" style="background:#2563eb;width:auto;font-size:12px;padding:8px 12px;">Contrato</button>
-                  <button onclick="abrirTela('patrimonio')" style="background:#7c3aed;width:auto;font-size:12px;padding:8px 12px;">Patrimônio</button>
-                </td>
-              </tr>
+              ${tabelaClientes}
             </tbody>
           </table>
         </div>
@@ -1205,13 +1237,8 @@ function adicionarOS(botao){
 function gerarOptionsClientes(){
   let html = '<option>Selecionar cliente</option>';
 
-  if(appState.clientes.length === 0){
-    html += '<option>Hospital Exemplo</option>';
-    html += '<option>UPA Modelo</option>';
-  }
-
   appState.clientes.forEach(cliente=>{
-    html += `<option>${cliente.CLIENTE || cliente.nome || cliente}</option>`;
+    html += `<option>${cliente.nome}</option>`;
   });
 
   return html;
@@ -1231,15 +1258,137 @@ function alterarCliente(select){
 
   const clienteSelecionado = select.value;
 
-  if(clienteSelecionado === 'Hospital Exemplo'){
-    endereco.innerHTML = 'Av. Paulista, 1500 - São Paulo/SP';
-  }
-  else if(clienteSelecionado === 'UPA Modelo'){
-    endereco.innerHTML = 'Rua Central, 250 - Santo André/SP';
+  const cliente = appState.clientes.find(c=>c.nome === clienteSelecionado);
+
+  if(cliente){
+    endereco.innerHTML = cliente.endereco || 'Endereço não informado';
   }
   else{
     endereco.innerHTML = 'Endereço do cliente aparecerá automaticamente';
   }
+}
+
+function abrirModalCliente(index=null){
+
+  const cliente = index !== null
+    ? appState.clientes[index]
+    : {};
+
+  const modalExistente = document.getElementById('modalCliente');
+
+  if(modalExistente){
+    modalExistente.remove();
+  }
+
+  document.body.insertAdjacentHTML('beforeend',`
+    <div id="modalCliente" style="position:fixed;inset:0;background:rgba(15,23,42,.65);display:flex;align-items:center;justify-content:center;z-index:999999;padding:20px;">
+
+      <div style="background:white;width:100%;max-width:700px;border-radius:18px;padding:25px;">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 style="color:#2563eb;">🏥 ${index !== null ? 'Editar Cliente' : 'Novo Cliente'}</h2>
+
+          <button onclick="fecharModalCliente()" style="background:#dc2626;">
+            ✕
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+          <input id="clienteNome" value="${cliente.nome || ''}" placeholder="Nome do cliente" class="input-padrao">
+
+          <input id="clienteContrato" value="${cliente.contrato || ''}" placeholder="Contrato" class="input-padrao">
+
+          <input id="clienteCidade" value="${cliente.cidade || ''}" placeholder="Cidade" class="input-padrao">
+
+          <input id="clienteResponsavel" value="${cliente.responsavel || ''}" placeholder="Responsável" class="input-padrao">
+
+        </div>
+
+        <textarea id="clienteEndereco" placeholder="Endereço completo" class="textarea-padrao" style="margin-top:14px;min-height:100px;">${cliente.endereco || ''}</textarea>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+
+          <button onclick="fecharModalCliente()" class="btn-secondary">
+            Cancelar
+          </button>
+
+          <button onclick="salvarCliente(${index})" class="btn-success">
+            💾 Salvar Cliente
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>`);
+}
+
+function fecharModalCliente(){
+
+  const modal = document.getElementById('modalCliente');
+
+  if(modal){
+    modal.remove();
+  }
+}
+
+function salvarCliente(index=null){
+
+  const nome = document.getElementById('clienteNome').value.trim();
+  const contrato = document.getElementById('clienteContrato').value.trim();
+  const cidade = document.getElementById('clienteCidade').value.trim();
+  const responsavel = document.getElementById('clienteResponsavel').value.trim();
+  const endereco = document.getElementById('clienteEndereco').value.trim();
+
+  if(!nome){
+    mostrarAlerta('Informe o nome do cliente');
+    return;
+  }
+
+  const dadosCliente = {
+    nome,
+    contrato,
+    cidade,
+    responsavel,
+    endereco
+  };
+
+  if(index !== null){
+    appState.clientes[index] = dadosCliente;
+  }
+  else{
+    appState.clientes.push(dadosCliente);
+  }
+
+  salvarLocalStorage('orizonClientes', appState.clientes);
+
+  fecharModalCliente();
+
+  abrirTela('clientes');
+
+  mostrarAlerta('Cliente salvo com sucesso');
+}
+
+function editarCliente(index){
+  abrirModalCliente(index);
+}
+
+function excluirClienteCadastro(index){
+
+  const confirmar = confirm('Deseja excluir este cliente?');
+
+  if(!confirmar){
+    return;
+  }
+
+  appState.clientes.splice(index,1);
+
+  salvarLocalStorage('orizonClientes', appState.clientes);
+
+  abrirTela('clientes');
+
+  mostrarAlerta('Cliente excluído com sucesso');
 }
 
 function coletarDadosRota(){
