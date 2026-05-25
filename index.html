@@ -527,7 +527,9 @@ function abrirHistoricoRotas(){
   }
   else{
 
-    appState.rotas.forEach((rota,index)=>{
+    [...appState.rotas].reverse().forEach((rota,indexReverso)=>{
+
+      const index = appState.rotas.length - 1 - indexReverso;
 
       htmlRotas += `
         <div class="card-padrao" style="margin-bottom:18px;border-left:6px solid #2563eb;">
