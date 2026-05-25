@@ -1288,8 +1288,6 @@ async function carregarCadastrosGoogle(){
     if(dados.clientes){
       appState.clientes = dados.clientes;
       salvarLocalStorage('orizonClientes', appState.clientes);
-
-  enviarCadastroGoogle('CLIENTE', dadosCliente);
     }
 
     if(dados.veiculos){
@@ -1297,9 +1295,7 @@ async function carregarCadastrosGoogle(){
       appState.veiculos = dados.veiculos.map(v=>v.modelo);
 
       salvarLocalStorage('orizonVeiculosDetalhes', appState.veiculosDetalhes);
-  salvarLocalStorage('orizonVeiculos', appState.veiculos);
-
-  enviarCadastroGoogle('VEICULO', dadosVeiculo);
+      salvarLocalStorage('orizonVeiculos', appState.veiculos);
     }
 
     if(dados.usuarios){
@@ -1310,9 +1306,7 @@ async function carregarCadastrosGoogle(){
         .map(u=>u.nome);
 
       salvarLocalStorage('orizonUsuarios', appState.usuarios);
-  salvarLocalStorage('orizonTecnicos', appState.tecnicos);
-
-  enviarCadastroGoogle('USUARIO', dadosUsuario);
+      salvarLocalStorage('orizonTecnicos', appState.tecnicos);
     }
 
     console.log('[GOOGLE] Cadastros sincronizados');
@@ -1595,6 +1589,8 @@ function salvarCliente(index=null){
 
   salvarLocalStorage('orizonClientes', appState.clientes);
 
+  enviarCadastroGoogle('CLIENTE', dadosCliente);
+
   fecharModalCliente();
 
   abrirTela('clientes');
@@ -1754,8 +1750,6 @@ function excluirUsuario(index){
   salvarLocalStorage('orizonUsuarios', appState.usuarios);
   salvarLocalStorage('orizonTecnicos', appState.tecnicos);
 
-  enviarCadastroGoogle('USUARIO', dadosUsuario);
-
   abrirTela('usuarios');
 
   mostrarAlerta('Usuário excluído com sucesso');
@@ -1883,8 +1877,6 @@ function excluirVeiculo(index){
 
   salvarLocalStorage('orizonVeiculosDetalhes', appState.veiculosDetalhes);
   salvarLocalStorage('orizonVeiculos', appState.veiculos);
-
-  enviarCadastroGoogle('VEICULO', dadosVeiculo);
 
   abrirTela('veiculos');
 
