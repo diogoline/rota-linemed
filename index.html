@@ -1325,15 +1325,16 @@ async function salvarRota(){
       JSON.stringify(dadosRota)
     );
 
-    await fetch(
+    const response = await fetch(
       'https://script.google.com/macros/s/AKfycbx78pGTT4d6h9k0r4WjFsb8MJ3s0YpFz2ngFV2ZYjEoXwlxgd7ma13iye44-GgvwHLygg/exec',
       {
         method:'POST',
-        body:formData
+        body:formData,
+        mode:'no-cors'
       }
     );
 
-    console.log('[SHEETS] OK');
+    console.log('[SHEETS] ENVIO REALIZADO');
 
     mostrarAlerta('Rota salva com sucesso!');
 
