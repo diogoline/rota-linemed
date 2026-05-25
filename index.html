@@ -1537,33 +1537,44 @@ function fecharModalCliente(){
   }
 }
 
-async function enviarCadastroGoogle(tipo,dados){
+async function enviarCadastroGoogle(tipo,dados,editando=false){
 
   try{
 
     const params = new URLSearchParams();
 
-    params.append('acao','salvarCadastro');
+    params.append(
+      'acao',
+      editando
+        ? 'editarCadastro'
+        : 'salvarCadastro'
+    );
+
     params.append('tipo',tipo);
+
     params.append('dados',JSON.stringify(dados));
 
     await fetch(WEB_APP_URL,{
       method:'POST',
       body:params,
-      mode:'no-cors',
       headers:{
         'Content-Type':'application/x-www-form-urlencoded'
       }
     });
 
-    console.log(`[GOOGLE] Cadastro enviado: ${tipo}`);
+    console.log(`[GOOGLE] ${editando ? 'EDIÇÃO' : 'CADASTRO'} enviado`);
+
+    return true;
 
   }catch(erro){
+
     console.error('[GOOGLE] Erro cadastro', erro);
+
+    return false;
   }
 }
 
-function salvarCliente(index=null){
+async function salvarCliente(index=null){
 
   const nome = document.getElementById('clienteNome').value.trim();
   const contrato = document.getElementById('clienteContrato').value.trim();
@@ -1576,21 +1587,46 @@ function salvarCliente(index=null){
     return;
   }
 
-  const dadosCliente = {
-    nome,
-    contrato,
-    cidade,
-    responsavel,
-    endereco
-  };
+  let dadosCliente = {};
 
   if(index !== null && index !== 'null' && index !== undefined){
+
+    dadosCliente = {
+      ...appState.clientes[index],
+      nome,
+      contrato,
+      cidade,
+      responsavel,
+      endereco
+    };
+
     appState.clientes[index] = dadosCliente;
+
+    await enviarCadastroGoogle(
+      'CLIENTE',
+      dadosCliente,
+      true
+    );
+
   }
   else{
+
+    dadosCliente = {
+      id: crypto.randomUUID(),
+      nome,
+      contrato,
+      cidade,
+      responsavel,
+      endereco
+    };
+
     appState.clientes.push(dadosCliente);
 
-    enviarCadastroGoogle('CLIENTE', dadosCliente);
+    await enviarCadastroGoogle(
+      'CLIENTE',
+      dadosCliente,
+      false
+    );
   }
 
   salvarLocalStorage('orizonClientes', appState.clientes);
@@ -1695,7 +1731,7 @@ function fecharModalUsuario(){
   }
 }
 
-function salvarUsuario(index=null){
+async function salvarUsuario(index=null){
 
   const nome = document.getElementById('usuarioNome').value.trim();
   const login = document.getElementById('usuarioLogin').value.trim();
@@ -1709,22 +1745,48 @@ function salvarUsuario(index=null){
     return;
   }
 
-  const dadosUsuario = {
-    nome,
-    login,
-    senha,
-    perfil,
-    telefone,
-    email
-  };
+  let dadosUsuario = {};
 
   if(index !== null && index !== 'null' && index !== undefined){
+
+    dadosUsuario = {
+      ...appState.usuarios[index],
+      nome,
+      login,
+      senha,
+      perfil,
+      telefone,
+      email
+    };
+
     appState.usuarios[index] = dadosUsuario;
+
+    await enviarCadastroGoogle(
+      'USUARIO',
+      dadosUsuario,
+      true
+    );
+
   }
   else{
+
+    dadosUsuario = {
+      id: crypto.randomUUID(),
+      nome,
+      login,
+      senha,
+      perfil,
+      telefone,
+      email
+    };
+
     appState.usuarios.push(dadosUsuario);
 
-    enviarCadastroGoogle('USUARIO', dadosUsuario);
+    await enviarCadastroGoogle(
+      'USUARIO',
+      dadosUsuario,
+      false
+    );
   }
 
   appState.tecnicos = appState.usuarios
@@ -1833,7 +1895,7 @@ function fecharModalVeiculo(){
   }
 }
 
-function salvarVeiculo(index=null){
+async function salvarVeiculo(index=null){
 
   const modelo = document.getElementById('veiculoModelo').value.trim();
   const placa = document.getElementById('veiculoPlaca').value.trim();
@@ -1844,19 +1906,42 @@ function salvarVeiculo(index=null){
     return;
   }
 
-  const dadosVeiculo = {
-    modelo,
-    placa,
-    tipo
-  };
+  let dadosVeiculo = {};
 
   if(index !== null && index !== 'null' && index !== undefined){
+
+    dadosVeiculo = {
+      ...appState.veiculosDetalhes[index],
+      modelo,
+      placa,
+      tipo
+    };
+
     appState.veiculosDetalhes[index] = dadosVeiculo;
+
+    await enviarCadastroGoogle(
+      'VEICULO',
+      dadosVeiculo,
+      true
+    );
+
   }
   else{
+
+    dadosVeiculo = {
+      id: crypto.randomUUID(),
+      modelo,
+      placa,
+      tipo
+    };
+
     appState.veiculosDetalhes.push(dadosVeiculo);
 
-    enviarCadastroGoogle('VEICULO', dadosVeiculo);
+    await enviarCadastroGoogle(
+      'VEICULO',
+      dadosVeiculo,
+      false
+    );
   }
 
   appState.veiculos = appState.veiculosDetalhes.map(v=>v.modelo);
