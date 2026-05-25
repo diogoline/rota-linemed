@@ -1211,6 +1211,8 @@ function abrirTela(menu){
           <tr>
             <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${usuario.nome}</td>
             <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${usuario.login}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${usuario.telefone || '-'}</td>
+            <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${usuario.email || '-'}</td>
             <td style="padding:12px;border-bottom:1px solid #e2e8f0;">${usuario.perfil}</td>
             <td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#16a34a;font-weight:bold;">ATIVO</td>
 
@@ -1255,6 +1257,8 @@ function abrirTela(menu){
               <tr style="background:#f8fafc;text-align:left;">
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Nome</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Login</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Telefone</th>
+                <th style="padding:12px;border-bottom:1px solid #e2e8f0;">E-mail</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Perfil</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Status</th>
                 <th style="padding:12px;border-bottom:1px solid #e2e8f0;">Ações</th>
@@ -1653,6 +1657,10 @@ function abrirModalUsuario(index=null){
 
           <input id="usuarioSenha" value="${usuario.senha || ''}" placeholder="Senha" class="input-padrao">
 
+          <input id="usuarioTelefone" value="${usuario.telefone || ''}" placeholder="Telefone" class="input-padrao">
+
+          <input id="usuarioEmail" value="${usuario.email || ''}" placeholder="E-mail" class="input-padrao">
+
           <select id="usuarioPerfil" class="select-padrao">
             <option ${usuario.perfil === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
             <option ${usuario.perfil === 'TECNICO' ? 'selected' : ''}>TECNICO</option>
@@ -1693,6 +1701,8 @@ function salvarUsuario(index=null){
   const login = document.getElementById('usuarioLogin').value.trim();
   const senha = document.getElementById('usuarioSenha').value.trim();
   const perfil = document.getElementById('usuarioPerfil').value;
+  const telefone = document.getElementById('usuarioTelefone').value.trim();
+  const email = document.getElementById('usuarioEmail').value.trim();
 
   if(!nome || !login || !senha){
     mostrarAlerta('Preencha todos os campos do usuário');
@@ -1703,7 +1713,9 @@ function salvarUsuario(index=null){
     nome,
     login,
     senha,
-    perfil
+    perfil,
+    telefone,
+    email
   };
 
   if(index !== null){
