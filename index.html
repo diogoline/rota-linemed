@@ -1318,19 +1318,22 @@ async function salvarRota(){
 
   try{
 
-    const formData = new FormData();
+    const params = new URLSearchParams();
 
-    formData.append(
+    params.append(
       'dados',
       JSON.stringify(dadosRota)
     );
 
-    const response = await fetch(
+    await fetch(
       'https://script.google.com/macros/s/AKfycbx78pGTT4d6h9k0r4WjFsb8MJ3s0YpFz2ngFV2ZYjEoXwlxgd7ma13iye44-GgvwHLygg/exec',
       {
         method:'POST',
-        body:formData,
-        mode:'no-cors'
+        body:params,
+        mode:'no-cors',
+        headers:{
+          'Content-Type':'application/x-www-form-urlencoded'
+        }
       }
     );
 
