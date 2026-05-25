@@ -1584,7 +1584,7 @@ function salvarCliente(index=null){
     endereco
   };
 
-  if(index !== null){
+  if(index !== null && index !== 'null' && index !== undefined){
     appState.clientes[index] = dadosCliente;
   }
   else{
@@ -1718,7 +1718,7 @@ function salvarUsuario(index=null){
     email
   };
 
-  if(index !== null){
+  if(index !== null && index !== 'null' && index !== undefined){
     appState.usuarios[index] = dadosUsuario;
   }
   else{
@@ -1850,7 +1850,7 @@ function salvarVeiculo(index=null){
     tipo
   };
 
-  if(index !== null){
+  if(index !== null && index !== 'null' && index !== undefined){
     appState.veiculosDetalhes[index] = dadosVeiculo;
   }
   else{
