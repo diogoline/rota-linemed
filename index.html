@@ -556,9 +556,7 @@ function abrirHistoricoRotas(){
                 👁 Visualizar
               </button>
 
-              <button onclick="duplicarRota(${index})" style="background:#7c3aed;">
-                📄 Duplicar
-              </button>
+              
 
               <button onclick="excluirRota(${index})" class="btn-danger">
                 🗑 Excluir
@@ -699,16 +697,42 @@ function duplicarRota(index){
 
   const novaRota = JSON.parse(JSON.stringify(rotaOriginal));
 
-  novaRota.numeroRota = `${rotaOriginal.numeroRota}-COPIA`;
+  // =========================
+  // NOVA ESTRUTURA DE ROTA
+  // =========================
+
+  novaRota.numeroRota = gerarNumeroRota();
+  novaRota.data = '';
   novaRota.dataRegistro = new Date().toISOString();
 
+  // =========================
+  // LIMPA CHAMADOS
+  // =========================
+
+  novaRota.clientes.forEach(cliente=>{
+
+    cliente.chamados = [
+      {
+        os:'',
+        atividade:'',
+        tipo:'Preventiva',
+        prioridade:'🟢 Baixa'
+      }
+    ];
+
+    cliente.observacao = '';
+
+  });
+
   appState.rotas.push(novaRota);
+
+  salvarUltimoNumeroRota(novaRota.numeroRota);
 
   salvarLocalStorage('orizonRotas', appState.rotas);
 
   abrirHistoricoRotas();
 
-  mostrarAlerta('Rota duplicada com sucesso');
+  mostrarAlerta('Estrutura da rota duplicada com sucesso');
 }
 
 function carregarIndicadoresPatrimonio(){
