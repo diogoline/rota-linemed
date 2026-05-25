@@ -1292,13 +1292,81 @@ function validarRota(dados){
   return true;
 }
 
+let salvandoRota = false;
+
 async function salvarRota(){
+
+  if(salvandoRota){
+    mostrarAlerta('A rota já está sendo salva. Aguarde...');
+    return;
+  }
+
+  salvandoRota = true;
+
+  const botaoSalvar = document.querySelector('.btn-success');
+
+  if(botaoSalvar){
+    botaoSalvar.disabled = true;
+    botaoSalvar.innerHTML = '⏳ Salvando...';
+    botaoSalvar.style.opacity = '.7';
+  }
 
   const dadosRota = coletarDadosRota();
 
   console.log('[ROTA]', dadosRota);
 
   if(!validarRota(dadosRota)){
+
+    salvandoRota = false;
+
+    if(botaoSalvar){
+      botaoSalvar.disabled = false;
+      botaoSalvar.innerHTML = '💾 Salvar Rota';
+      botaoSalvar.style.opacity = '1';
+    }
+
+    return;
+  }
+
+  // =========================
+  // BLOQUEIO DUPLICIDADE OS
+  // =========================
+
+  const osUtilizadas = [];
+  let osDuplicada = false;
+
+  dadosRota.clientes.forEach(cliente=>{
+
+    cliente.chamados.forEach(chamado=>{
+
+      const numeroOS = String(chamado.os || '').trim();
+
+      if(!numeroOS){
+        return;
+      }
+
+      if(osUtilizadas.includes(numeroOS)){
+        osDuplicada = true;
+      }
+
+      osUtilizadas.push(numeroOS);
+
+    });
+
+  });
+
+  if(osDuplicada){
+
+    mostrarAlerta('Existe O.S duplicada na rota. O sistema não permite salvar chamados repetidos.');
+
+    salvandoRota = false;
+
+    if(botaoSalvar){
+      botaoSalvar.disabled = false;
+      botaoSalvar.innerHTML = '💾 Salvar Rota';
+      botaoSalvar.style.opacity = '1';
+    }
+
     return;
   }
 
@@ -1341,11 +1409,26 @@ async function salvarRota(){
 
     mostrarAlerta('Rota salva com sucesso!');
 
+    setTimeout(()=>{
+      abrirHistoricoRotas();
+    },500);
+
   }catch(erro){
 
     console.error('[ERRO]', erro);
 
     mostrarAlerta('Erro ao enviar para planilha');
+  }
+
+  finally{
+
+    salvandoRota = false;
+
+    if(botaoSalvar){
+      botaoSalvar.disabled = false;
+      botaoSalvar.innerHTML = '💾 Salvar Rota';
+      botaoSalvar.style.opacity = '1';
+    }
 
   }
 
