@@ -1589,11 +1589,11 @@ function salvarCliente(index=null){
   }
   else{
     appState.clientes.push(dadosCliente);
+
+    enviarCadastroGoogle('CLIENTE', dadosCliente);
   }
 
   salvarLocalStorage('orizonClientes', appState.clientes);
-
-  enviarCadastroGoogle('CLIENTE', dadosCliente);
 
   fecharModalCliente();
 
@@ -1723,6 +1723,8 @@ function salvarUsuario(index=null){
   }
   else{
     appState.usuarios.push(dadosUsuario);
+
+    enviarCadastroGoogle('USUARIO', dadosUsuario);
   }
 
   appState.tecnicos = appState.usuarios
@@ -1731,8 +1733,6 @@ function salvarUsuario(index=null){
 
   salvarLocalStorage('orizonUsuarios', appState.usuarios);
   salvarLocalStorage('orizonTecnicos', appState.tecnicos);
-
-  enviarCadastroGoogle('USUARIO', dadosUsuario);
 
   fecharModalUsuario();
 
@@ -1855,14 +1855,14 @@ function salvarVeiculo(index=null){
   }
   else{
     appState.veiculosDetalhes.push(dadosVeiculo);
+
+    enviarCadastroGoogle('VEICULO', dadosVeiculo);
   }
 
   appState.veiculos = appState.veiculosDetalhes.map(v=>v.modelo);
 
   salvarLocalStorage('orizonVeiculosDetalhes', appState.veiculosDetalhes);
   salvarLocalStorage('orizonVeiculos', appState.veiculos);
-
-  enviarCadastroGoogle('VEICULO', dadosVeiculo);
 
   fecharModalVeiculo();
 
