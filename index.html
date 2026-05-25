@@ -1296,13 +1296,16 @@ async function salvarRota(){
 
   const dadosRota = coletarDadosRota();
 
-  console.log('[ROTA] Dados coletados', dadosRota);
+  console.log('[ROTA]', dadosRota);
 
   if(!validarRota(dadosRota)){
     return;
   }
 
+  // =========================
   // SALVA LOCALMENTE
+  // =========================
+
   appState.rotas.push(dadosRota);
 
   salvarUltimoNumeroRota(dadosRota.numeroRota);
@@ -1310,38 +1313,38 @@ async function salvarRota(){
   salvarLocalStorage('orizonRotas', appState.rotas);
 
   // =========================
-  // INTEGRAÇÃO GOOGLE SHEETS
+  // ENVIO GOOGLE SHEETS
   // =========================
 
   try{
 
-    await fetch('https://script.google.com/macros/s/AKfycbx78pGTT4d6h9k0r4WjFsb8MJ3s0YpFz2ngFV2ZYjEoXwlxgd7ma13iye44-GgvwHLygg/exec',{
+    const formData = new FormData();
 
-      method:'POST',
+    formData.append(
+      'dados',
+      JSON.stringify(dadosRota)
+    );
 
-      mode:'no-cors',
+    await fetch(
+      'https://script.google.com/macros/s/AKfycbx78pGTT4d6h9k0r4WjFsb8MJ3s0YpFz2ngFV2ZYjEoXwlxgd7ma13iye44-GgvwHLygg/exec',
+      {
+        method:'POST',
+        body:formData
+      }
+    );
 
-      headers:{
-        'Content-Type':'text/plain;charset=utf-8'
-      },
-
-      body: JSON.stringify(dadosRota)
-
-    });
-
-    console.log('[SHEETS] Dados enviados com sucesso');
+    console.log('[SHEETS] OK');
 
     mostrarAlerta('Rota salva com sucesso!');
 
   }catch(erro){
 
-    console.error('[ERRO SHEETS]', erro);
+    console.error('[ERRO]', erro);
 
-    mostrarAlerta('Rota salva localmente, mas ocorreu erro no envio.');
+    mostrarAlerta('Erro ao enviar para planilha');
 
   }
 
-  console.log('[ROTA] Processo finalizado');
 }
 
 function adicionarClienteRota(){
