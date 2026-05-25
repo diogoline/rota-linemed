@@ -276,6 +276,8 @@ button:hover{
 // =========================
 // ESTADO GLOBAL APLICAÇÃO
 // =========================
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
+
 const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   tecnicos: JSON.parse(localStorage.getItem('orizonTecnicos')) || ['Diogo'],
@@ -1275,7 +1277,54 @@ setTimeout(()=>{carregarIndicadoresPatrimonio();},300);
 // LOGIN SISTEMA
 // =========================
 
-window.addEventListener('DOMContentLoaded', ()=>{
+async function carregarCadastrosGoogle(){
+
+  try{
+
+    const response = await fetch(`${WEB_APP_URL}?acao=listarCadastros`);
+
+    const dados = await response.json();
+
+    if(dados.clientes){
+      appState.clientes = dados.clientes;
+      salvarLocalStorage('orizonClientes', appState.clientes);
+
+  enviarCadastroGoogle('CLIENTE', dadosCliente);
+    }
+
+    if(dados.veiculos){
+      appState.veiculosDetalhes = dados.veiculos;
+      appState.veiculos = dados.veiculos.map(v=>v.modelo);
+
+      salvarLocalStorage('orizonVeiculosDetalhes', appState.veiculosDetalhes);
+  salvarLocalStorage('orizonVeiculos', appState.veiculos);
+
+  enviarCadastroGoogle('VEICULO', dadosVeiculo);
+    }
+
+    if(dados.usuarios){
+      appState.usuarios = dados.usuarios;
+
+      appState.tecnicos = dados.usuarios
+        .filter(u=>u.perfil === 'TECNICO' || u.perfil === 'ADMIN')
+        .map(u=>u.nome);
+
+      salvarLocalStorage('orizonUsuarios', appState.usuarios);
+  salvarLocalStorage('orizonTecnicos', appState.tecnicos);
+
+  enviarCadastroGoogle('USUARIO', dadosUsuario);
+    }
+
+    console.log('[GOOGLE] Cadastros sincronizados');
+
+  }catch(erro){
+    console.error('[GOOGLE] Erro ao carregar cadastros', erro);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', async ()=>{
+
+  await carregarCadastrosGoogle();
   console.log('[ORIZON] Sistema carregado');
 
   verificarSessao();
@@ -1490,6 +1539,32 @@ function fecharModalCliente(){
   }
 }
 
+async function enviarCadastroGoogle(tipo,dados){
+
+  try{
+
+    const params = new URLSearchParams();
+
+    params.append('acao','salvarCadastro');
+    params.append('tipo',tipo);
+    params.append('dados',JSON.stringify(dados));
+
+    await fetch(WEB_APP_URL,{
+      method:'POST',
+      body:params,
+      mode:'no-cors',
+      headers:{
+        'Content-Type':'application/x-www-form-urlencoded'
+      }
+    });
+
+    console.log(`[GOOGLE] Cadastro enviado: ${tipo}`);
+
+  }catch(erro){
+    console.error('[GOOGLE] Erro cadastro', erro);
+  }
+}
+
 function salvarCliente(index=null){
 
   const nome = document.getElementById('clienteNome').value.trim();
@@ -1649,6 +1724,8 @@ function salvarUsuario(index=null){
   salvarLocalStorage('orizonUsuarios', appState.usuarios);
   salvarLocalStorage('orizonTecnicos', appState.tecnicos);
 
+  enviarCadastroGoogle('USUARIO', dadosUsuario);
+
   fecharModalUsuario();
 
   abrirTela('usuarios');
@@ -1676,6 +1753,8 @@ function excluirUsuario(index){
 
   salvarLocalStorage('orizonUsuarios', appState.usuarios);
   salvarLocalStorage('orizonTecnicos', appState.tecnicos);
+
+  enviarCadastroGoogle('USUARIO', dadosUsuario);
 
   abrirTela('usuarios');
 
@@ -1777,6 +1856,8 @@ function salvarVeiculo(index=null){
   salvarLocalStorage('orizonVeiculosDetalhes', appState.veiculosDetalhes);
   salvarLocalStorage('orizonVeiculos', appState.veiculos);
 
+  enviarCadastroGoogle('VEICULO', dadosVeiculo);
+
   fecharModalVeiculo();
 
   abrirTela('veiculos');
@@ -1802,6 +1883,8 @@ function excluirVeiculo(index){
 
   salvarLocalStorage('orizonVeiculosDetalhes', appState.veiculosDetalhes);
   salvarLocalStorage('orizonVeiculos', appState.veiculos);
+
+  enviarCadastroGoogle('VEICULO', dadosVeiculo);
 
   abrirTela('veiculos');
 
@@ -1986,7 +2069,7 @@ async function salvarRota(){
     );
 
     await fetch(
-      'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec',
+      WEB_APP_URL,
       {
         method:'POST',
         body:params,
