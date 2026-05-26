@@ -2159,16 +2159,6 @@ async function salvarRota(){
   }
 
   // =========================
-  // SALVA LOCALMENTE + NUVEM
-  // =========================
-
-  appState.rotas.push(dadosRota);
-
-  salvarUltimoNumeroRota(dadosRota.numeroRota);
-
-  salvarLocalStorage('orizonRotas', appState.rotas);
-
-  // =========================
   // ENVIO GOOGLE SHEETS
   // =========================
 
@@ -2181,21 +2171,38 @@ async function salvarRota(){
       JSON.stringify(dadosRota)
     );
 
-    await fetch(
+    const response = await fetch(
       WEB_APP_URL,
       {
         method:'POST',
         body:params,
-        mode:'no-cors',
         headers:{
           'Content-Type':'application/x-www-form-urlencoded'
         }
       }
     );
 
-    console.log('[SHEETS] ENVIO REALIZADO');
+    const resultado = await response.json();
+
+    console.log('[SHEETS]', resultado);
+
+    if(!resultado.sucesso){
+      throw new Error('Erro ao salvar no Google Sheets');
+    }
+
+    // =========================
+    // SALVA LOCAL SOMENTE APÓS GOOGLE
+    // =========================
+
+    appState.rotas.push(dadosRota);
+
+    salvarUltimoNumeroRota(dadosRota.numeroRota);
+
+    salvarLocalStorage('orizonRotas', appState.rotas);
 
     mostrarAlerta('Rota salva com sucesso!');
+
+    await carregarRotasGoogle();
 
     setTimeout(()=>{
       abrirHistoricoRotas();
@@ -2206,9 +2213,8 @@ async function salvarRota(){
     console.error('[ERRO]', erro);
 
     mostrarAlerta('Erro ao enviar para planilha');
-  }
 
-  finally{
+  }finally{
 
     salvandoRota = false;
 
