@@ -1345,12 +1345,31 @@ async function carregarRotasGoogle(){
 
 window.addEventListener('DOMContentLoaded', async ()=>{
 
+  // =========================
+  // RESTAURA SESSÃO IMEDIATAMENTE
+  // =========================
+
+  const usuarioSalvo = localStorage.getItem('orizonUsuarioLogado');
+
+  if(usuarioSalvo){
+
+    appState.usuarioLogado = {
+      login:usuarioSalvo
+    };
+
+    const telaLogin = document.getElementById('loginScreen');
+
+    if(telaLogin){
+      telaLogin.style.display='none';
+    }
+  }
+
   await carregarCadastrosGoogle();
   await carregarRotasGoogle();
 
-  console.log('[ORIZON] Sistema carregado');
-
   verificarSessao();
+
+  console.log('[ORIZON] Sistema carregado');
 
   // =========================
   // AUTO SINCRONISMO TEMPO REAL
@@ -1358,22 +1377,19 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 
   setInterval(async ()=>{
 
-    const telaLogin = document.getElementById('loginScreen');
-
-    // NÃO SINCRONIZA SE ESTIVER DESLOGADO
-    if(telaLogin && telaLogin.style.display !== 'none'){
+    // NÃO EXECUTA DURANTE SALVAMENTO
+    if(salvandoRota){
       return;
     }
 
-    const totalAntes = appState.rotas.length;
+    const rotaAtual = JSON.stringify(appState.rotas);
 
-    await carregarCadastrosGoogle();
     await carregarRotasGoogle();
 
-    const totalDepois = appState.rotas.length;
+    const novaRotaAtual = JSON.stringify(appState.rotas);
 
     // =========================
-    // ATUALIZA HISTÓRICO AUTOMÁTICO
+    // ATUALIZA HISTÓRICO SOZINHO
     // =========================
 
     const tituloHistorico = document.querySelector('h2');
@@ -1383,20 +1399,13 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       &&
       tituloHistorico.innerText.includes('Histórico de Rotas')
       &&
-      totalDepois !== totalAntes
+      rotaAtual !== novaRotaAtual
     ){
       abrirHistoricoRotas();
+      console.log('[AUTO SYNC] Histórico atualizado');
     }
 
-    console.log('[AUTO SYNC] Atualizado');
-
   },5000);
-
-  const btnLogin = document.querySelector('#loginScreen button');
-
-  if(btnLogin){
-    console.log('[LOGIN] Botão localizado');
-  }
 
 });
 
@@ -1408,32 +1417,31 @@ function verificarSessao(){
     return;
   }
 
-  // =========================
-  // RESTAURAÇÃO IMEDIATA
-  // =========================
-
-  const telaLogin = document.getElementById('loginScreen');
-
-  if(telaLogin){
-    telaLogin.style.display = 'none';
-  }
-
   const usuario = appState.usuarios.find(u => u.login === usuarioSalvo);
 
   if(usuario){
 
     appState.usuarioLogado = usuario;
 
-    console.log('[SESSAO] Sessão restaurada');
-
   }else{
 
     appState.usuarioLogado = {
-      login:usuarioSalvo
+      login:usuarioSalvo,
+      perfil:'ADMIN'
     };
-
-    console.log('[SESSAO] Sessão temporária mantida');
   }
+
+  // =========================
+  // GARANTE LOGIN OCULTO
+  // =========================
+
+  const telaLogin = document.getElementById('loginScreen');
+
+  if(telaLogin){
+    telaLogin.style.display='none';
+  }
+
+  console.log('[SESSAO] Sessão ativa');
 }
 
 function fazerLogin(){
