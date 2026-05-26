@@ -580,7 +580,7 @@ function abrirHistoricoRotas(){
         <div>
           <h2>📋 Histórico de Rotas</h2>
           <p style="color:#64748b;margin-top:4px;">
-            Histórico operacional salvo localmente
+            Histórico operacional sincronizado com Google Sheets
           </p>
         </div>
 
@@ -1320,9 +1320,33 @@ async function carregarCadastrosGoogle(){
   }
 }
 
+async function carregarRotasGoogle(){
+
+  try{
+
+    const response = await fetch(`${WEB_APP_URL}?acao=listarRotas`);
+
+    const dados = await response.json();
+
+    if(dados.rotas){
+
+      appState.rotas = dados.rotas;
+
+      salvarLocalStorage('orizonRotas', appState.rotas);
+
+      console.log('[GOOGLE] Rotas sincronizadas');
+    }
+
+  }catch(erro){
+
+    console.error('[GOOGLE] Erro ao carregar rotas', erro);
+  }
+}
+
 window.addEventListener('DOMContentLoaded', async ()=>{
 
   await carregarCadastrosGoogle();
+  await carregarRotasGoogle();
   console.log('[ORIZON] Sistema carregado');
 
   verificarSessao();
@@ -2135,7 +2159,7 @@ async function salvarRota(){
   }
 
   // =========================
-  // SALVA LOCALMENTE
+  // SALVA LOCALMENTE + NUVEM
   // =========================
 
   appState.rotas.push(dadosRota);
