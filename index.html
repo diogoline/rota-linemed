@@ -1365,12 +1365,32 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       return;
     }
 
+    const totalAntes = appState.rotas.length;
+
     await carregarCadastrosGoogle();
     await carregarRotasGoogle();
 
+    const totalDepois = appState.rotas.length;
+
+    // =========================
+    // ATUALIZA HISTÓRICO AUTOMÁTICO
+    // =========================
+
+    const tituloHistorico = document.querySelector('h2');
+
+    if(
+      tituloHistorico
+      &&
+      tituloHistorico.innerText.includes('Histórico de Rotas')
+      &&
+      totalDepois !== totalAntes
+    ){
+      abrirHistoricoRotas();
+    }
+
     console.log('[AUTO SYNC] Atualizado');
 
-  },15000);
+  },5000);
 
   const btnLogin = document.querySelector('#loginScreen button');
 
@@ -1388,30 +1408,31 @@ function verificarSessao(){
     return;
   }
 
+  // =========================
+  // RESTAURAÇÃO IMEDIATA
+  // =========================
+
+  const telaLogin = document.getElementById('loginScreen');
+
+  if(telaLogin){
+    telaLogin.style.display = 'none';
+  }
+
   const usuario = appState.usuarios.find(u => u.login === usuarioSalvo);
 
   if(usuario){
 
     appState.usuarioLogado = usuario;
 
-    const telaLogin = document.getElementById('loginScreen');
-
-    if(telaLogin){
-      telaLogin.style.display = 'none';
-    }
-
     console.log('[SESSAO] Sessão restaurada');
 
   }else{
 
-    // EVITA LOGOUT AUTOMÁTICO DURANTE SINCRONIZAÇÃO
-    console.log('[SESSAO] Usuário ainda não sincronizado, mantendo sessão local');
+    appState.usuarioLogado = {
+      login:usuarioSalvo
+    };
 
-    const telaLogin = document.getElementById('loginScreen');
-
-    if(telaLogin){
-      telaLogin.style.display = 'none';
-    }
+    console.log('[SESSAO] Sessão temporária mantida');
   }
 }
 
