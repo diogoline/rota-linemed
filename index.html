@@ -1,649 +1,115 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ORIZON - Gestão Inteligente</title>
-
-<style>
-/* =========================
-   PADRONIZAÇÃO GLOBAL
-========================= */
-:root{
-  --cor-primaria:#2563eb;
-  --cor-secundaria:#334155;
-  --cor-sucesso:#16a34a;
-  --cor-perigo:#dc2626;
-  --cor-alerta:#f59e0b;
-  --borda:#cbd5e1;
-  --bg-claro:#f8fafc;
-}
-
-.input-padrao,
-.select-padrao,
-.textarea-padrao{
-  width:100%;
-  padding:12px;
-  border:1px solid var(--borda);
-  border-radius:10px;
-  background:white;
-  font-size:14px;
-}
-
-.btn-primary{ background:var(--cor-primaria); }
-.btn-danger{ background:var(--cor-perigo); }
-.btn-success{ background:var(--cor-sucesso); }
-.btn-secondary{ background:var(--cor-secundaria); }
-
-.card-padrao{
-  background:#fff;
-  border-radius:16px;
-  padding:22px;
-  box-shadow:0 6px 18px rgba(0,0,0,.06);
-  border:1px solid #e2e8f0;
-}
-
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
-body{background:#f4f7fb;color:#1e293b;display:flex;min-height:100vh;}
-
-.sidebar{
-  width:240px;
-  background:linear-gradient(180deg,#0f172a,#111827);
-  color:#fff;
-  position:fixed;
-  top:0;left:0;bottom:0;
-  padding:24px 16px;
-  display:flex;
-  flex-direction:column;
-}
-
-.menu-items {
-  flex-grow: 1;
-}
-
-.logo{
-  font-size:34px;
-  font-weight:bold;
-  color:#60a5fa;
-  cursor:pointer;
-  margin-bottom:8px;
-}
-
-.sidebar small{
-  color:#94a3b8;
-  display:block;
-  margin-bottom:28px;
-}
-
-.sidebar button{
-  width:100%;
-  border:none;
-  background:linear-gradient(135deg,#1e293b,#334155);
-  color:#fff;
-  padding:14px 16px;
-  border-radius:12px;
-  text-align:left;
-  margin-bottom:10px;
-  cursor:pointer;
-  font-weight:600;
-  font-size:14px;
-  transition:all .25s ease;
-  box-shadow:0 4px 10px rgba(0,0,0,.12);
-}
-
-.sidebar button:hover{
-  background:linear-gradient(135deg,#2563eb,#1d4ed8);
-  transform:translateX(4px);
-}
-
-.sidebar button.btn-logout {
-  background: linear-gradient(135deg, #1e293b, #334155);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-  margin-top: auto;
-  margin-bottom: 0;
-}
-
-.sidebar button.btn-logout:hover {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-  border-color: #dc2626;
-}
-
-.main{
-  margin-left:240px;
-  width:calc(100% - 240px);
-}
-
-.topbar{
-  background:#fff;
-  padding:22px;
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
-}
-
-.topbar h1{color:#1565C0;font-size:34px;}
-.topbar p{color:#64748b;margin-top:4px;}
-
-.content{ padding:25px; }
-
-.dashboard-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-  gap:18px;
-  margin-top:20px;
-}
-
-.card{
-  background:#fff;
-  border-radius:16px;
-  padding:22px;
-  box-shadow:0 6px 18px rgba(0,0,0,.06);
-  border:1px solid #e2e8f0;
-}
-
-button{
-  border:none;
-  padding:12px 18px;
-  border-radius:10px;
-  color:white;
-  font-weight:600;
-  cursor:pointer;
-  font-size:14px;
-  transition:all .25s ease;
-  box-shadow:0 4px 10px rgba(0,0,0,.10);
-}
-
-button:hover{
-  transform:translateY(-2px);
-  filter:brightness(1.05);
-}
-
-.card h3{margin-bottom:8px;color:#1565C0;}
-.card p{color:#475569;font-size:14px;line-height:1.5;}
-
-.hidden{display:none;}
-
-@media print{
-  .sub-chamado{
-    display:grid !important;
-    grid-template-columns:35px 2fr 70px 90px !important;
-    gap:6px !important;
-    margin-left:10px !important;
-    font-size:10px !important;
-    padding:6px !important;
-    page-break-inside:avoid;
-  }
-  .sub-chamado button{ display:none !important; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORIZON - Gestão Inteligente</title>
+    <style>
+        :root {
+            --cor-primaria: #2563eb;
+            --cor-secundaria: #334155;
+            --bg-claro: #f8fafc;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #0f172a; display: flex; min-height: 100vh; align-items: center; justify-content: center; }
+        
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,.25);
+            text-align: center;
+        }
+        .logo { font-size: 42px; font-weight: bold; color: var(--cor-primaria); margin-bottom: 8px; }
+        .sub { color: #64748b; margin-bottom: 28px; }
+        .input-padrao { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; }
+        .btn-entrar { width: 100%; padding: 14px; background: var(--cor-primaria); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; transition: background 0.2s; }
+        .btn-entrar:hover { background: #1d4ed8; }
+        .footer { margin-top: 18px; font-size: 12px; color: #94a3b8; }
+        
+        /* Layout Principal Pós-Login */
+        #painelSistema { display: none; background: #f4f7fb; position: fixed; inset: 0; padding: 20px; color: #1e293b; text-align: left; }
+        .topbar { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
 </head>
 <body>
 
-<div id="loginScreen" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f172a,#1e3a8a);display:flex;align-items:center;justify-content:center;z-index:99999;">
-  <div style="width:100%;max-width:420px;background:white;padding:40px;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.25);text-align:center;">
-    <div style="font-size:42px;font-weight:bold;color:#2563eb;margin-bottom:8px;">⚡ ORIZON</div>
-    <p style="color:#64748b;margin-bottom:28px;">Smart Operations Platform</p>
+<div id="loginScreen" class="login-container">
+    <div class="logo">⚡ ORIZON</div>
+    <p class="sub">Smart Operations Platform</p>
 
-    <input id="loginUser" type="text" placeholder="Usuário" style="width:100%;padding:14px;margin-bottom:12px;border:1px solid #cbd5e1;border-radius:10px;">
-    <input id="loginPass" type="password" placeholder="Senha" style="width:100%;padding:14px;margin-bottom:18px;border:1px solid #cbd5e1;border-radius:10px;">
+    <input id="loginUser" type="text" placeholder="Usuário" class="input-padrao" autocomplete="off">
+    <input id="loginPass" type="password" placeholder="Senha" class="input-padrao">
 
-    <button onclick="fazerLogin()" style="width:100%;padding:14px;background:#2563eb;color:white;border:none;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer;">Entrar no sistema</button>
+    <button onclick="fazerLogin()" class="btn-entrar">Entrar no sistema</button>
 
-    <p style="margin-top:18px;font-size:12px;color:#94a3b8;">by DMA Solutions • Operational Management</p>
-  </div>
+    <p class="footer">by DMA Solutions • Operational Management</p>
 </div>
 
-<div class="sidebar">
-  <div class="logo" onclick="voltarInicio()">⚡ ORIZON</div>
-  <small>Painel principal de operações</small>
-
-  <div class="menu-items">
-    <button onclick="abrirTela('rotas')">📍 Rotas</button>
-    <button onclick="abrirTela('clientes')">🏥 Clientes</button>
-    <button onclick="abrirTela('chamados')">🛠 Chamados</button>
-    <button onclick="abrirTela('patrimonio')">📦 Patrimônio</button>
-    <button onclick="abrirTela('movimentacoes')">🔄 Movimentações</button>
-    <button onclick="abrirTela('dashboards')">📊 Dashboards</button>
-    <button onclick="abrirTela('usuarios')">👤 Usuários</button>
-    <button onclick="abrirTela('veiculos')">🚗 Veículos</button>
-    <button onclick="abrirTela('config')">⚙ Configurações</button>
-  </div>
-
-  <button onclick="efetuarLogout()" class="btn-logout">🚪 Sair do Sistema</button>
-</div>
-
-<div class="main">
-  <div class="topbar">
-    <h1>ORIZON</h1>
-    <p id="subtituloTopbar">Gestão inteligente de rotas e operações</p>
-  </div>
-
-  <div class="content" id="conteudoPrincipal">
-    <div id="inicio">
-      <h2>Bem-vindo ao ORIZON</h2>
-      <div class="dashboard-grid">
-        <div class="card">
-          <h3>📍 Controle de Rotas</h3>
-          <p>Planejamento operacional e acompanhamento diário.</p>
+<div id="painelSistema">
+    <div class="topbar">
+        <div>
+            <h1 style="color:#2563eb;">⚡ ORIZON</h1>
+            <p id="infoUsuario" style="color:#64748b; font-size:14px; margin-top:4px;"></p>
         </div>
-        <div class="card">
-          <h3>🛠 Gestão de Chamados</h3>
-          <p>Controle de atendimentos técnicos e ordens de serviço.</p>
-        </div>
-        <div class="card">
-          <h3>📦 Patrimônio</h3>
-          <p>Inventário simples por cliente e contrato.</p>
-        </div>
-        <div class="card">
-          <h3>📊 Dashboards</h3>
-          <p>Indicadores operacionais e performance.</p>
-        </div>
-      </div>
+        <button onclick="efetuarLogout()" style="padding:10px 15px; background:#dc2626; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">🚪 Sair</button>
     </div>
-  </div>
+    
+    <div style="background:white; padding:30px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+        <h2>Conectado com Sucesso!</h2>
+        <p style="margin-top:10px; color:#475569;">O script de autenticação respondeu corretamente. Você já pode prosseguir com os testes das rotas e banco de dados.</p>
+    </div>
 </div>
 
 <script>
-// =========================
-// ESTADO GLOBAL APLICAÇÃO
-// =========================
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
+// Lista de usuários aceitos no sistema
+const listaUsuarios = [
+    { login: 'admin', senha: '@181989Di', nome: 'Administrador' },
+    { login: 'visitante', senha: '123', nome: 'Visitante' }
+];
 
-const appState = {
-  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
-  tecnicos: JSON.parse(localStorage.getItem('orizonTecnicos')) || ['Diogo'],
-  veiculos: JSON.parse(localStorage.getItem('orizonVeiculos')) || ['Spin'],
-  veiculosDetalhes: JSON.parse(localStorage.getItem('orizonVeiculosDetalhes')) || [],
-  rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
-
-  usuarios: JSON.parse(localStorage.getItem('orizonUsuarios')) || [
-    { login:'admin', senha:'@181989Di', perfil:'ADMIN', nome:'Administrador' },
-    { login:'visitante', senha:'123', perfil:'VISUALIZADOR', nome:'Visitante' }
-  ],
-
-  usuarioLogado: null
-};
-
-// =========================
-// SESSÃO E AUTENTICAÇÃO
-// =========================
 function fazerLogin() {
-  const userIn = document.getElementById('loginUser').value.trim();
-  const passIn = document.getElementById('loginPass').value;
+    // Captura os valores digitados tirando espaços extras
+    const usuarioDigitado = document.getElementById('loginUser').value.trim().toLowerCase();
+    const senhaDigitada = document.getElementById('loginPass').value;
 
-  const contaEncontrada = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
+    // Busca o usuário na lista
+    const usuarioValido = listaUsuarios.find(u => u.login === usuarioDigitado && u.senha === senhaDigitada);
 
-  if (contaEncontrada) {
-    appState.usuarioLogado = contaEncontrada;
-    sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(contaEncontrada));
-    
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('subtituloTopbar').innerText = `Logado como: ${contaEncontrada.nome} (${contaEncontrada.perfil})`;
-    
+    if (usuarioValido) {
+        // Armazena a sessão temporária no navegador
+        sessionStorage.setItem('orizon_usuario_logado', JSON.stringify(usuarioValido));
+        
+        // Altera a exibição das telas
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('painelSistema').style.display = 'block';
+        document.getElementById('infoUsuario').innerText = `Usuário atual: ${usuarioValido.nome}`;
+    } else {
+        alert('Usuário ou senha incorretos! Verifique as credenciais.');
+    }
+}
+
+function efectuarLogout() {
+    sessionStorage.removeItem('orizon_usuario_logado');
+    document.getElementById('painelSistema').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'block';
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
-    voltarInicio();
-  } else {
-    mostrarAlerta('Usuário ou senha incorretos.');
-  }
 }
 
-function efetuarLogout() {
-  const confirmar = confirm('Deseja realmente sair do sistema?');
-  if (!confirmar) return;
+// Verifica se já estava logado antes ao recarregar a página
+window.onload = function() {
+    const sessaoAtiva = sessionStorage.getItem('orizon_usuario_logado');
+    if (sessaoAtiva) {
+        const usuario = JSON.parse(sessaoAtiva);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('painelSistema').style.display = 'block';
+        document.getElementById('infoUsuario').innerText = `Usuário atual: ${usuario.nome}`;
+    }
+};
+</script>
 
-  appState.usuarioLogado = null;
-  sessionStorage.removeItem('orizonUsuarioAtivo');
-  
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('subtituloTopbar').innerText = 'Gestão inteligente de rotas e operações';
-}
-
-function verificarSessaoAtiva() {
-  const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
-  if (sessaoSalva) {
-    const usuario = JSON.parse(sessaoSalva);
-    appState.usuarioLogado = usuario;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil})`;
-  }
-}
-
-// =========================
-// UTILITÁRIOS GLOBAIS
-// =========================
-function mostrarAlerta(msg){ alert(msg); }
-function salvarLocalStorage(chave,dados){ localStorage.setItem(chave, JSON.stringify(dados)); }
-function voltarInicio(){ abrirTela('inicio'); }
-
-function gerarOptionsTecnicos(){
-  let html = '<option>Selecionar técnico</option>';
-  appState.tecnicos.forEach(tecnico=>{ html += `<option>${tecnico}</option>`; });
-  html += '<option>+ Cadastrar novo técnico</option>';
-  return html;
-}
-
-function gerarOptionsVeiculos(){
-  let html = '<option>Selecionar veículo</option>';
-  appState.veiculos.forEach(veiculo=>{ html += `<option>${veiculo}</option>`; });
-  html += '<option>+ Cadastrar novo veículo</option>';
-  return html;
-}
-
-function gerarLinhaOS(numero=1){
-  return `
-    <tr>
-      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${numero}</td>
-      <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><input placeholder="Nº OS" class="input-padrao"></td>
-      <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><input placeholder="Serviço / Atividade" class="input-padrao"></td>
-      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-        <select class="select-padrao">
-          <option>Preventiva</option>
-          <option>Corretiva</option>
-          <option>Instalação</option>
-          <option>Calibração</option>
-        </select>
-      </td>
-      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-        <select class="select-padrao">
-          <option>🟢 Baixa</option>
-          <option>🟡 Média</option>
-          <option>🔴 Alta</option>
-          <option>🚨 Crítico</option>
-        </select>
-      </td>
-      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
-        <button onclick="this.closest('tr').remove()" class="btn-danger">🗑 Excluir</button>
-      </td>
-    </tr>`;
-}
-
-function gerarTabelaOS(){
-  return `
-    <table style="width:100%;border-collapse:collapse;min-width:850px;">
-      <thead>
-        <tr style="background:#f8fafc;">
-          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">#</th>
-          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">OS</th>
-          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
-          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Tipo</th>
-          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Prioridade</th>
-          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${gerarLinhaOS(1)}
-      </tbody>
-    </table>`;
-}
-
-function gerarObservacaoRota(){
-  return `
-    <div style="margin-top:25px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;">
-      <div style="font-size:14px;font-weight:bold;color:#334155;margin-bottom:10px;">Observações Gerais da Rota</div>
-      <textarea id="observacaoGeralRota" class="textarea-padrao" placeholder="Informações gerais, pendências, retorno ao cliente, observações operacionais..." style="min-height:120px;resize:vertical;"></textarea>
-    </div>`;
-}
-
-// =========================
-// GERAÇÃO DE NÚMERO DE ROTA
-// =========================
-function obterUltimoNumeroRota(){
-  const ultimoNumero = localStorage.getItem('orizonUltimaRota');
-  return ultimoNumero ? parseInt(ultimoNumero) : 0;
-}
-
-function gerarNumeroRota(){
-  const ano = new Date().getFullYear();
-  let ultimoNumero = obterUltimoNumeroRota();
-  ultimoNumero++;
-  const numeroFormatado = String(ultimoNumero).padStart(4,'0');
-  return `ROT-${ano}-${numeroFormatado}`;
-}
-
-function salvarUltimoNumeroRota(numeroRota){
-  const partes = numeroRota.split('-');
-  const numero = partes[2];
-  localStorage.setItem('orizonUltimaRota', numero);
-}
-
-// =========================
-// FORMULÁRIO E CLIENTES DINÂMICOS
-// =========================
-function abrirFormularioRota(){
-  document.getElementById('conteudoPrincipal').innerHTML = `
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
-        <div>
-          <h2 style="color:#2563eb;">📍 Nova Rota Operacional</h2>
-          <p style="color:#64748b;margin-top:4px;">Gestão inteligente de atendimentos técnicos</p>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button onclick="salvarRota()" class="btn-success">💾 Salvar Rota</button>
-          <button onclick="abrirHistoricoRotas()" class="btn-secondary">📋 Histórico</button>
-        </div>
-      </div>
-
-      <div class="card-padrao" style="margin-bottom:18px;">
-        <h3 style="margin-bottom:18px;color:#2563eb;">📄 Dados da rota</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
-          <div>
-            <label style="font-size:12px;color:#64748b;">Nº Rota</label>
-            <input id="numeroRota" value="${gerarNumeroRota()}" readonly class="input-padrao" style="background:#f1f5f9;font-weight:bold;color:#2563eb;">
-          </div>
-          <div>
-            <label style="font-size:12px;color:#64748b;">Data</label>
-            <input type="date" id="dataRota" class="input-padrao">
-          </div>
-          <div>
-            <label style="font-size:12px;color:#64748b;">Técnico 1</label>
-            <select id="tecnico1Rota" class="select-padrao">${gerarOptionsTecnicos()}</select>
-          </div>
-          <div>
-            <label style="font-size:12px;color:#64748b;">Técnico 2</label>
-            <select id="tecnico2Rota" class="select-padrao">${gerarOptionsTecnicos()}</select>
-          </div>
-          <div>
-            <label style="font-size:12px;color:#64748b;">Veículo</label>
-            <select id="veiculoRota" class="select-padrao">${gerarOptionsVeiculos()}</select>
-          </div>
-        </div>
-      </div>
-
-      <div id="clientesRotaContainer"></div>
-
-      <div style="margin-top:20px;display:flex;justify-content:center;">
-        <button onclick="adicionarClienteRota()" style="background:#0f172a;color:white;">➕ Adicionar Cliente na Rota</button>
-      </div>
-      
-      ${gerarObservacaoRota()}
-    </div>`;
-
-  adicionarClienteRota();
-}
-
-function adicionarClienteRota() {
-  const container = document.getElementById('clientesRotaContainer');
-  const clienteId = 'cliente_' + Date.now();
-  
-  let optionsClientes = '<option value="">Selecionar cliente</option>';
-  appState.clientes.forEach(c => {
-    optionsClientes += `<option value="${c.cliente}">${c.cliente}</option>`;
-  });
-
-  const blocoCliente = document.createElement('div');
-  blocoCliente.className = 'card-padrao bloco-cliente-rota';
-  blocoCliente.style.marginTop = '20px';
-  blocoCliente.id = clienteId;
-  
-  blocoCliente.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;gap:10px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:280px;">
-        <label style="font-size:12px;color:#64748b;">Cliente</label>
-        <select class="select-padrao select-cliente-nome" onchange="atualizarEnderecoAutomatico(this)">
-          ${optionsClientes}
-        </select>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:18px;">
-        <button onclick="adicionarLinhaOSTabela('${clienteId}')" class="btn-primary">➕ Adicionar OS</button>
-        <button onclick="document.getElementById('${clienteId}').remove()" class="btn-danger">🗑 Excluir Cliente</button>
-      </div>
-    </div>
-    <div style="margin-bottom:15px;background:#f8fafc;padding:12px;border-radius:10px;font-size:13px;color:#475569;">
-      📍 <strong>Endereço:</strong> <span class="endereco-texto-automatico">Endereço do cliente aparecerá automaticamente</span>
-    </div>
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;min-width:850px;" class="tabela-os-cliente">
-        <thead>
-          <tr style="background:#f8fafc;">
-            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:50px;">#</th>
-            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:120px;">OS</th>
-            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
-            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:150px;">Tipo</th>
-            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:150px;">Prioridade</th>
-            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:100px;">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${gerarLinhaOS(1)}
-        </tbody>
-      </table>
-    </div>
-    <div style="margin-top:15px;">
-      <label style="font-size:12px;color:#64748b;">Observações específicas deste atendimento</label>
-      <input type="text" class="input-padrao obs-especifica-cliente" placeholder="Ex: Falar com encarregado, levar escada, etc.">
-    </div>`;
-    
-  container.appendChild(blocoCliente);
-}
-
-function adicionarLinhaOSTabela(clienteId) {
-  const tabelaBody = document.querySelector(`#${clienteId} .tabela-os-cliente tbody`);
-  const numeroLinhas = tabelaBody.rows.length + 1;
-  
-  const novaLinha = document.createElement('tr');
-  novaLinha.innerHTML = gerarLinhaOS(numeroLinhas);
-  tabelaBody.appendChild(novaLinha);
-}
-
-function atualizarEnderecoAutomatico(selectElement) {
-  const clienteSelecionado = selectElement.value;
-  const cardElement = selectElement.closest('.bloco-cliente-rota');
-  const txtEndereco = cardElement.querySelector('.endereco-texto-automatico');
-  
-  const busca = appState.clientes.find(c => c.cliente === clienteSelecionado);
-  txtEndereco.innerText = busca && busca.endereco ? busca.endereco : 'Endereço não cadastrado ou não encontrado';
-}
-
-// =========================
-// HISTÓRICO E EXCLUSÃO
-// =========================
-function abrirHistoricoRotas(){
-  let htmlRotas = '';
-
-  if(appState.rotas.length === 0){
-    htmlRotas = `
-      <div class="card-padrao">
-        <h3>Nenhuma rota salva</h3>
-        <p style="margin-top:10px;color:#64748b;">As rotas salvas aparecerão aqui.</p>
-      </div>`;
-  } else {
-    appState.rotas.sort((a,b)=> new Date(b.dataRegistro || 0) - new Date(a.dataRegistro || 0)).forEach((rota, indexReverso)=>{
-      const index = appState.rotas.length - 1 - indexReverso;
-      htmlRotas += `
-        <div class="card-padrao" style="margin-bottom:18px;border-left:6px solid #2563eb;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;">
-            <div>
-              <div style="font-size:13px;color:#64748b;">ROTA</div>
-              <div style="font-size:24px;font-weight:bold;color:#0f172a;">${rota.numeroRota || 'SEM NÚMERO'}</div>
-              <div style="margin-top:12px;color:#475569;line-height:1.8;">
-                📅 Data Rota: ${rota.data || '-'}<br>
-                👨‍🔧 Técnico 1: ${rota.tecnico1 || '-'}<br>
-                🚗 Veículo: ${rota.veiculo || '-'}<br>
-                👥 Clientes: ${rota.clientes ? rota.clientes.length : 0} cliente(s)
-              </div>
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
-              <button onclick="visualizarRota(${index})" class="btn-primary">👁 Visualizar</button>
-              <button onclick="excluirRota(${index})" class="btn-danger">🗑 Excluir</button>
-            </div>
-          </div>
-        </div>`;
-    });
-  }
-
-  document.getElementById('conteudoPrincipal').innerHTML = `
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
-        <div>
-          <h2>📋 Histórico de Rotas</h2>
-          <p style="color:#64748b;margin-top:4px;">Histórico operacional sincronizado com Google Sheets</p>
-        </div>
-        <button onclick="abrirFormularioRota()" class="btn-success">➕ Nova Rota</button>
-      </div>
-      ${htmlRotas}
-    </div>`;
-}
-
-function visualizarRota(index){
-  const rota = appState.rotas[index];
-  if(!rota){ mostrarAlerta('Rota não encontrada'); return; }
-
-  let htmlClientes = '';
-  if(rota.clientes && rota.clientes.length > 0) {
-    rota.clientes.forEach(cliente=>{
-      let htmlChamados = '';
-      if(cliente.chamados) {
-        cliente.chamados.forEach(chamado=>{
-          htmlChamados += `
-            <tr>
-              <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.os || '-'}</td>
-              <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.atividade || '-'}</td>
-              <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.tipo || '-'}</td>
-              <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.prioridade || '-'}</td>
-            </tr>`;
-        });
-      }
-
-      htmlClientes += `
-        <div class="card-padrao" style="margin-bottom:18px;border-left:6px solid #2563eb;">
-          <h3>${cliente.cliente}</h3>
-          <p style="margin-top:10px;color:#475569;">📍 ${cliente.endereco || 'Sem endereço'}</p>
-          <div style="overflow-x:auto;margin-top:18px;">
-            <table style="width:100%;border-collapse:collapse;min-width:700px;">
-              <thead>
-                <tr style="background:#f8fafc;">
-                  <th style="padding:10px;text-align:left;">OS</th>
-                  <th style="padding:10px;text-align:left;">Atividade</th>
-                  <th style="padding:10px;text-align:left;">Tipo</th>
-                  <th style="padding:10px;text-align:left;">Prioridade</th>
-                </tr>
-              </thead>
-              <tbody>${htmlChamados}</tbody>
-            </table>
-          </div>
-          <div style="margin-top:18px;background:#f8fafc;padding:14px;border-radius:12px;">
-            <strong>Observação Atendimento:</strong> ${cliente.observacao || 'Sem observações'}
-          </div>
-        </div>`;
-    });
-  }
-
-  document.getElementById('conteudoPrincipal').innerHTML = `
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
-        <div>
-          <h2>📍 ${rota.numeroRota}</h2>
-          <p style="color:#64748b;margin-top:4px;">${rota.data} • Técnico: ${rota.tecnico1} • Veículo: ${rota.veiculo}</p>
-        </div>
-        <button onclick="abrirHistoricoRotas()" class="btn-secondary">← Voltar</button>
-      </div>
-      ${htmlClientes}
-      <div class="card-padrao" style="margin-top:20px;background:#f1f5f9;">
-        <h4>Observações Gerais da Rota:</h4>
-        <p style="margin-top:8px;color:#334155;white-space:pre-wrap;">${rota.observacaoGeral || 'Nenhuma observação informada.'}</p>
-      </div>
-    </div>`;
-}
-
-function excluirRota(index){
-  const confirmar = confirm('Deseja realmente excluir esta rota?');
-  if(!confirm
+</body>
+</html>
