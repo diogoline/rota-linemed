@@ -16,7 +16,7 @@
 body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 
 .input-padrao, .select-padrao, .textarea-padrao {
-  width: 100%; padding: 12px; border: 1px solid var(--borda); border-radius: 10px; background: white; font-size: 14px;
+  width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; background: white; font-size: 13px;
 }
 .btn-primary { background: var(--cor-primaria); color: white; }
 .btn-danger { background: var(--cor-perigo); color: white; }
@@ -39,19 +39,23 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .topbar p { color: #64748b; margin-top: 4px; }
 .content { padding: 25px; flex-grow: 1; }
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 20px; }
-.card { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; }
 button { border: none; padding: 12px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all .25s ease; }
 button:hover { transform: translateY(-2px); filter: brightness(1.05); }
 .hidden { display: none !important; }
 
-/* Estilos de Tabela Padrão */
-.tabela-sistema { width: 100%; border-collapse: collapse; margin-top: 15px; }
-.tabela-sistema th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 14px; color: #475569; border-bottom: 2px solid #e2e8f0; }
-.tabela-sistema td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; background: white; }
+.tabela-container { width: 100%; overflow-x: auto; margin-top: 15px; }
+.tabela-sistema { width: 100%; border-collapse: collapse; min-width: 800px; }
+.tabela-sistema th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #e2e8f0; }
+.tabela-sistema td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; background: white; white-space: nowrap; }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.form-grupo { display: flex; flex-direction: column; margin-bottom: 8px; }
+.form-grupo label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
 </style>
 </head>
 <body>
 
+<!-- TELA DE LOGIN -->
 <div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:99999;">
   <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
     <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">⚡ ORIZON</div>
@@ -63,6 +67,7 @@ button:hover { transform: translateY(-2px); filter: brightness(1.05); }
   </div>
 </div>
 
+<!-- CONTAINER PRINCIPAL -->
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
   <div class="sidebar">
     <div class="logo" id="logoInicio">⚡ ORIZON</div>
@@ -88,15 +93,12 @@ button:hover { transform: translateY(-2px); filter: brightness(1.05); }
 </div>
 
 <script>
-// Configurações Globais
+// URL do Web App do Google Apps Script
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
 const appState = {
-  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [
-    { cliente: 'UBS Brasília', endereco: 'Praça Sol Nascente, Base Monte Azul' },
-    { cliente: 'UBS Novo Caminho', endereco: 'Rua das Flores, Base Monte Azul' },
-    { cliente: 'UPA Atalaia', endereco: 'Av. Central, Atalaia' }
-  ],
+  // Sincronizados a partir da sua Planilha Google
+  clientes: [],
   tecnicos: ['Diogo', 'Fagner Lima', 'Administrador'],
   veiculos: ['Strada', 'Fiorino', 'Mobi'],
   rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
@@ -107,7 +109,7 @@ const appState = {
   usuarioLogado: null
 };
 
-// Vinculação de eventos via JavaScript Nativo
+// Eventos de clique do menu
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
@@ -129,8 +131,9 @@ function fazerLogin() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('wrapperSistema').classList.remove('hidden');
     document.getElementById('subtituloTopbar').innerText = `Logado como: ${conta.nome} (${conta.perfil})`;
-    document.getElementById('loginUser').value = '';
-    document.getElementById('loginPass').value = '';
+    
+    // Puxa as informações da Planilha Google logo no login
+    sincronizarDadosPlanilha();
     voltarInicio();
   } else {
     alert('Usuário ou senha incorretos!');
@@ -148,13 +151,29 @@ function efetuarLogout() {
 function verificarSessaoAtiva() {
   const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
   if (sessaoSalva) {
-    const usuario = JSON.parse(sessaoSalva);
-    appState.usuarioLogado = usuario;
+    appState.usuarioLogado = JSON.parse(sessaoSalva);
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('wrapperSistema').classList.remove('hidden');
-    document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil})`;
+    document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
+    sincronizarDadosPlanilha();
     voltarInicio();
   }
+}
+
+// INTEGRAÇÃO DE LEITURA COM O GOOGLE SHEETS
+function sincronizarDadosPlanilha() {
+  fetch(`${WEB_APP_URL}?action=getClientes`)
+    .then(res => res.json())
+    .then(dados => {
+      if (Array.isArray(dados)) {
+        appState.clientes = dados;
+        localStorage.setItem('orizonClientes', JSON.stringify(dados));
+        // Se estiver na tela de clientes, atualiza a exibição na tabela
+        const tbody = document.getElementById('listaClientesTbody');
+        if (tbody) atualizarTabelaClientesLocal();
+      }
+    })
+    .catch(err => console.error("Erro na leitura remota dos dados: ", err));
 }
 
 function abrirTela(menu) {
@@ -163,69 +182,127 @@ function abrirTela(menu) {
     principal.innerHTML = `
       <h2>Bem-vindo ao ORIZON</h2>
       <div class="dashboard-grid">
-        <div class="card"><h3>📍 Controle de Rotas</h3><p>Planejamento operacional e acompanhamento diário.</p></div>
-        <div class="card"><h3>🏥 Clientes</h3><p>Cadastro de unidades de saúde e gerenciamento de endereços.</p></div>
-        <div class="card"><h3>🛠 Gestão de Chamados</h3><p>Controle de atendimentos técnicos e ordens de serviço.</p></div>
-        <div class="card"><h3>📦 Patrimônio</h3><p>Inventário simples por cliente e contrato.</p></div>
+        <div class="card" style="background:white; border-radius:16px; padding:22px;"><h3>📍 Controle de Rotas</h3><p>Planejamento operacional e acompanhamento diário.</p></div>
+        <div class="card" style="background:white; border-radius:16px; padding:22px;"><h3>🏥 Clientes</h3><p>Cadastro integrado com o Google Sheets.</p></div>
+        <div class="card" style="background:white; border-radius:16px; padding:22px;"><h3>🛠 Gestão de Chamados</h3><p>Controle de atendimentos técnicos e ordens de serviço.</p></div>
+        <div class="card" style="background:white; border-radius:16px; padding:22px;"><h3>📦 Patrimônio</h3><p>Inventário por unidade de atendimento.</p></div>
       </div>`;
-  } else if (menu === 'rotas') {
-    principal.innerHTML = `
-      <div>
-        <h2>📍 Módulo de Rotas</h2>
-        <div class="dashboard-grid">
-          <div class="card">
-            <h3>Nova Rota</h3>
-            <p>Criar rota diária com técnicos, veículo e atendimentos.</p>
-            <button id="btnCriarFormRota" class="btn-primary" style="margin-top:12px;">Abrir formulário</button>
-          </div>
-          <div class="card">
-            <h3>📋 Histórico</h3>
-            <p>Consultar rotas anteriores salvas na base.</p>
-            <button id="btnAbrirHistRotas" class="btn-secondary" style="margin-top:12px;">Abrir histórico</button>
-          </div>
-        </div>
-      </div>`;
-      document.getElementById('btnCriarFormRota').addEventListener('click', abrirFormularioRota);
-      document.getElementById('btnAbrirHistRotas').addEventListener('click', abrirHistoricoRotas);
   } else if (menu === 'clientes') {
     renderizarTelaClientes(principal);
+  } else if (menu === 'rotas') {
+    renderizarTelaRotas(principal);
   } else {
-    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Módulo em homologação técnica.</p>`;
+    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Módulo integrado à planilha em desenvolvimento.</p>`;
   }
 }
 
 function voltarInicio() { abrirTela('inicio'); }
 
-// ==========================================
-// MÓDULO DE CLIENTES (NOVO)
-// ==========================================
+// =========================================================================
+// MÓDULO DE CLIENTES DE ACORDO COM A SUA PLANILHA (image_d33fc1.png)
+// =========================================================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
     <div>
-      <h2>🏥 Gerenciamento de Clientes / Unidades</h2>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2>🏥 Cadastro e Listagem de Clientes</h2>
+        <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="padding:8px 12px; font-size:12px;">🔄 Sincronizar Planilha</button>
+      </div>
       
-      <div class="dashboard-grid" style="grid-template-columns: 1fr 2fr; align-items: start;">
-        <div class="card-padrao">
-          <h3 style="margin-bottom:15px; color:var(--cor-primaria);">Novo Cliente</h3>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:13px; font-weight:600;">Nome da Unidade / Cliente</label>
-            <input type="text" id="cadNomeCliente" class="input-padrao" placeholder="Ex: UBS Jardim Monte Azul">
+      <!-- Formulário estruturado idêntico ao seu banco de dados -->
+      <div class="card-padrao" style="margin-bottom: 25px;">
+        <h3 style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro do Cliente</h3>
+        
+        <div class="form-grid">
+          <div class="form-grupo">
+            <label>Cliente / Unidade *</label>
+            <input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente">
           </div>
-          <div style="margin-bottom:18px;">
-            <label style="font-size:13px; font-weight:600;">Endereço Completo</label>
-            <textarea id="cadEnderecoCliente" class="textarea-padrao" placeholder="Rua, número, bairro..." style="height:80px;"></textarea>
+          <div class="form-grupo">
+            <label>CNPJ</label>
+            <input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00">
           </div>
-          <button id="btnSalvarNovoCliente" class="btn-success" style="width:100%;">Adicionar Unidade</button>
+          <div class="form-grupo">
+            <label>Contrato</label>
+            <input type="text" id="formContrato" class="input-padrao" placeholder="Nº Contrato">
+          </div>
+          <div class="form-grupo">
+            <label>CEP</label>
+            <input type="text" id="formCep" class="input-padrao" placeholder="00000-000">
+          </div>
+          <div class="form-grupo">
+            <label>Logradouro</label>
+            <input type="text" id="formLogradouro" class="input-padrao" placeholder="Rua / Av">
+          </div>
+          <div class="form-grupo">
+            <label>Número</label>
+            <input type="text" id="formNumero" class="input-padrao" placeholder="Nº">
+          </div>
+          <div class="form-grupo">
+            <label>Complemento</label>
+            <input type="text" id="formComplemento" class="input-padrao" placeholder="Sala, Bloco...">
+          </div>
+          <div class="form-grupo">
+            <label>Bairro</label>
+            <input type="text" id="formBairro" class="input-padrao" placeholder="Bairro">
+          </div>
+          <div class="form-grupo">
+            <label>Cidade</label>
+            <input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO">
+          </div>
+          <div class="form-grupo">
+            <label>UF</label>
+            <input type="text" id="formUf" class="input-padrao" value="SP" maxlength="2">
+          </div>
+          <div class="form-grupo">
+            <label>Região</label>
+            <input type="text" id="formRegiao" class="input-padrao" placeholder="Ex: Sul, Monte Azul">
+          </div>
+          <div class="form-grupo">
+            <label>Responsável</label>
+            <input type="text" id="formResponsavel" class="input-padrao" placeholder="Nome do contato">
+          </div>
+          <div class="form-grupo">
+            <label>Telefone</label>
+            <input type="text" id="formTelefone" class="input-padrao" placeholder="(11) 99999-0000">
+          </div>
+          <div class="form-grupo">
+            <label>E-mail</label>
+            <input type="email" id="formEmail" class="input-padrao" placeholder="email@provedor.com">
+          </div>
+          <div class="form-grupo">
+            <label>Status</label>
+            <select id="formStatus" class="select-padrao">
+              <option value="ATIVO" selected>ATIVO</option>
+              <option value="INATIVO">INATIVO</option>
+            </select>
+          </div>
+        </div>
+        
+        <div style="margin-top:12px;">
+          <div class="form-grupo">
+            <label>Observações</label>
+            <input type="text" id="formObservacao" class="input-padrao" placeholder="Observações operacionais do cliente">
+          </div>
         </div>
 
-        <div class="card-padrao">
-          <h3 style="margin-bottom:10px;">Unidades Cadastradas</h3>
+        <button id="btnSalvarClientePlanilha" class="btn-success" style="margin-top:15px; width:100%; padding:14px;">💾 Gravar na Planilha Google</button>
+      </div>
+
+      <!-- Listagem Base de Dados -->
+      <div class="card-padrao">
+        <h3 style="margin-bottom:10px;">Clientes na Base</h3>
+        <div class="tabela-container">
           <table class="tabela-sistema">
             <thead>
               <tr>
-                <th>Unidade / Cliente</th>
-                <th>Endereço Operacional</th>
-                <th style="width:80px; text-align:center;">Ações</th>
+                <th>CLIENTE</th>
+                <th>CONTRATO</th>
+                <th>LOGRADOURO</th>
+                <th>BAIRRO</th>
+                <th>CIDADE</th>
+                <th>RESPONSÁVEL</th>
+                <th>STATUS</th>
               </tr>
             </thead>
             <tbody id="listaClientesTbody"></tbody>
@@ -234,61 +311,112 @@ function renderizarTelaClientes(container) {
       </div>
     </div>`;
 
-  document.getElementById('btnSalvarNovoCliente').addEventListener('click', cadastrarNovoCliente);
+  document.getElementById('btnSalvarClientePlanilha').addEventListener('click', enviarClientePlanilha);
   atualizarTabelaClientesLocal();
 }
 
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody');
-  if(!tbody) return;
-  
+  if (!tbody) return;
   tbody.innerHTML = '';
-  appState.clientes.forEach((c, index) => {
+
+  if (appState.clientes.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b;">Nenhum cliente carregado. Clique em Sincronizar.</td></tr>`;
+    return;
+  }
+
+  appState.clientes.forEach(c => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="font-weight:600;">${c.cliente}</td>
-      <td style="color:#475569;">${c.endereco}</td>
-      <td style="text-align:center;"><button class="btn-danger" style="padding:6px 10px; font-size:12px;" onclick="removerClienteDoEstado(${index})">Excluir</button></td>
+      <td style="font-weight:600; color:#1e293b;">${c.CLIENTE || c.cliente || ''}</td>
+      <td>${c.CONTRATO || c.contrato || ''}</td>
+      <td>${(c.LOGRADOURO || c.logradouro || '')}, ${(c.NÚMERO || c.numero || '')}</td>
+      <td>${c.BAIRRO || c.bairro || ''}</td>
+      <td>${c.CIDADE || c.cidade || ''}</td>
+      <td>${c.RESPONSAVEL || c.responsavel || ''}</td>
+      <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${(c.STATUS || c.status) === 'ATIVO' ? '#dcfce7; color:#16a34a;' : '#fee2e2; color:#dc2626;'}">${c.STATUS || c.status || 'ATIVO'}</span></td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-function cadastrarNovoCliente() {
-  const nome = document.getElementById('cadNomeCliente').value.trim();
-  const endereco = document.getElementById('cadEnderecoCliente').value.trim();
+// POST: ENVIA OS DADOS DOS CAMPOS PARA O SEU GOOGLE APPS SCRIPT
+function enviarClientePlanilha() {
+  const cliente = document.getElementById('formCliente').value.trim();
+  if (!cliente) { alert('O campo Cliente é obrigatório!'); return; }
 
-  if(!nome || !endereco) {
-    alert('Por favor, preencha o Nome e o Endereço da unidade!');
-    return;
-  }
+  const dadosForm = {
+    action: 'addCliente',
+    CLIENTE: cliente,
+    CNPJ: document.getElementById('formCnpj').value,
+    CONTRATO: document.getElementById('formContrato').value,
+    CEP: document.getElementById('formCep</label>').value,
+    LOGRADOURO: document.getElementById('formLogradouro').value,
+    NÚMERO: document.getElementById('formNumero').value,
+    COMPLEMENTO: document.getElementById('formComplemento').value,
+    BAIRRO: document.getElementById('formBairro').value,
+    CIDADE: document.getElementById('formCidade').value,
+    UF: document.getElementById('formUf').value,
+    REGIÃO: document.getElementById('formRegiao').value,
+    RESPONSAVEL: document.getElementById('formResponsavel').value,
+    TELEFONE: document.getElementById('formTelefone').value,
+    EMAIL: document.getElementById('formEmail').value,
+    STATUS: document.getElementById('formStatus').value,
+    OBSERVAÇÃO: document.getElementById('formObservacao').value
+  };
 
-  // Evita duplicidade simples
-  if(appState.clientes.some(c => c.cliente.toLowerCase() === nome.toLowerCase())) {
-    alert('Esta unidade já está cadastrada no sistema!');
-    return;
-  }
+  const btn = document.getElementById('btnSalvarClientePlanilha');
+  btn.innerText = 'Enviando dados...';
+  btn.disabled = true;
 
-  appState.clientes.push({ cliente: nome, endereco: endereco });
-  localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
-  
-  alert('Cliente cadastrado com sucesso localmente!');
-  document.getElementById('cadNomeCliente').value = '';
-  document.getElementById('cadEnderecoCliente').value = '';
-  atualizarTabelaClientesLocal();
+  fetch(WEB_APP_URL, {
+    method: 'POST',
+    mode: 'no-cors', // Evita bloqueio de CORS ao gravar
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dadosForm)
+  })
+  .then(() => {
+    alert('Solicitação enviada para a Planilha Google!');
+    btn.innerText = '💾 Gravar na Planilha Google';
+    btn.disabled = false;
+    // Limpa os campos
+    document.getElementById('formCliente').value = '';
+    document.getElementById('formCnpj').value = '';
+    document.getElementById('formContrato').value = '';
+    // Atualiza o cache local após alguns segundos
+    setTimeout(sincronizarDadosPlanilha, 1500);
+  })
+  .catch(err => {
+    alert('Erro ao enviar dados.');
+    console.error(err);
+    btn.disabled = false;
+  });
 }
 
-// Gambiarra controlada para o botão de exclusão da tabela funcionar sem conflito
-window.removerClienteDoEstado = function(index) {
-  if(!confirm('Deseja realmente excluir este cliente?')) return;
-  appState.clientes.splice(index, 1);
-  localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
-  atualizarTabelaClientesLocal();
-};
+// =========================================================================
+// MÓDULO DE ROTAS INTEGRADO COM O ENDEREÇO DA PLANILHA
+// =========================================================================
+function renderizarTelaRotas(container) {
+  container.innerHTML = `
+    <div>
+      <h2>📍 Módulo de Rotas</h2>
+      <div class="dashboard-grid">
+        <div class="card" style="background:white; border-radius:16px; padding:22px;">
+          <h3>Nova Rota</h3>
+          <p>Criar rota diária vinculando clientes e ordens de serviço.</p>
+          <button id="btnCriarFormRota" class="btn-primary" style="margin-top:12px;">Abrir formulário</button>
+        </div>
+        <div class="card" style="background:white; border-radius:16px; padding:22px;">
+          <h3>📋 Histórico</h3>
+          <p>Consultar rotas anteriores salvas na base.</p>
+          <button id="btnAbrirHistRotas" class="btn-secondary" style="margin-top:12px;">Abrir histórico</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('btnCriarFormRota').addEventListener('click', abrirFormularioRota);
+  document.getElementById('btnAbrirHistRotas').addEventListener('click', abrirHistoricoRotas);
+}
 
-// ==========================================
-// MÓDULO DE ROTAS (PERSISTENTE)
-// ==========================================
 function abrirFormularioRota() {
   const numRotaSugerido = `ROT-${new Date().getFullYear()}-${String(appState.rotas.length + 1).padStart(4, '0')}`;
   let optionsTecnicos = '<option>Selecionar técnico</option>';
@@ -316,7 +444,6 @@ function abrirFormularioRota() {
       </div>
       <div id="clientesRotaContainer"></div>
       <div style="margin-top:20px; text-align:center;"><button id="btnAdicionarCliCard" class="btn-secondary">➕ Adicionar Cliente à Rota</button></div>
-      <div style="margin-top:20px;"><label>Observações Gerais da Rota</label><textarea id="observacaoGeralRota" class="textarea-padrao" placeholder="Avisos operacionais importantes..."></textarea></div>
     </div>`;
 
   document.getElementById('btnGravarRotaFinal').addEventListener('click', salvarRota);
@@ -329,7 +456,12 @@ function adicionarClienteRota() {
   const container = document.getElementById('clientesRotaContainer');
   const clienteId = 'cli_' + Date.now();
   let optionsClientes = '<option value="">Escolher Cliente</option>';
-  appState.clientes.forEach(c => optionsClientes += `<option value="${c.cliente}">${c.cliente}</option>`);
+  
+  // Puxa dinamicamente a listagem de clientes carregados da planilha
+  appState.clientes.forEach(c => {
+    const nomeCli = c.CLIENTE || c.cliente;
+    optionsClientes += `<option value="${nomeCli}">${nomeCli}</option>`;
+  });
 
   const div = document.createElement('div');
   div.className = 'card-padrao bloco-cliente-rota';
@@ -343,7 +475,7 @@ function adicionarClienteRota() {
         <button class="btn-danger btn-rem-cli" style="padding:8px 12px;">Remover</button>
       </div>
     </div>
-    <div style="margin-bottom:10px; font-size:13px; color:#475569;">📍 Endereço: <span class="endereco-texto">Selecione o cliente para carregar</span></div>
+    <div style="margin-bottom:10px; font-size:13px; color:#475569;">📍 Endereço da Planilha: <span class="endereco-texto" style="font-weight:bold;">Selecione o cliente para puxar os dados</span></div>
     <table style="width:100%; border-collapse:collapse;" class="tabela-os-cliente">
       <thead><tr style="background:#f8fafc;"><th style="padding:8px; text-align:left;">Nº O.S</th><th style="padding:8px; text-align:left;">Atividade</th></tr></thead>
       <tbody>
@@ -356,10 +488,19 @@ function adicionarClienteRota() {
   
   container.appendChild(div);
 
+  // Une automaticamente o endereço utilizando os campos vindos da sua planilha
   div.querySelector('.select-cliente-nome').addEventListener('change', function() {
-    const local = appState.clientes.find(c => c.cliente === this.value);
-    div.querySelector('.endereco-texto').innerText = local ? local.endereco : 'Não encontrado';
+    const local = appState.clientes.find(c => (c.CLIENTE || c.cliente) === this.value);
+    if (local) {
+      const rua = local.LOGRADOURO || local.logradouro || '';
+      const num = local.NÚMERO || local.numero || '';
+      const bairro = local.BAIRRO || local.bairro || '';
+      div.querySelector('.endereco-texto').innerText = `${rua}, ${num} - ${bairro}`;
+    } else {
+      div.querySelector('.endereco-texto').innerText = 'Não encontrado';
+    }
   });
+
   div.querySelector('.btn-add-os').addEventListener('click', () => {
     const tbody = div.querySelector('.tabela-os-cliente tbody');
     const tr = document.createElement('tr');
@@ -389,7 +530,7 @@ function salvarRota() {
   const ve = document.getElementById('veiculoRota').value;
 
   if (!dt || t1.includes('Selecionar') || ve.includes('Selecionar')) {
-    alert('Preencha os campos obrigatórios (Data, Técnico 1 e Veículo)!');
+    alert('Preencha os campos obrigatórios!');
     return;
   }
 
@@ -400,7 +541,7 @@ function salvarRota() {
   };
   appState.rotas.push(novaRota);
   localStorage.setItem('orizonRotas', JSON.stringify(appState.rotas));
-  alert('Rota gravada com sucesso!');
+  alert('Rota gravada localmente com sucesso!');
   abrirHistoricoRotas();
 }
 
