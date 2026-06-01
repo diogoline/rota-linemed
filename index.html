@@ -96,7 +96,6 @@ body{background:#f4f7fb;color:#1e293b;display:flex;min-height:100vh;}
   transform:translateX(4px);
 }
 
-/* Estilo do Botão do Logout */
 .sidebar button.btn-logout {
   background: linear-gradient(135deg, #1e293b, #334155);
   border: 1px solid rgba(220, 38, 38, 0.2);
@@ -279,7 +278,6 @@ function fazerLogin() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('subtituloTopbar').innerText = `Logado como: ${contaEncontrada.nome} (${contaEncontrada.perfil})`;
     
-    // Limpa os inputs para segurança
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
     voltarInicio();
@@ -295,7 +293,6 @@ function efetuarLogout() {
   appState.usuarioLogado = null;
   sessionStorage.removeItem('orizonUsuarioAtivo');
   
-  // Exibe a tela de login novamente
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('subtituloTopbar').innerText = 'Gestão inteligente de rotas e operações';
 }
@@ -309,9 +306,6 @@ function verificarSessaoAtiva() {
     document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil})`;
   }
 }
-
-// Executa a validação assim que o arquivo carrega
-verificarSessaoAtiva();
 
 // =========================
 // UTILITÁRIOS GLOBAIS
@@ -334,103 +328,322 @@ function gerarOptionsVeiculos(){
   return html;
 }
 
-// =========================
-// NAVEGAÇÃO E REQUISITOS DE TELAS
-// =========================
-function abrirTela(menu){
-  const principal = document.getElementById('conteudoPrincipal');
-  
-  if(menu === 'inicio'){
-    principal.innerHTML = `
-      <h2>Bem-vindo ao ORIZON</h2>
-      <div class="dashboard-grid">
-        <div class="card"><h3>📍 Controle de Rotas</h3><p>Planejamento operacional e acompanhamento diário.</p></div>
-        <div class="card"><h3>🛠 Gestão de Chamados</h3><p>Controle de atendimentos técnicos e ordens de serviço.</p></div>
-        <div class="card"><h3>📦 Patrimônio</h3><p>Inventário simples por cliente e contrato.</p></div>
-        <div class="card"><h3>📊 Dashboards</h3><p>Indicadores operacionais e performance.</p></div>
-      </div>`;
-  }
-  else if(menu === 'rotas'){
-    principal.innerHTML = `
-      <div>
-        <h2>📍 Módulo de Rotas</h2>
-        <div class="dashboard-grid">
-          <div class="card">
-            <h3>Nova Rota</h3>
-            <p>Criar rota diária com técnicos, veículo e atendimentos.</p>
-            <button onclick="abrirFormularioRota()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir formulário</button>
-          </div>
-          <div class="card">
-            <h3>📋 Histórico</h3>
-            <p>Consultar rotas anteriores, editar e imprimir PDF.</p>
-            <button onclick="abrirHistoricoRotas()" style="margin-top:12px;background:#2563eb;width:auto;">Abrir histórico</button>
-          </div>
-          <div class="card">
-            <h3>Resumo operacional</h3>
-            <p>Visualize rapidamente status das rotas do dia.</p>
-          </div>
-        </div>
-      </div>`;
-  }
-  else if(menu === 'dashboards'){
-    principal.innerHTML = `
-      <div>
-        <h2>📊 Dashboards</h2>
-        <div class="dashboard-grid">
-          <div class="card"><h3>Rotas Finalizadas</h3><p>125 no mês</p></div>
-          <div class="card"><h3>Chamados Abertos</h3><p>18 pendentes</p></div>
-          <div class="card"><h3>Clientes Ativos</h3><p>42 contratos</p></div>
-        </div>
-      </div>`;
-  }
-  else if(menu === 'patrimonio'){
-    principal.innerHTML = `
-      <div>
-        <h2>📦 Controle de Patrimônio</h2>
-        <div class="dashboard-grid">
-          <div class="card">
-            <h3>Resumo</h3>
-            <p>Total de equipamentos cadastrados: <strong id="totalEquipamentos">0</strong></p>
-            <p>Contratos ativos: <strong id="totalContratos">0</strong></p>
-            <p>Divergências encontradas: <strong id="totalDivergencias" style="color:#dc2626;">0</strong></p>
-          </div>
-          <div class="card" style="grid-column:span 2;">
-            <h3>Inventário por cliente / contrato</h3>
-            <div style="display:flex;gap:10px;margin:15px 0;flex-wrap:wrap;">
-              <input type="text" placeholder="Pesquisar cliente ou contrato" style="flex:1;padding:12px;border:1px solid #cbd5e1;border-radius:8px;">
-              <button style="background:#2563eb;width:auto;">Pesquisar</button>
-              <button onclick="novoContrato()" style="background:#16a34a;width:auto;">+ Novo contrato</button>
-            </div>
-            <table style="width:100%;border-collapse:collapse;font-size:14px;">
-              <thead>
-                <tr style="background:#f8fafc;text-align:left;">
-                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Cliente</th>
-                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Contrato</th>
-                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Qtd. Equip.</th>
-                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Divergências</th>
-                  <th style="padding:10px;border-bottom:1px solid #e2e8f0;">Prioridade</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr onclick="abrirContratoDetalhe()" style="cursor:pointer;">
-                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;">Hospital Exemplo</td>
-                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;">CTR-001</td>
-                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;">58</td>
-                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;">2</td>
-                  <td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">Pendente</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>`;
-  }
-  else {
-    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b;margin-top:10px;">Tela em desenvolvimento para a v2.2</p>`;
-  }
+function gerarLinhaOS(numero=1){
+  return `
+    <tr>
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${numero}</td>
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><input placeholder="Nº OS" class="input-padrao"></td>
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;"><input placeholder="Serviço / Atividade" class="input-padrao"></td>
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+        <select class="select-padrao">
+          <option>Preventiva</option>
+          <option>Corretiva</option>
+          <option>Instalação</option>
+          <option>Calibração</option>
+        </select>
+      </td>
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+        <select class="select-padrao">
+          <option>🟢 Baixa</option>
+          <option>🟡 Média</option>
+          <option>🔴 Alta</option>
+          <option>🚨 Crítico</option>
+        </select>
+      </td>
+      <td style="padding:10px;border-bottom:1px solid #e2e8f0;">
+        <button onclick="this.closest('tr').remove()" class="btn-danger">🗑 Excluir</button>
+      </td>
+    </tr>`;
 }
 
-// (Mantenha as funções estruturais abaixo como 'abrirFormularioRota', 'abrirHistoricoRotas', etc. exatamente como você já tinha estruturado)
-</script>
-</body>
-</html>
+function gerarTabelaOS(){
+  return `
+    <table style="width:100%;border-collapse:collapse;min-width:850px;">
+      <thead>
+        <tr style="background:#f8fafc;">
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">#</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">OS</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Tipo</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Prioridade</th>
+          <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${gerarLinhaOS(1)}
+      </tbody>
+    </table>`;
+}
+
+function gerarObservacaoRota(){
+  return `
+    <div style="margin-top:25px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;">
+      <div style="font-size:14px;font-weight:bold;color:#334155;margin-bottom:10px;">Observações Gerais da Rota</div>
+      <textarea id="observacaoGeralRota" class="textarea-padrao" placeholder="Informações gerais, pendências, retorno ao cliente, observações operacionais..." style="min-height:120px;resize:vertical;"></textarea>
+    </div>`;
+}
+
+// =========================
+// GERAÇÃO DE NÚMERO DE ROTA
+// =========================
+function obterUltimoNumeroRota(){
+  const ultimoNumero = localStorage.getItem('orizonUltimaRota');
+  return ultimoNumero ? parseInt(ultimoNumero) : 0;
+}
+
+function gerarNumeroRota(){
+  const ano = new Date().getFullYear();
+  let ultimoNumero = obterUltimoNumeroRota();
+  ultimoNumero++;
+  const numeroFormatado = String(ultimoNumero).padStart(4,'0');
+  return `ROT-${ano}-${numeroFormatado}`;
+}
+
+function salvarUltimoNumeroRota(numeroRota){
+  const partes = numeroRota.split('-');
+  const numero = partes[2];
+  localStorage.setItem('orizonUltimaRota', numero);
+}
+
+// =========================
+// FORMULÁRIO E CLIENTES DINÂMICOS
+// =========================
+function abrirFormularioRota(){
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+        <div>
+          <h2 style="color:#2563eb;">📍 Nova Rota Operacional</h2>
+          <p style="color:#64748b;margin-top:4px;">Gestão inteligente de atendimentos técnicos</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="salvarRota()" class="btn-success">💾 Salvar Rota</button>
+          <button onclick="abrirHistoricoRotas()" class="btn-secondary">📋 Histórico</button>
+        </div>
+      </div>
+
+      <div class="card-padrao" style="margin-bottom:18px;">
+        <h3 style="margin-bottom:18px;color:#2563eb;">📄 Dados da rota</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+          <div>
+            <label style="font-size:12px;color:#64748b;">Nº Rota</label>
+            <input id="numeroRota" value="${gerarNumeroRota()}" readonly class="input-padrao" style="background:#f1f5f9;font-weight:bold;color:#2563eb;">
+          </div>
+          <div>
+            <label style="font-size:12px;color:#64748b;">Data</label>
+            <input type="date" id="dataRota" class="input-padrao">
+          </div>
+          <div>
+            <label style="font-size:12px;color:#64748b;">Técnico 1</label>
+            <select id="tecnico1Rota" class="select-padrao">${gerarOptionsTecnicos()}</select>
+          </div>
+          <div>
+            <label style="font-size:12px;color:#64748b;">Técnico 2</label>
+            <select id="tecnico2Rota" class="select-padrao">${gerarOptionsTecnicos()}</select>
+          </div>
+          <div>
+            <label style="font-size:12px;color:#64748b;">Veículo</label>
+            <select id="veiculoRota" class="select-padrao">${gerarOptionsVeiculos()}</select>
+          </div>
+        </div>
+      </div>
+
+      <div id="clientesRotaContainer"></div>
+
+      <div style="margin-top:20px;display:flex;justify-content:center;">
+        <button onclick="adicionarClienteRota()" style="background:#0f172a;color:white;">➕ Adicionar Cliente na Rota</button>
+      </div>
+      
+      ${gerarObservacaoRota()}
+    </div>`;
+
+  adicionarClienteRota();
+}
+
+function adicionarClienteRota() {
+  const container = document.getElementById('clientesRotaContainer');
+  const clienteId = 'cliente_' + Date.now();
+  
+  let optionsClientes = '<option value="">Selecionar cliente</option>';
+  appState.clientes.forEach(c => {
+    optionsClientes += `<option value="${c.cliente}">${c.cliente}</option>`;
+  });
+
+  const blocoCliente = document.createElement('div');
+  blocoCliente.className = 'card-padrao bloco-cliente-rota';
+  blocoCliente.style.marginTop = '20px';
+  blocoCliente.id = clienteId;
+  
+  blocoCliente.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;gap:10px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:280px;">
+        <label style="font-size:12px;color:#64748b;">Cliente</label>
+        <select class="select-padrao select-cliente-nome" onchange="atualizarEnderecoAutomatico(this)">
+          ${optionsClientes}
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button onclick="adicionarLinhaOSTabela('${clienteId}')" class="btn-primary">➕ Adicionar OS</button>
+        <button onclick="document.getElementById('${clienteId}').remove()" class="btn-danger">🗑 Excluir Cliente</button>
+      </div>
+    </div>
+    <div style="margin-bottom:15px;background:#f8fafc;padding:12px;border-radius:10px;font-size:13px;color:#475569;">
+      📍 <strong>Endereço:</strong> <span class="endereco-texto-automatico">Endereço do cliente aparecerá automaticamente</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:850px;" class="tabela-os-cliente">
+        <thead>
+          <tr style="background:#f8fafc;">
+            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:50px;">#</th>
+            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:120px;">OS</th>
+            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;">Serviço / Atividade</th>
+            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:150px;">Tipo</th>
+            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:150px;">Prioridade</th>
+            <th style="padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;width:100px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${gerarLinhaOS(1)}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:15px;">
+      <label style="font-size:12px;color:#64748b;">Observações específicas deste atendimento</label>
+      <input type="text" class="input-padrao obs-especifica-cliente" placeholder="Ex: Falar com encarregado, levar escada, etc.">
+    </div>`;
+    
+  container.appendChild(blocoCliente);
+}
+
+function adicionarLinhaOSTabela(clienteId) {
+  const tabelaBody = document.querySelector(`#${clienteId} .tabela-os-cliente tbody`);
+  const numeroLinhas = tabelaBody.rows.length + 1;
+  
+  const novaLinha = document.createElement('tr');
+  novaLinha.innerHTML = gerarLinhaOS(numeroLinhas);
+  tabelaBody.appendChild(novaLinha);
+}
+
+function atualizarEnderecoAutomatico(selectElement) {
+  const clienteSelecionado = selectElement.value;
+  const cardElement = selectElement.closest('.bloco-cliente-rota');
+  const txtEndereco = cardElement.querySelector('.endereco-texto-automatico');
+  
+  const busca = appState.clientes.find(c => c.cliente === clienteSelecionado);
+  txtEndereco.innerText = busca && busca.endereco ? busca.endereco : 'Endereço não cadastrado ou não encontrado';
+}
+
+// =========================
+// HISTÓRICO E EXCLUSÃO
+// =========================
+function abrirHistoricoRotas(){
+  let htmlRotas = '';
+
+  if(appState.rotas.length === 0){
+    htmlRotas = `
+      <div class="card-padrao">
+        <h3>Nenhuma rota salva</h3>
+        <p style="margin-top:10px;color:#64748b;">As rotas salvas aparecerão aqui.</p>
+      </div>`;
+  } else {
+    appState.rotas.sort((a,b)=> new Date(b.dataRegistro || 0) - new Date(a.dataRegistro || 0)).forEach((rota, indexReverso)=>{
+      const index = appState.rotas.length - 1 - indexReverso;
+      htmlRotas += `
+        <div class="card-padrao" style="margin-bottom:18px;border-left:6px solid #2563eb;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:13px;color:#64748b;">ROTA</div>
+              <div style="font-size:24px;font-weight:bold;color:#0f172a;">${rota.numeroRota || 'SEM NÚMERO'}</div>
+              <div style="margin-top:12px;color:#475569;line-height:1.8;">
+                📅 Data Rota: ${rota.data || '-'}<br>
+                👨‍🔧 Técnico 1: ${rota.tecnico1 || '-'}<br>
+                🚗 Veículo: ${rota.veiculo || '-'}<br>
+                👥 Clientes: ${rota.clientes ? rota.clientes.length : 0} cliente(s)
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
+              <button onclick="visualizarRota(${index})" class="btn-primary">👁 Visualizar</button>
+              <button onclick="excluirRota(${index})" class="btn-danger">🗑 Excluir</button>
+            </div>
+          </div>
+        </div>`;
+    });
+  }
+
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+        <div>
+          <h2>📋 Histórico de Rotas</h2>
+          <p style="color:#64748b;margin-top:4px;">Histórico operacional sincronizado com Google Sheets</p>
+        </div>
+        <button onclick="abrirFormularioRota()" class="btn-success">➕ Nova Rota</button>
+      </div>
+      ${htmlRotas}
+    </div>`;
+}
+
+function visualizarRota(index){
+  const rota = appState.rotas[index];
+  if(!rota){ mostrarAlerta('Rota não encontrada'); return; }
+
+  let htmlClientes = '';
+  if(rota.clientes && rota.clientes.length > 0) {
+    rota.clientes.forEach(cliente=>{
+      let htmlChamados = '';
+      if(cliente.chamados) {
+        cliente.chamados.forEach(chamado=>{
+          htmlChamados += `
+            <tr>
+              <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.os || '-'}</td>
+              <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.atividade || '-'}</td>
+              <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.tipo || '-'}</td>
+              <td style="padding:10px;border-bottom:1px solid #e2e8f0;">${chamado.prioridade || '-'}</td>
+            </tr>`;
+        });
+      }
+
+      htmlClientes += `
+        <div class="card-padrao" style="margin-bottom:18px;border-left:6px solid #2563eb;">
+          <h3>${cliente.cliente}</h3>
+          <p style="margin-top:10px;color:#475569;">📍 ${cliente.endereco || 'Sem endereço'}</p>
+          <div style="overflow-x:auto;margin-top:18px;">
+            <table style="width:100%;border-collapse:collapse;min-width:700px;">
+              <thead>
+                <tr style="background:#f8fafc;">
+                  <th style="padding:10px;text-align:left;">OS</th>
+                  <th style="padding:10px;text-align:left;">Atividade</th>
+                  <th style="padding:10px;text-align:left;">Tipo</th>
+                  <th style="padding:10px;text-align:left;">Prioridade</th>
+                </tr>
+              </thead>
+              <tbody>${htmlChamados}</tbody>
+            </table>
+          </div>
+          <div style="margin-top:18px;background:#f8fafc;padding:14px;border-radius:12px;">
+            <strong>Observação Atendimento:</strong> ${cliente.observacao || 'Sem observações'}
+          </div>
+        </div>`;
+    });
+  }
+
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;">
+        <div>
+          <h2>📍 ${rota.numeroRota}</h2>
+          <p style="color:#64748b;margin-top:4px;">${rota.data} • Técnico: ${rota.tecnico1} • Veículo: ${rota.veiculo}</p>
+        </div>
+        <button onclick="abrirHistoricoRotas()" class="btn-secondary">← Voltar</button>
+      </div>
+      ${htmlClientes}
+      <div class="card-padrao" style="margin-top:20px;background:#f1f5f9;">
+        <h4>Observações Gerais da Rota:</h4>
+        <p style="margin-top:8px;color:#334155;white-space:pre-wrap;">${rota.observacaoGeral || 'Nenhuma observação informada.'}</p>
+      </div>
+    </div>`;
+}
+
+function excluirRota(index){
+  const confirmar = confirm('Deseja realmente excluir esta rota?');
+  if(!confirm
