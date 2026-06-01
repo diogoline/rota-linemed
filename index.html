@@ -1,115 +1,287 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORIZON - Gestão Inteligente</title>
-    <style>
-        :root {
-            --cor-primaria: #2563eb;
-            --cor-secundaria: #334155;
-            --bg-claro: #f8fafc;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: #0f172a; display: flex; min-height: 100vh; align-items: center; justify-content: center; }
-        
-        .login-container {
-            width: 100%;
-            max-width: 420px;
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,.25);
-            text-align: center;
-        }
-        .logo { font-size: 42px; font-weight: bold; color: var(--cor-primaria); margin-bottom: 8px; }
-        .sub { color: #64748b; margin-bottom: 28px; }
-        .input-padrao { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; }
-        .btn-entrar { width: 100%; padding: 14px; background: var(--cor-primaria); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; transition: background 0.2s; }
-        .btn-entrar:hover { background: #1d4ed8; }
-        .footer { margin-top: 18px; font-size: 12px; color: #94a3b8; }
-        
-        /* Layout Principal Pós-Login */
-        #painelSistema { display: none; background: #f4f7fb; position: fixed; inset: 0; padding: 20px; color: #1e293b; text-align: left; }
-        .topbar { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ORIZON - Gestão Inteligente</title>
+
+<style>
+/* =========================
+   PADRONIZAÇÃO GLOBAL E UI
+========================= */
+:root {
+  --cor-primaria: #2563eb;
+  --cor-secundaria: #334155;
+  --cor-sucesso: #16a34a;
+  --cor-perigo: #dc2626;
+  --cor-alerta: #f59e0b;
+  --borda: #cbd5e1;
+  --bg-claro: #f8fafc;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
+
+.input-padrao, .select-padrao, .textarea-padrao {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+}
+
+.btn-primary { background: var(--cor-primaria); color: white; }
+.btn-danger { background: var(--cor-perigo); color: white; }
+.btn-success { background: var(--cor-sucesso); color: white; }
+.btn-secondary { background: var(--cor-secundaria); color: white; }
+
+.card-padrao {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  border: 1px solid #e2e8f0;
+}
+
+/* SIDEBAR EXTERNA */
+.sidebar {
+  width: 240px;
+  background: linear-gradient(180deg, #0f172a, #111827);
+  color: #fff;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-items { flex-grow: 1; }
+.logo { font-size: 34px; font-weight: bold; color: #60a5fa; cursor: pointer; margin-bottom: 8px; }
+.sidebar small { color: #94a3b8; display: block; margin-bottom: 28px; }
+
+.sidebar button {
+  width: 100%;
+  border: none;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: #fff;
+  padding: 14px 16px;
+  border-radius: 12px;
+  text-align: left;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all .25s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+}
+
+.sidebar button:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateX(4px);
+}
+
+.sidebar button.btn-logout {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  margin-top: auto;
+}
+.sidebar button.btn-logout:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border-color: #dc2626;
+}
+
+/* ÁREA DE CONTEÚDO */
+.main { margin-left: 240px; width: calc(100% - 240px); display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { background: #fff; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.topbar h1 { color: #1565C0; font-size: 34px; }
+.topbar p { color: #64748b; margin-top: 4px; }
+.content { padding: 25px; flex-grow: 1; }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 20px; }
+.card { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; }
+
+button { border: none; padding: 12px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all .25s ease; }
+button:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+.hidden { display: none !important; }
+</style>
 </head>
 <body>
 
-<div id="loginScreen" class="login-container">
-    <div class="logo">⚡ ORIZON</div>
-    <p class="sub">Smart Operations Platform</p>
+<div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:99999;">
+  <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
+    <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">⚡ ORIZON</div>
+    <p style="color:#64748b; margin-bottom:28px;">Smart Operations Platform</p>
 
-    <input id="loginUser" type="text" placeholder="Usuário" class="input-padrao" autocomplete="off">
-    <input id="loginPass" type="password" placeholder="Senha" class="input-padrao">
+    <input id="loginUser" type="text" placeholder="Usuário" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
+    <input id="loginPass" type="password" placeholder="Senha" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
 
-    <button onclick="fazerLogin()" class="btn-entrar">Entrar no sistema</button>
-
-    <p class="footer">by DMA Solutions • Operational Management</p>
+    <button onclick="fazerLogin()" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:10px; font-weight:bold; font-size:15px; cursor:pointer;">Entrar no sistema</button>
+    <p style="margin-top:18px; font-size:12px; color:#94a3b8;">by DMA Solutions • Operational Management</p>
+  </div>
 </div>
 
-<div id="painelSistema">
+<div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
+  
+  <div class="sidebar">
+    <div class="logo" onclick="voltarInicio()">⚡ ORIZON</div>
+    <small>Painel de Operações</small>
+
+    <div class="menu-items">
+      <button onclick="abrirTela('rotas')">📍 Rotas</button>
+      <button onclick="abrirTela('clientes')">🏥 Clientes</button>
+      <button onclick="abrirTela('chamados')">🛠 Chamados</button>
+      <button onclick="abrirTela('patrimonio')">📦 Patrimônio</button>
+      <button onclick="abrirTela('dashboards')">📊 Dashboards</button>
+      <button onclick="abrirTela('config')">⚙ Configurações</button>
+    </div>
+
+    <button onclick="efetuarLogout()" class="btn-logout">🚪 Sair do Sistema</button>
+  </div>
+
+  <div class="main">
     <div class="topbar">
-        <div>
-            <h1 style="color:#2563eb;">⚡ ORIZON</h1>
-            <p id="infoUsuario" style="color:#64748b; font-size:14px; margin-top:4px;"></p>
-        </div>
-        <button onclick="efetuarLogout()" style="padding:10px 15px; background:#dc2626; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">🚪 Sair</button>
+      <h1>ORIZON</h1>
+      <p id="subtituloTopbar">Gestão inteligente de rotas e operações</p>
     </div>
-    
-    <div style="background:white; padding:30px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
-        <h2>Conectado com Sucesso!</h2>
-        <p style="margin-top:10px; color:#475569;">O script de autenticação respondeu corretamente. Você já pode prosseguir com os testes das rotas e banco de dados.</p>
-    </div>
+
+    <div class="content" id="conteudoPrincipal">
+      </div>
+  </div>
 </div>
 
 <script>
-// Lista de usuários aceitos no sistema
-const listaUsuarios = [
-    { login: 'admin', senha: '@181989Di', nome: 'Administrador' },
-    { login: 'visitante', senha: '123', nome: 'Visitante' }
-];
+// URL de Integração da API Google Sheets
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
+// Base de dados local sincronizável
+const appState = {
+  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [
+    { cliente: 'UBS Brasília', endereco: 'Praça Sol Nascente, Base Monte Azul' },
+    { cliente: 'UBS Novo Caminho', endereco: 'Rua das Flores, Base Monte Azul' },
+    { cliente: 'UPA Atalaia', endereco: 'Av. Central, Atalaia' }
+  ],
+  tecnicos: ['Diogo', 'Fagner Lima', 'Administrador'],
+  veiculos: ['Strada', 'Fiorino', 'Mobi'],
+  rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
+  usuarios: [
+    { login: 'admin', senha: '@181989Di', perfil: 'ADMIN', nome: 'Administrador' },
+    { login: 'visitante', senha: '123', perfil: 'VISUALIZADOR', nome: 'Visitante' }
+  ],
+  usuarioLogado: null
+};
+
+// =========================
+// SISTEMA DE LOGIN & LOGOUT
+// =========================
 function fazerLogin() {
-    // Captura os valores digitados tirando espaços extras
-    const usuarioDigitado = document.getElementById('loginUser').value.trim().toLowerCase();
-    const senhaDigitada = document.getElementById('loginPass').value;
+  const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
+  const passIn = document.getElementById('loginPass').value;
 
-    // Busca o usuário na lista
-    const usuarioValido = listaUsuarios.find(u => u.login === usuarioDigitado && u.senha === senhaDigitada);
+  const conta = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
 
-    if (usuarioValido) {
-        // Armazena a sessão temporária no navegador
-        sessionStorage.setItem('orizon_usuario_logado', JSON.stringify(usuarioValido));
-        
-        // Altera a exibição das telas
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('painelSistema').style.display = 'block';
-        document.getElementById('infoUsuario').innerText = `Usuário atual: ${usuarioValido.nome}`;
-    } else {
-        alert('Usuário ou senha incorretos! Verifique as credenciais.');
-    }
-}
-
-function efectuarLogout() {
-    sessionStorage.removeItem('orizon_usuario_logado');
-    document.getElementById('painelSistema').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'block';
+  if (conta) {
+    appState.usuarioLogado = conta;
+    sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(conta));
+    
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('wrapperSistema').classList.remove('hidden');
+    document.getElementById('subtituloTopbar').innerText = `Logado como: ${conta.nome} (${conta.perfil})`;
+    
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
+    voltarInicio();
+  } else {
+    alert('Usuário ou senha incorretos!');
+  }
 }
 
-// Verifica se já estava logado antes ao recarregar a página
-window.onload = function() {
-    const sessaoAtiva = sessionStorage.getItem('orizon_usuario_logado');
-    if (sessaoAtiva) {
-        const usuario = JSON.parse(sessaoAtiva);
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('painelSistema').style.display = 'block';
-        document.getElementById('infoUsuario').innerText = `Usuário atual: ${usuario.nome}`;
-    }
-};
-</script>
+function efetuarLogout() {
+  if (!confirm('Deseja realmente sair do sistema?')) return;
+  appState.usuarioLogado = null;
+  sessionStorage.removeItem('orizonUsuarioAtivo');
+  
+  document.getElementById('wrapperSistema').classList.add('hidden');
+  document.getElementById('loginScreen').style.display = 'flex';
+}
 
-</body>
-</html>
+function verificarSessaoAtiva() {
+  const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
+  if (sessaoSalva) {
+    const usuario = JSON.parse(sessaoSalva);
+    appState.usuarioLogado = usuario;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('wrapperSistema').classList.remove('hidden');
+    document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil})`;
+    voltarInicio();
+  }
+}
+
+// =========================
+// CONTROLADOR DE INTERFACE (NAVEGAÇÃO)
+// =========================
+function abrirTela(menu) {
+  const principal = document.getElementById('conteudoPrincipal');
+  
+  if (menu === 'inicio') {
+    principal.innerHTML = `
+      <h2>Bem-vindo ao ORIZON</h2>
+      <div class="dashboard-grid">
+        <div class="card"><h3>📍 Controle de Rotas</h3><p>Planejamento operacional e acompanhamento diário.</p></div>
+        <div class="card"><h3>🛠 Gestão de Chamados</h3><p>Controle de atendimentos técnicos e ordens de serviço.</p></div>
+        <div class="card"><h3>📦 Patrimônio</h3><p>Inventário simples por cliente e contrato.</p></div>
+        <div class="card"><h3>📊 Dashboards</h3><p>Indicadores operacionais e performance.</p></div>
+      </div>`;
+  } 
+  else if (menu === 'rotas') {
+    principal.innerHTML = `
+      <div>
+        <h2>📍 Módulo de Rotas</h2>
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3>Nova Rota</h3>
+            <p>Criar rota diária com técnicos, veículo e atendimentos.</p>
+            <button onclick="abrirFormularioRota()" class="btn-primary" style="margin-top:12px;">Abrir formulário</button>
+          </div>
+          <div class="card">
+            <h3>📋 Histórico</h3>
+            <p>Consultar rotas anteriores salvas na base.</p>
+            <button onclick="abrirHistoricoRotas()" class="btn-secondary" style="margin-top:12px;">Abrir histórico</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  else {
+    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Módulo em desenvolvimento para homologação técnica.</p>`;
+  }
+}
+
+function voltarInicio() { abrirTela('inicio'); }
+
+// =========================
+// CRIAÇÃO E RENDERIZAÇÃO DE ROTAS
+// =========================
+function abrirFormularioRota() {
+  const numRotaSugerido = `ROT-${new Date().getFullYear()}-${String(appState.rotas.length + 1).padStart(4, '0')}`;
+  
+  let optionsTecnicos = '<option>Selecionar técnico</option>';
+  appState.tecnicos.forEach(t => optionsTecnicos += `<option>${t}</option>`);
+
+  let optionsVeiculos = '<option>Selecionar veículo</option>';
+  appState.veiculos.forEach(v => optionsVeiculos += `<option>${v}</option>`);
+
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <h2>📍 Criar Nova Rota</h2>
+        <div>
+          <button onclick="salvarRota()" class="btn-success">💾 Salvar Rota</button>
+          <button onclick="abrirTela('rotas')" class="btn-secondary">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="card-padrao" style="margin-bottom:20px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;">
+          <div><label>Nº Rota</label><input id="numeroRota" value="${numRotaSugerido}" readonly class="input-padrao" style="background:#f1f5f9;"></div>
+          <div><label>Data</label><input type="date" id="dataRota" class
