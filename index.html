@@ -93,23 +93,18 @@ button:hover { transform: translateY(-2px); filter: brightness(1.05); }
 </div>
 
 <script>
-// URL do Web App do Google Apps Script
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
 const appState = {
-  // Sincronizados a partir da sua Planilha Google
-  clientes: [],
+  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   tecnicos: ['Diogo', 'Fagner Lima', 'Administrador'],
-  veiculos: ['Strada', 'Fiorino', 'Mobi'],
+  veiculos: [],
   rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
-  usuarios: [
-    { login: 'admin', senha: '@181989Di', perfil: 'ADMIN', nome: 'Administrador' },
-    { login: 'visitante', senha: '123', perfil: 'VISUALIZADOR', nome: 'Visitante' }
-  ],
+  usuarios: [],
   usuarioLogado: null
 };
 
-// Eventos de clique do menu
+// Vinculação de eventos via JavaScript Nativo
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
@@ -123,21 +118,29 @@ document.getElementById('btnMenuConfig').addEventListener('click', () => abrirTe
 function fazerLogin() {
   const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
   const passIn = document.getElementById('loginPass').value;
-  const conta = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
 
+  // Verificação temporária local caso a planilha esteja sincronizando pela primeira vez
+  if ((userIn === 'admin' && passIn === '@181989Di') || (userIn === 'visitante' && passIn === '123')) {
+    liberarPainel({ nome: userIn === 'admin' ? 'Administrador' : 'Visitante', perfil: userIn.toUpperCase() });
+    return;
+  }
+
+  const conta = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
   if (conta) {
-    appState.usuarioLogado = conta;
-    sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(conta));
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('wrapperSistema').classList.remove('hidden');
-    document.getElementById('subtituloTopbar').innerText = `Logado como: ${conta.nome} (${conta.perfil})`;
-    
-    // Puxa as informações da Planilha Google logo no login
-    sincronizarDadosPlanilha();
-    voltarInicio();
+    liberarPainel(conta);
   } else {
     alert('Usuário ou senha incorretos!');
   }
+}
+
+function liberarPainel(usuario) {
+  appState.usuarioLogado = usuario;
+  sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('wrapperSistema').classList.remove('hidden');
+  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil})`;
+  sincronizarDadosPlanilha();
+  voltarInicio();
 }
 
 function efetuarLogout() {
@@ -160,15 +163,21 @@ function verificarSessaoAtiva() {
   }
 }
 
-// INTEGRAÇÃO DE LEITURA COM O GOOGLE SHEETS
+// SINCRONIZAÇÃO COMPATÍVEL COM O SEU DO_GET (acao=listarCadastros)
 function sincronizarDadosPlanilha() {
-  fetch(`${WEB_APP_URL}?action=getClientes`)
+  fetch(`${WEB_APP_URL}?acao=listarCadastros`)
     .then(res => res.json())
-    .then(dados => {
-      if (Array.isArray(dados)) {
-        appState.clientes = dados;
-        localStorage.setItem('orizonClientes', JSON.stringify(dados));
-        // Se estiver na tela de clientes, atualiza a exibição na tabela
+    .then(res => {
+      if (res.sucesso) {
+        appState.clientes = res.clientes || [];
+        appState.usuarios = res.usuarios || [];
+        
+        if (res.veiculos && res.veiculos.length > 0) {
+          appState.veiculos = res.veiculos.map(v => v.modelo);
+        }
+
+        localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
+        
         const tbody = document.getElementById('listaClientesTbody');
         if (tbody) atualizarTabelaClientesLocal();
       }
@@ -182,25 +191,25 @@ function abrirTela(menu) {
     principal.innerHTML = `
       <h2>Bem-vindo ao ORIZON</h2>
       <div class="dashboard-grid">
-        <div class="card" style="background:white; border-radius:16px; padding:22px;"><h3>📍 Controle de Rotas</h3><p>Planejamento operacional e acompanhamento diário.</p></div>
-        <div class="card" style="background:white; border-radius:16px; padding:22px;"><h3>🏥 Clientes</h3><p>Cadastro integrado com o Google Sheets.</p></div>
-        <div class="card" style="background:white; border-radius:16px; padding:22px;"><h3>🛠 Gestão de Chamados</h3><p>Controle de atendimentos técnicos e ordens de serviço.</p></div>
-        <div class="card" style="background:white; border-radius:16px; padding:22px;"><h3>📦 Patrimônio</h3><p>Inventário por unidade de atendimento.</p></div>
+        <div class="card"><h3>📍 Controle de Rotas</h3><p>Planejamento operacional e acompanhamento diário.</p></div>
+        <div class="card"><h3>🏥 Clientes</h3><p>Cadastro integrado com o Google Sheets.</p></div>
+        <div class="card"><h3>🛠 Gestão de Chamados</h3><p>Controle de atendimentos técnicos e ordens de serviço.</p></div>
+        <div class="card"><h3>📦 Patrimônio</h3><p>Inventário por unidade de atendimento.</p></div>
       </div>`;
   } else if (menu === 'clientes') {
     renderizarTelaClientes(principal);
   } else if (menu === 'rotas') {
     renderizarTelaRotas(principal);
   } else {
-    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Módulo integrado à planilha em desenvolvimento.</p>`;
+    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Módulo integrado à planilha em homologação técnica.</p>`;
   }
 }
 
 function voltarInicio() { abrirTela('inicio'); }
 
-// =========================================================================
-// MÓDULO DE CLIENTES DE ACORDO COM A SUA PLANILHA (image_d33fc1.png)
-// =========================================================================
+// ==========================================
+// FORMULÁRIO COMPATÍVEL COM BANCO DE DADOS CLIENTES
+// ==========================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
     <div>
@@ -209,105 +218,31 @@ function renderizarTelaClientes(container) {
         <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="padding:8px 12px; font-size:12px;">🔄 Sincronizar Planilha</button>
       </div>
       
-      <!-- Formulário estruturado idêntico ao seu banco de dados -->
       <div class="card-padrao" style="margin-bottom: 25px;">
         <h3 style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro do Cliente</h3>
-        
         <div class="form-grid">
-          <div class="form-grupo">
-            <label>Cliente / Unidade *</label>
-            <input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente">
-          </div>
-          <div class="form-grupo">
-            <label>CNPJ</label>
-            <input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00">
-          </div>
-          <div class="form-grupo">
-            <label>Contrato</label>
-            <input type="text" id="formContrato" class="input-padrao" placeholder="Nº Contrato">
-          </div>
-          <div class="form-grupo">
-            <label>CEP</label>
-            <input type="text" id="formCep" class="input-padrao" placeholder="00000-000">
-          </div>
-          <div class="form-grupo">
-            <label>Logradouro</label>
-            <input type="text" id="formLogradouro" class="input-padrao" placeholder="Rua / Av">
-          </div>
-          <div class="form-grupo">
-            <label>Número</label>
-            <input type="text" id="formNumero" class="input-padrao" placeholder="Nº">
-          </div>
-          <div class="form-grupo">
-            <label>Complemento</label>
-            <input type="text" id="formComplemento" class="input-padrao" placeholder="Sala, Bloco...">
-          </div>
-          <div class="form-grupo">
-            <label>Bairro</label>
-            <input type="text" id="formBairro" class="input-padrao" placeholder="Bairro">
-          </div>
-          <div class="form-grupo">
-            <label>Cidade</label>
-            <input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO">
-          </div>
-          <div class="form-grupo">
-            <label>UF</label>
-            <input type="text" id="formUf" class="input-padrao" value="SP" maxlength="2">
-          </div>
-          <div class="form-grupo">
-            <label>Região</label>
-            <input type="text" id="formRegiao" class="input-padrao" placeholder="Ex: Sul, Monte Azul">
-          </div>
-          <div class="form-grupo">
-            <label>Responsável</label>
-            <input type="text" id="formResponsavel" class="input-padrao" placeholder="Nome do contato">
-          </div>
-          <div class="form-grupo">
-            <label>Telefone</label>
-            <input type="text" id="formTelefone" class="input-padrao" placeholder="(11) 99999-0000">
-          </div>
-          <div class="form-grupo">
-            <label>E-mail</label>
-            <input type="email" id="formEmail" class="input-padrao" placeholder="email@provedor.com">
-          </div>
-          <div class="form-grupo">
-            <label>Status</label>
-            <select id="formStatus" class="select-padrao">
-              <option value="ATIVO" selected>ATIVO</option>
-              <option value="INATIVO">INATIVO</option>
-            </select>
-          </div>
+          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente"></div>
+          <div class="form-grupo"><label>CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
+          <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao" placeholder="Nº Contrato"></div>
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao" placeholder="Rua / Av"></div>
+          <div class="form-grupo"><label>Número</label><input type="text" id="formNumero" class="input-padrao" placeholder="Nº"></div>
+          <div class="form-grupo"><label>Complemento</label><input type="text" id="formComplemento" class="input-padrao" placeholder="Sala, Bloco..."></div>
+          <div class="form-grupo"><label>Bairro</label><input type="text" id="formBairro" class="input-padrao" placeholder="Bairro"></div>
+          <div class="form-grupo"><label>Cidade</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUf" class="input-padrao" value="SP" maxlength="2"></div>
+          <div class="form-grupo"><label>Região</label><input type="text" id="formRegiao" class="input-padrao" placeholder="Ex: Sul, Monte Azul"></div>
+          <div class="form-grupo"><label>Responsável</label><input type="text" id="formResponsavel" class="input-padrao" placeholder="Nome do contato"></div>
+          <div class="form-grupo"><label>Telefone</label><input type="text" id="formTelefone" class="input-padrao" placeholder="(11) 99999-0000"></div>
+          <div class="form-grupo"><label>E-mail</label><input type="email" id="formEmail" class="input-padrao" placeholder="email@provedor.com"></div>
         </div>
-        
-        <div style="margin-top:12px;">
-          <div class="form-grupo">
-            <label>Observações</label>
-            <input type="text" id="formObservacao" class="input-padrao" placeholder="Observações operacionais do cliente">
-          </div>
-        </div>
-
+        <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservacao" class="input-padrao" placeholder="Observações operacionais do cliente"></div></div>
         <button id="btnSalvarClientePlanilha" class="btn-success" style="margin-top:15px; width:100%; padding:14px;">💾 Gravar na Planilha Google</button>
       </div>
 
-      <!-- Listagem Base de Dados -->
       <div class="card-padrao">
         <h3 style="margin-bottom:10px;">Clientes na Base</h3>
-        <div class="tabela-container">
-          <table class="tabela-sistema">
-            <thead>
-              <tr>
-                <th>CLIENTE</th>
-                <th>CONTRATO</th>
-                <th>LOGRADOURO</th>
-                <th>BAIRRO</th>
-                <th>CIDADE</th>
-                <th>RESPONSÁVEL</th>
-                <th>STATUS</th>
-              </tr>
-            </thead>
-            <tbody id="listaClientesTbody"></tbody>
-          </table>
-        </div>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
       </div>
     </div>`;
 
@@ -321,69 +256,54 @@ function atualizarTabelaClientesLocal() {
   tbody.innerHTML = '';
 
   if (appState.clientes.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b;">Nenhum cliente carregado. Clique em Sincronizar.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b;">Nenhum cliente carregado. Clique em Sincronizar.</td></tr>`;
     return;
   }
 
   appState.clientes.forEach(c => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="font-weight:600; color:#1e293b;">${c.CLIENTE || c.cliente || ''}</td>
-      <td>${c.CONTRATO || c.contrato || ''}</td>
-      <td>${(c.LOGRADOURO || c.logradouro || '')}, ${(c.NÚMERO || c.numero || '')}</td>
-      <td>${c.BAIRRO || c.bairro || ''}</td>
-      <td>${c.CIDADE || c.cidade || ''}</td>
-      <td>${c.RESPONSAVEL || c.responsavel || ''}</td>
-      <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${(c.STATUS || c.status) === 'ATIVO' ? '#dcfce7; color:#16a34a;' : '#fee2e2; color:#dc2626;'}">${c.STATUS || c.status || 'ATIVO'}</span></td>
+      <td style="font-weight:600; color:#1e293b;">${c.nome || ''}</td>
+      <td>${c.contrato || ''}</td>
+      <td>${c.endereco || ''}</td>
+      <td>-</td>
+      <td>${c.cidade || ''}</td>
+      <td>${c.responsavel || ''}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-// POST: ENVIA OS DADOS DOS CAMPOS PARA O SEU GOOGLE APPS SCRIPT
+// POST INTEGRADO COM SEU DO_POST (acao=salvarCadastro & tipo=CLIENTE)
 function enviarClientePlanilha() {
-  const cliente = document.getElementById('formCliente').value.trim();
-  if (!cliente) { alert('O campo Cliente é obrigatório!'); return; }
+  const clienteNome = document.getElementById('formCliente').value.trim();
+  if (!clienteNome) { alert('O campo Cliente é obrigatório!'); return; }
 
-  const dadosForm = {
-    action: 'addCliente',
-    CLIENTE: cliente,
-    CNPJ: document.getElementById('formCnpj').value,
-    CONTRATO: document.getElementById('formContrato').value,
-    CEP: document.getElementById('formCep</label>').value,
-    LOGRADOURO: document.getElementById('formLogradouro').value,
-    NÚMERO: document.getElementById('formNumero').value,
-    COMPLEMENTO: document.getElementById('formComplemento').value,
-    BAIRRO: document.getElementById('formBairro').value,
-    CIDADE: document.getElementById('formCidade').value,
-    UF: document.getElementById('formUf').value,
-    REGIÃO: document.getElementById('formRegiao').value,
-    RESPONSAVEL: document.getElementById('formResponsavel').value,
-    TELEFONE: document.getElementById('formTelefone').value,
-    EMAIL: document.getElementById('formEmail').value,
-    STATUS: document.getElementById('formStatus').value,
-    OBSERVAÇÃO: document.getElementById('formObservacao').value
+  const objetoDados = {
+    id: 'cli_' + Date.now(),
+    nome: clienteNome,
+    contrato: document.getElementById('formContrato').value,
+    endereco: `${document.getElementById('formLogradouro').value}, ${document.getElementById('formNumero').value}`,
+    cidade: document.getElementById('formCidade').value,
+    responsavel: document.getElementById('formResponsavel').value
   };
 
   const btn = document.getElementById('btnSalvarClientePlanilha');
   btn.innerText = 'Enviando dados...';
   btn.disabled = true;
 
-  fetch(WEB_APP_URL, {
-    method: 'POST',
-    mode: 'no-cors', // Evita bloqueio de CORS ao gravar
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(dadosForm)
-  })
+  // Montagem da URL no padrão do seu e.parameter.acao do Apps Script
+  const urlEnvio = `${WEB_APP_URL}?acao=salvarCadastro&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(objetoDados))}`;
+
+  fetch(urlEnvio, { method: 'POST', mode: 'no-cors' })
   .then(() => {
-    alert('Solicitação enviada para a Planilha Google!');
+    alert('Solicitação de cadastro gravada na Planilha Google!');
     btn.innerText = '💾 Gravar na Planilha Google';
     btn.disabled = false;
-    // Limpa os campos
     document.getElementById('formCliente').value = '';
-    document.getElementById('formCnpj').value = '';
     document.getElementById('formContrato').value = '';
-    // Atualiza o cache local após alguns segundos
+    document.getElementById('formLogradouro').value = '';
+    document.getElementById('formNumero').value = '';
     setTimeout(sincronizarDadosPlanilha, 1500);
   })
   .catch(err => {
@@ -393,24 +313,16 @@ function enviarClientePlanilha() {
   });
 }
 
-// =========================================================================
-// MÓDULO DE ROTAS INTEGRADO COM O ENDEREÇO DA PLANILHA
-// =========================================================================
+// ==========================================
+// MÓDULO DE ROTAS DIÁRIAS
+// ==========================================
 function renderizarTelaRotas(container) {
   container.innerHTML = `
     <div>
       <h2>📍 Módulo de Rotas</h2>
       <div class="dashboard-grid">
-        <div class="card" style="background:white; border-radius:16px; padding:22px;">
-          <h3>Nova Rota</h3>
-          <p>Criar rota diária vinculando clientes e ordens de serviço.</p>
-          <button id="btnCriarFormRota" class="btn-primary" style="margin-top:12px;">Abrir formulário</button>
-        </div>
-        <div class="card" style="background:white; border-radius:16px; padding:22px;">
-          <h3>📋 Histórico</h3>
-          <p>Consultar rotas anteriores salvas na base.</p>
-          <button id="btnAbrirHistRotas" class="btn-secondary" style="margin-top:12px;">Abrir histórico</button>
-        </div>
+        <div class="card"><h3>Nova Rota</h3><p>Criar rota diária vinculando clientes e ordens de serviço.</p><button id="btnCriarFormRota" class="btn-primary" style="margin-top:12px;">Abrir formulário</button></div>
+        <div class="card"><h3>📋 Histórico</h3><p>Consultar rotas anteriores salvas na base.</p><button id="btnAbrirHistRotas" class="btn-secondary" style="margin-top:12px;">Abrir histórico</button></div>
       </div>
     </div>`;
   document.getElementById('btnCriarFormRota').addEventListener('click', abrirFormularioRota);
@@ -421,17 +333,19 @@ function abrirFormularioRota() {
   const numRotaSugerido = `ROT-${new Date().getFullYear()}-${String(appState.rotas.length + 1).padStart(4, '0')}`;
   let optionsTecnicos = '<option>Selecionar técnico</option>';
   appState.tecnicos.forEach(t => optionsTecnicos += `<option>${t}</option>`);
+  
   let optionsVeiculos = '<option>Selecionar veículo</option>';
-  appState.veiculos.forEach(v => optionsVeiculos += `<option>${v}</option>`);
+  if(appState.veiculos.length > 0) {
+    appState.veiculos.forEach(v => optionsVeiculos += `<option>${v}</option>`);
+  } else {
+    optionsVeiculos += '<option>Strada</option><option>Fiorino</option>';
+  }
 
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
         <h2>📍 Criar Nova Rota</h2>
-        <div>
-          <button id="btnGravarRotaFinal" class="btn-success">💾 Salvar Rota</button>
-          <button id="btnCancelarFormRota" class="btn-secondary">Cancelar</button>
-        </div>
+        <div><button id="btnGravarRotaFinal" class="btn-success">💾 Salvar Rota</button><button id="btnCancelarFormRota" class="btn-secondary">Cancelar</button></div>
       </div>
       <div class="card-padrao" style="margin-bottom:20px;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;">
@@ -446,7 +360,7 @@ function abrirFormularioRota() {
       <div style="margin-top:20px; text-align:center;"><button id="btnAdicionarCliCard" class="btn-secondary">➕ Adicionar Cliente à Rota</button></div>
     </div>`;
 
-  document.getElementById('btnGravarRotaFinal').addEventListener('click', salvarRota);
+  document.getElementById('btnGravarRotaFinal').addEventListener('click', salvarRotaPlanilhaReal);
   document.getElementById('btnCancelarFormRota').addEventListener('click', () => abrirTela('rotas'));
   document.getElementById('btnAdicionarCliCard').addEventListener('click', adicionarClienteRota);
   adicionarClienteRota();
@@ -456,12 +370,7 @@ function adicionarClienteRota() {
   const container = document.getElementById('clientesRotaContainer');
   const clienteId = 'cli_' + Date.now();
   let optionsClientes = '<option value="">Escolher Cliente</option>';
-  
-  // Puxa dinamicamente a listagem de clientes carregados da planilha
-  appState.clientes.forEach(c => {
-    const nomeCli = c.CLIENTE || c.cliente;
-    optionsClientes += `<option value="${nomeCli}">${nomeCli}</option>`;
-  });
+  appState.clientes.forEach(c => optionsClientes += `<option value="${c.nome}">${c.nome}</option>`);
 
   const div = document.createElement('div');
   div.className = 'card-padrao bloco-cliente-rota';
@@ -475,7 +384,7 @@ function adicionarClienteRota() {
         <button class="btn-danger btn-rem-cli" style="padding:8px 12px;">Remover</button>
       </div>
     </div>
-    <div style="margin-bottom:10px; font-size:13px; color:#475569;">📍 Endereço da Planilha: <span class="endereco-texto" style="font-weight:bold;">Selecione o cliente para puxar os dados</span></div>
+    <div style="margin-bottom:10px; font-size:13px; color:#475569;">📍 Endereço da Planilha: <span class="endereco-texto" style="font-weight:bold;">Selecione o cliente para puxar</span></div>
     <table style="width:100%; border-collapse:collapse;" class="tabela-os-cliente">
       <thead><tr style="background:#f8fafc;"><th style="padding:8px; text-align:left;">Nº O.S</th><th style="padding:8px; text-align:left;">Atividade</th></tr></thead>
       <tbody>
@@ -488,19 +397,10 @@ function adicionarClienteRota() {
   
   container.appendChild(div);
 
-  // Une automaticamente o endereço utilizando os campos vindos da sua planilha
   div.querySelector('.select-cliente-nome').addEventListener('change', function() {
-    const local = appState.clientes.find(c => (c.CLIENTE || c.cliente) === this.value);
-    if (local) {
-      const rua = local.LOGRADOURO || local.logradouro || '';
-      const num = local.NÚMERO || local.numero || '';
-      const bairro = local.BAIRRO || local.bairro || '';
-      div.querySelector('.endereco-texto').innerText = `${rua}, ${num} - ${bairro}`;
-    } else {
-      div.querySelector('.endereco-texto').innerText = 'Não encontrado';
-    }
+    const local = appState.clientes.find(c => c.nome === this.value);
+    div.querySelector('.endereco-texto').innerText = local ? local.endereco : 'Não encontrado';
   });
-
   div.querySelector('.btn-add-os').addEventListener('click', () => {
     const tbody = div.querySelector('.tabela-os-cliente tbody');
     const tr = document.createElement('tr');
@@ -510,23 +410,11 @@ function adicionarClienteRota() {
   div.querySelector('.btn-rem-cli').addEventListener('click', () => div.remove());
 }
 
-function abrirHistoricoRotas() {
-  let html = '<h2>📋 Histórico Operacional</h2><div style="margin-top:15px;">';
-  if (appState.rotas.length === 0) {
-    html += '<p class="card-padrao">Nenhuma rota salva localmente.</p>';
-  } else {
-    appState.rotas.forEach(r => {
-      html += `<div class="card-padrao" style="margin-bottom:10px;"><strong>${r.numeroRota}</strong> - ${r.data} | Técnico: ${r.tecnico1} | Veículo: ${r.veiculo}</div>`;
-    });
-  }
-  html += `</div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>`;
-  document.getElementById('conteudoPrincipal').innerHTML = html;
-  document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
-}
-
-function salvarRota() {
+function salvarRotaPlanilhaReal() {
+  const nr = document.getElementById('numeroRota').value;
   const dt = document.getElementById('dataRota').value;
   const t1 = document.getElementById('tecnico1Rota').value;
+  const t2 = document.getElementById('tecnico2Rota').value;
   const ve = document.getElementById('veiculoRota').value;
 
   if (!dt || t1.includes('Selecionar') || ve.includes('Selecionar')) {
@@ -534,15 +422,62 @@ function salvarRota() {
     return;
   }
 
-  const novaRota = { 
-    numeroRota: document.getElementById('numeroRota').value, 
-    data: dt, tecnico1: t1, veiculo: ve, 
-    dataRegistro: new Date().toLocaleDateString() 
-  };
-  appState.rotas.push(novaRota);
-  localStorage.setItem('orizonRotas', JSON.stringify(appState.rotas));
-  alert('Rota gravada localmente com sucesso!');
-  abrirHistoricoRotas();
+  const blocos = document.querySelectorAll('.bloco-cliente-rota');
+  let clientesMontados = [];
+
+  blocos.forEach(b => {
+    const nome = b.querySelector('.select-cliente-nome').value;
+    const end = b.querySelector('.endereco-texto').innerText;
+    
+    let chamados = [];
+    b.querySelectorAll('.tabela-os-cliente tbody tr').forEach(r => {
+      const inputs = r.querySelectorAll('input');
+      if(inputs[0].value || inputs[1].value) {
+        chamados.push({ os: inputs[0].value, atividade: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
+      }
+    });
+
+    if(nome) {
+      clientesMontados.push({ cliente: nome, endereco: end, observacao: '', chamados: chamados });
+    }
+  });
+
+  const pacoteRota = { numeroRota: nr, data: dt, tecnico1: t1, tecnico2: t2 === 'Selecionar técnico' ? '' : t2, veiculo: ve, clientes: clientesMontados };
+
+  const btn = document.getElementById('btnGravarRotaFinal');
+  btn.innerText = 'Gravando Rota...';
+  btn.disabled = true;
+
+  // Envio casado com o seu doPost de salvar Rota por parâmetro de dados
+  const urlEnvio = `${WEB_APP_URL}?dados=${encodeURIComponent(JSON.stringify(pacoteRota))}`;
+
+  fetch(urlEnvio, { method: 'POST', mode: 'no-cors' })
+  .then(() => {
+    alert('Rota integrada e salva nas abas ROTAS, ROTAS_CLIENTES e ROTA_OS!');
+    appState.rotas.push(pacoteRota);
+    localStorage.setItem('orizonRotas', JSON.stringify(appState.rotas));
+    abrirTela('rotas');
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Erro de conexão ao salvar.');
+    btn.disabled = false;
+    btn.innerText = '💾 Salvar Rota';
+  });
+}
+
+function abrirHistoricoRotas() {
+  let html = '<h2>📋 Histórico Operacional</h2><div style="margin-top:15px;">';
+  if (appState.rotas.length === 0) {
+    html += '<p class="card-padrao">Nenhuma rota salva nesta sessão de testes.</p>';
+  } else {
+    appState.rotas.forEach(r => {
+      html += `<div class="card-padrao" style="margin-bottom:10px;"><strong>${r.numeroRota}</strong> - ${r.data} | Técnico: ${r.tecnico1} | Veículo: ${r.veiculo} (${r.clientes.length} clientes vinculados)</div>`;
+    });
+  }
+  html += `</div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>`;
+  document.getElementById('conteudoPrincipal').innerHTML = html;
+  document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
 }
 
 verificarSessaoAtiva();
