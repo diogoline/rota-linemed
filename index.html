@@ -100,7 +100,7 @@ const appState = {
   rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
   usuarios: [],
   usuarioLogado: null,
-  idClienteEmEdicao: null // Controla se o formulário está salvando um novo ou editando
+  idClienteEmEdicao: null
 };
 
 // Eventos de clique do menu
@@ -203,7 +203,7 @@ function abrirTela(menu) {
 function voltarInicio() { abrirTela('inicio'); }
 
 // =========================================================================
-// INTERFACE DE GERENCIAMENTO DE CLIENTES AJUSTADA
+// MÓDULO CLIENTES COM TIPO DE CADASTRO E MÁSCARAS AUTOMÁTICAS
 // =========================================================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
@@ -216,8 +216,15 @@ function renderizarTelaClientes(container) {
       <div class="card-padrao" style="margin-bottom: 25px;">
         <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro do Cliente</h3>
         <div class="form-grid">
-          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente"></div>
-          <div class="form-grupo"><label>CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
+          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente / UBS"></div>
+          <div class="form-grupo">
+            <label>Tipo de Pessoa</label>
+            <select id="formTipoPessoa" class="select-padrao">
+              <option value="JURIDICA">Pessoa Jurídica (CNPJ)</option>
+              <option value="FISICA">Pessoa Física (CPF)</option>
+            </select>
+          </div>
+          <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
           <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao" placeholder="Nº Contrato"></div>
           <div class="form-grupo"><label>CEP (Busca Automática)</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
           <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao" placeholder="Rua / Av"></div>
@@ -248,17 +255,71 @@ function renderizarTelaClientes(container) {
 
       <div class="card-padrao">
         <h3 style="margin-bottom:10px;">Clientes na Base</h3>
-        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th><th>STATUS</th><th style="text-align:center; width:140px;">AÇÕES</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ/CPF</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th><th>STATUS</th><th style="text-align:center; width:140px;">AÇÕES</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
       </div>
     </div>`;
 
+  // Mapeamentos de Eventos
   document.getElementById('btnSyncClientesPlanilha').addEventListener('click', sincronizarDadosPlanilha);
   document.getElementById('btnSalvarClientePlanilha').addEventListener('click', enviarClientePlanilha);
   document.getElementById('btnCancelarEdicao').addEventListener('click', limparFormularioCliente);
   document.getElementById('formCep').addEventListener('blur', buscarCepAutomatico);
   
+  // Evento para alternar tipo de pessoa e placeholder
+  document.getElementById('formTipoPessoa').addEventListener('change', function() {
+    const docInput = document.getElementById('formCnpj');
+    const docLabel = document.getElementById('labelDocumento');
+    docInput.value = '';
+    if(this.value === 'JURIDICA') { docLabel.innerText = 'CNPJ'; docInput.placeholder = '00.000.000/0001-00'; }
+    else { docLabel.innerText = 'CPF'; docInput.placeholder = '000.000.000-00'; }
+  });
+
+  // Gatilhos de aplicação de Máscaras em tempo real
+  document.getElementById('formCnpj').addEventListener('input', aplicarMascaraDocumento);
+  document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
+  document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
+  
   appState.idClienteEmEdicao = null;
   atualizarTabelaClientesLocal();
+}
+
+// ==========================================
+// FUNÇÕES DE MÁSCARAS (REGEXP)
+// ==========================================
+function aplicarMascaraDocumento() {
+  let v = this.value.replace(/\D/g, '');
+  const tipo = document.getElementById('formTipoPessoa').value;
+  
+  if (tipo === 'JURIDICA') {
+    v = v.substring(0, 14);
+    v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+    v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+    v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+    v = v.replace(/(\d{4})(\d)/, "$1-$2");
+  } else {
+    v = v.substring(0, 11);
+    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+    v = v.replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3");
+    v = v.replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1-$2");
+  }
+  this.value = v;
+}
+
+function aplicarMascaraCep() {
+  let v = this.value.replace(/\D/g, '').substring(0, 8);
+  v = v.replace(/^(\d{5})(\d)/, "$1-$2");
+  this.value = v;
+}
+
+function aplicarMascaraTelefone() {
+  let v = this.value.replace(/\D/g, '').substring(0, 11);
+  v = v.replace(/^(\d{2})(\d)/, "($1) $2");
+  if (v.length > 9) {
+    v = v.replace(/(\d{5})(\d)/, "$1-$2"); // Celular: (11) 99999-9999
+  } else {
+    v = v.replace(/(\d{4})(\d)/, "$1-$2"); // Fixo: (11) 4444-4444
+  }
+  this.value = v;
 }
 
 function buscarCepAutomatico() {
@@ -339,6 +400,11 @@ window.prepararEdicaoCliente = function(index) {
   document.getElementById('formStatus').value = c.status || 'ATIVO';
   document.getElementById('formObservacao').value = c.observacao || '';
 
+  // Tenta prever se é CPF ou CNPJ pelo tamanho salvo
+  const limpo = (c.cnpj || '').replace(/\D/g, '');
+  document.getElementById('formTipoPessoa').value = limpo.length <= 11 ? 'FISICA' : 'JURIDICA';
+  document.getElementById('labelDocumento').innerText = limpo.length <= 11 ? 'CPF' : 'CNPJ';
+
   document.getElementById('btnCancelarEdicao').classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -394,7 +460,6 @@ function enviarClientePlanilha() {
   btn.innerText = '💾 Gravando...';
   btn.disabled = true;
 
-  // Decide se usa a ação de criar ou atualizar
   const acaoAPI = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   const urlEnvio = `${WEB_APP_URL}?acao=${acaoAPI}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(objetoDados))}`;
 
