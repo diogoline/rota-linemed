@@ -40,7 +40,6 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .topbar p { color: #64748b; margin-top: 4px; }
 .content { padding: 25px; flex-grow: 1; }
 
-/* Grid de Cards de Indicadores */
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 25px; }
 .card-indicador { background: #fff; padding: 20px; border-radius: 12px; border-left: 5px solid var(--cor-primaria); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
 .card-indicador.sucesso { border-left-color: var(--cor-sucesso); }
@@ -103,6 +102,7 @@ const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   patrimonio: [],
   movimentacoes: [],
+  usuarios: [], // CORREÇÃO: Declarado explicitamente para não travar o carregamento do script
   tecnicos: ['Diogo', 'Fagner Lima', 'Administrador'],
   usuarioLogado: null,
   idClienteEmEdicao: null
@@ -119,9 +119,20 @@ document.getElementById('btnMenuPatrimonio').addEventListener('click', () => abr
 function fazerLogin() {
   const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
   const passIn = document.getElementById('loginPass').value;
+
   if ((userIn === 'admin' && passIn === '@181989Di') || (userIn === 'visitante' && passIn === '123')) {
     liberarPainel({ nome: userIn === 'admin' ? 'Administrador' : 'Visitante', perfil: userIn.toUpperCase() });
-  } else { alert('Usuário ou senha incorretos!'); }
+    return;
+  }
+  
+  if (appState.usuarios && appState.usuarios.length > 0) {
+    const conta = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
+    if (conta) { 
+      liberarPainel(conta); 
+      return;
+    }
+  }
+  alert('Usuário ou senha incorretos!');
 }
 
 function liberarPainel(usuario) {
@@ -129,6 +140,7 @@ function liberarPainel(usuario) {
   sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('wrapperSistema').classList.remove('hidden');
+  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome}`;
   sincronizarDadosPlanilha();
   voltarInicio();
 }
@@ -140,6 +152,19 @@ function efetuarLogout() {
   document.getElementById('loginScreen').style.display = 'flex';
 }
 
+// CORREÇÃO: Mantém a sessão do usuário ativa caso ele dê F5 (Atualizar)
+function verificarSessaoAtiva() {
+  const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
+  if (sessaoSalva) {
+    appState.usuarioLogado = JSON.parse(sessaoSalva);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('wrapperSistema').classList.remove('hidden');
+    document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
+    sincronizarDadosPlanilha();
+    voltarInicio();
+  }
+}
+
 function sincronizarDadosPlanilha() {
   fetch(`${WEB_APP_URL}?acao=listarCadastros`)
     .then(res => res.json())
@@ -148,14 +173,14 @@ function sincronizarDadosPlanilha() {
         appState.clientes = res.clientes || [];
         appState.patrimonio = res.patrimonio || [];
         appState.movimentacoes = res.movimentacoes || [];
+        appState.usuarios = res.usuarios || [];
         localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
         
-        // Atualizações em tempo real das telas se estiverem visíveis
         if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
         if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
-        if (document.getElementById('listaAutocompletarClientes')) popularDatalistsGlobais();
+        popularDatalistsGlobais();
       }
-    }).catch(err => console.error(err));
+    }).catch(err => console.error('Erro na sincronização:', err));
 }
 
 function abrirTela(menu) {
@@ -164,7 +189,7 @@ function abrirTela(menu) {
     principal.innerHTML = `
       <h2>Painel Principal ORIZON</h2>
       <div class="dashboard-grid" style="margin-top:20px;">
-        <div class="card-padrao"><h3>📍 Rotas</h3><p>Controle diário de distribuição.</p></div>
+        <div class="card-padrao"><h3>📍 Rotas Diárias</h3><p>Controle diário de distribuição.</p></div>
         <div class="card-padrao"><h3>🏥 Clientes</h3><p>Unidades e validações de contratos.</p></div>
         <div class="card-padrao"><h3>🤝 Locação</h3><p>Rastreio físico e operacional.</p></div>
       </div>`;
@@ -174,11 +199,12 @@ function abrirTela(menu) {
     renderizarTelaPatrimonio(principal);
   } else if (menu === 'locacao') {
     renderizarTelaLocacao(principal);
+  } else if (menu === 'rotas') {
+    renderizarTelaRotas(principal);
   }
 }
 function voltarInicio() { abrirTela('inicio'); }
 
-// Cria listas globais de autocompletar para evitar caixas de seleção rígidas
 function popularDatalistsGlobais() {
   const dlCli = document.getElementById('listaAutocompletarClientes');
   if (dlCli) {
@@ -192,7 +218,7 @@ function popularDatalistsGlobais() {
 }
 
 // =========================================================================
-// MÓDULO: CLIENTES (COM VALIDAÇÕES DE SEGURANÇA E AUTOCOMPLETAR)
+// MÓDULO: CLIENTES (MANTENDO EXCLUSIVAMENTE O BOTÃO DE SALVAR)
 // =========================================================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
@@ -273,19 +299,17 @@ function prepararEdicaoCliente(i) {
   document.getElementById('btnCancelarEdicao').classList.remove('hidden');
 }
 
-// VALIDAÇÃO DE SEGURANÇA AVANÇADA ANTES DE SALVAR OU INATIVAR
 function verificarESalvarCliente() {
   const nome = document.getElementById('formCliente').value.trim();
   const statusPretendido = document.getElementById('formStatus').value;
   if (!nome) return alert('Por favor, indique o nome do Cliente/Unidade.');
 
-  // Se o usuário está tentando mudar para INATIVO, verifica se há equipamentos fisicamente alocados nele
   if (statusPretendido === 'INATIVO') {
     const equipamentosRetidos = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === nome);
     if (equipamentosRetidos.length > 0) {
       let tags = equipamentosRetidos.map(p => p.tag).join(', ');
       alert(`❌ BLOQUEIO DE SEGURANÇA:\nNão é permitido inativar a unidade "${nome}" porque existem contratos de locação vinculados e ativos neste local.\n\nEquipamentos retidos no cliente: [TAGs: ${tags}].\n\nFaça o recolhimento ou retorno dos ativos antes de desativar.`);
-      document.getElementById('formStatus').value = 'ATIVO'; // Força o retorno para ativo na tela
+      document.getElementById('formStatus').value = 'ATIVO';
       return;
     }
   }
@@ -311,10 +335,9 @@ function verificarESalvarCliente() {
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 
 // =========================================================================
-// MÓDULO: LOCAÇÕES (COM CARDS DE RESUMO E CAMPOS INTELIGENTES)
+// MÓDULO: LOCAÇÕES (COM OS CARDS DE METAS E RESUMOS OPERACIONAIS)
 // =========================================================================
 function renderizarTelaLocacao(container) {
-  // Cálculos dinâmicos para a geração dos novos Cards de Informações
   const totalAlocados = appState.patrimonio.filter(p => p.status === 'LOCADO').length;
   const totalEstoque = appState.patrimonio.filter(p => p.status === 'DISPONÍVEL EM ESTOQUE').length;
   const clientesComAtivos = [...new Set(appState.patrimonio.filter(p => p.status === 'LOCADO').map(p => p.localizacao))].length;
@@ -326,15 +349,15 @@ function renderizarTelaLocacao(container) {
       <div class="dashboard-grid" style="margin-top: 15px;">
         <div class="card-indicador">
           <h4>Ativos Alocados (Em Campo)</h4>
-          <div class="valor" id="cardTotalAlocados">${totalAlocados}</div>
+          <div class="valor">${totalAlocados}</div>
         </div>
         <div class="card-indicador sucesso">
           <h4>Disponíveis em Estoque</h4>
-          <div class="valor" id="cardTotalEstoque">${totalEstoque}</div>
+          <div class="valor">${totalEstoque}</div>
         </div>
         <div class="card-indicador alerta">
           <h4>Unidades com Contrato Ativo</h4>
-          <div class="valor" id="cardClientesAtendidos">${clientesComAtivos}</div>
+          <div class="valor">${clientesComAtivos}</div>
         </div>
       </div>
       
@@ -374,7 +397,7 @@ function renderizarTelaLocacao(container) {
         <div class="tabela-container">
           <table class="tabela-sistema">
             <thead>
-              <tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>CONTRATO / PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th></tr>
+              <tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th></tr>
             </thead>
             <tbody id="tbodyItensLocadosCliente">
               <tr><td colspan="6" style="text-align:center; color:#64748b; padding:15px;">Digite e confirme a unidade no campo acima para puxar o saldo de equipamentos.</td></tr>
@@ -409,15 +432,15 @@ function atualizarDatalistTags() {
 }
 
 function filtrarEquipamentosDoCliente() {
-  const cliente = this.value.trim();
+  const cliente = this.value.trim().toLowerCase();
   const tbody = document.getElementById('tbodyItensLocadosCliente');
   if(!cliente) return;
 
-  const locados = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao.toLowerCase() === cliente.toLowerCase());
+  const locados = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao.toLowerCase() === cliente);
   tbody.innerHTML = '';
 
   if(locados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ea580c; padding:15px;">Nenhum ativo localizado ou cadastrado para o nome exato digitado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ea580c; padding:15px;">Nenhum ativo alocado para esta unidade no momento.</td></tr>`;
     return;
   }
 
@@ -451,7 +474,7 @@ function processarMovimentacaoLocacao() {
 
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacoteMov))}`, { method: 'POST', mode: 'no-cors' })
   .then(() => {
-    alert(`Movimentação da TAG ${tag} registrada com sucesso.`);
+    alert(`Movimentação da TAG ${tag} registrada.`);
     sincronizarDadosPlanilha();
     setTimeout(() => { abrirTela('locacao'); }, 1200);
   });
@@ -472,6 +495,16 @@ function atualizarTabelaPatrimonioLocal() {
     tbody.appendChild(tr);
   });
 }
+
+// =========================================================================
+// MÓDULO: ROTAS
+// =========================================================================
+function renderizarTelaRotas(container) {
+  container.innerHTML = `<div><h2>📍 Módulo de Rotas Diárias</h2><p style="margin-top:10px; color:#64748b;">Integração e programação de itinerários ativa.</p></div>`;
+}
+
+// Inicializador automático do sistema
+verificarSessaoAtiva();
 </script>
 </body>
 </html>
