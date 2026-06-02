@@ -23,7 +23,7 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .btn-success { background: var(--cor-sucesso); color: white; }
 .btn-secondary { background: var(--cor-secundaria); color: white; }
 
-.card-padrao { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; }
+.card-padrao { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; margin-bottom: 25px; }
 .sidebar { width: 240px; background: linear-gradient(180deg, #0f172a, #111827); color: #fff; position: fixed; top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; }
 .menu-items { flex-grow: 1; }
 .logo { font-size: 34px; font-weight: bold; color: #60a5fa; cursor: pointer; margin-bottom: 8px; }
@@ -48,7 +48,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .tabela-sistema th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #e2e8f0; }
 .tabela-sistema td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; background: white; white-space: nowrap; }
 
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
 .form-grid label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
 .form-grupo { display: flex; flex-direction: column; margin-bottom: 8px; }
 </style>
@@ -104,7 +104,7 @@ const appState = {
   idClienteEmEdicao: null
 };
 
-// Eventos de clique do menu lateral
+// Eventos do menu lateral
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
@@ -171,9 +171,9 @@ function sincronizarDadosPlanilha() {
         appState.usuarios = res.usuarios || [];
         localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
         
-        // Atualiza dinamicamente as tabelas se as telas correspondentes estiverem abertas
         if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
         if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
+        if (document.getElementById('movTagInput')) atualizarDatalistTags();
       }
       if(btnSync) { btnSync.innerText = '🔄 Sincronizar Planilha'; btnSync.disabled = false; }
     })
@@ -219,7 +219,7 @@ function renderizarTelaClientes(container) {
         <h2>🏥 Cadastro e Listagem de Clientes</h2>
         <button id="btnSyncClientesPlanilha" class="btn-secondary" style="font-size:12px;">🔄 Sincronizar Planilha</button>
       </div>
-      <div class="card-padrao" style="margin-bottom: 25px;">
+      <div class="card-padrao">
         <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro</h3>
         <div class="form-grid">
           <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
@@ -325,10 +325,10 @@ function renderizarTelaPatrimonio(container) {
         </div>
       </div>
     </div>`;
-  atualidatTabelaPatrimonioLocal();
+  atualizarTabelaPatrimonioLocal();
 }
 
-function atualidatTabelaPatrimonioLocal() {
+function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
   if(appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Nenhum item carregado.</td></tr>`; return; }
   
@@ -339,98 +339,144 @@ function atualidatTabelaPatrimonioLocal() {
     tbody.appendChild(tr);
   });
 }
-function atualizarTabelaPatrimonioLocal() { atualidatTabelaPatrimonioLocal(); }
 
 // =========================================================================
-// NOVO MÓDULO: LOCAÇÃO E QUANTITATIVO POR CLIENTE
+// MÓDULO REESTRUTURADO: LOCAÇÃO E QUANTITATIVO POR CLIENTE (PADRÃO CLIENTE)
 // =========================================================================
 function renderizarTelaLocacao(container) {
-  let optCli = '<option value="">Selecione um Cliente / Unidade</option>';
+  let optCli = '<option value="">Escolha a Unidade / Cliente</option>';
   appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome}">${c.nome}</option>`);
-
-  let optTag = '<option value="">Escolha a TAG do Equipamento</option>';
-  appState.patrimonio.filter(p => p.status === 'DISPONÍVEL EM ESTOQUE').forEach(p => optTag += `<option value="${p.tag}">${p.tag} - ${p.equipamento} (Série: ${p.serie})</option>`);
 
   container.innerHTML = `
     <div>
-      <h2>🤝 Controle de Locações e Quantitativos</h2>
+      <h2>🤝 Controle de Locações e Movimentações</h2>
       
-      <div class="dashboard-grid" style="margin-bottom:20px;">
-        <div class="card-padrao">
-          <h3 style="color:var(--cor-primaria); margin-bottom:12px;">🏥 Equipamentos Instalados no Cliente</h3>
-          <div class="form-grupo"><label>Selecione a Unidade</label><select id="selectFiltroClienteLocacao" class="select-padrao">${optCli}</select></div>
-          <div class="tabela-container" style="margin-top:15px;">
-            <table style="width:100%; border-collapse:collapse;">
-              <thead><tr style="background:#f1f5f9;"><th style="padding:8px; text-align:left;">TAG</th><th style="padding:8px; text-align:left;">Equipamento</th><th style="padding:8px; text-align:left;">Nº Série</th></tr></thead>
-              <tbody id="tbodyItensLocadosCliente"><tr><td colspan="3" style="text-align:center; color:#64748b; padding:10px;">Selecione uma unidade acima para ver o saldo físico.</td></tr></tbody>
-            </table>
+      <div class="card-padrao">
+        <h3 style="margin-bottom:15px; color:var(--cor-sucesso);">Registrar Nova Movimentação</h3>
+        <div class="form-grid">
+          <div class="form-grupo">
+            <label>Tipo de Operação</label>
+            <select id="movTipo" class="select-padrao">
+              <option value="ENVIO">ENVIO PARA O CLIENTE</option>
+              <option value="RETORNO">RETORNO PARA A LINEMED</option>
+            </select>
+          </div>
+          
+          <div class="form-grupo">
+            <label>Equipamento (Digite TAG, Nome ou Série)</label>
+            <input type="text" id="movTagInput" list="listaTagsAutocomplete" class="input-padrao" placeholder="Comece a digitar...">
+            <datalist id="listaTagsAutocomplete"></datalist>
+          </div>
+
+          <div class="form-grupo">
+            <label>Cliente / Destino Operacional</label>
+            <select id="movCliente" class="select-padrao">${optCli}</select>
+          </div>
+
+          <div class="form-grupo">
+            <label>Observações do Lançamento</label>
+            <input type="text" id="movObs" class="input-padrao" placeholder="Ex: Vinculado à O.S de Instalação">
           </div>
         </div>
+        <div style="display:flex; justify-content: flex-end; margin-top:15px;">
+          <button id="btnGravarMovimentacao" class="btn-success">💾 Confirmar Movimentação</button>
+        </div>
+      </div>
 
-        <div class="card-padrao">
-          <h3 style="color:var(--cor-sucesso); margin-bottom:12px;">📦 Lançar Envio / Retorno (Mundo Real)</h3>
-          <div class="form-grid" style="grid-template-columns:1fr;">
-            <div class="form-grupo"><label>Tipo de Operação</label><select id="movTipo" class="select-padrao"><option value="ENVIO">ENVIO PARA O CLIENTE</option><option value="RETORNO">RETORNO PARA A LINEMED</option></select></div>
-            <div class="form-grupo" id="divFormTag"><label>Equipamento (TAG)</label><select id="movTag" class="select-padrao">${optTag}</select></div>
-            <div class="form-grupo"><label>Cliente / Unidade Vinculada</label><select id="movCliente" class="select-padrao">${optCli}</select></div>
-            <div class="form-grupo"><label>Observação da Movimentação</label><input type="text" id="movObs" class="input-padrao" placeholder="Ex: Enviado via OS de Instalação"></div>
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>📋 Equipamentos Instalados na Unidade</h3>
+          <div style="width:320px;">
+            <select id="selectFiltroClienteLocacao" class="select-padrao">${optCli}</select>
           </div>
-          <button id="btnGravarMovimentacao" class="btn-success" style="width:100%; margin-top:15px; padding:12px;">💾 Confirmar e Registrar Movimentação</button>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema" style="min-width:1000px;">
+            <thead>
+              <tr>
+                <th>TAG</th>
+                <th>EQUIPAMENTO</th>
+                <th>Nº SÉRIE</th>
+                <th>PATRIMÔNIO</th>
+                <th>MODELO</th>
+                <th>FABRICANTE</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyItensLocadosCliente">
+              <tr><td colspan="6" style="text-align:center; color:#64748b; padding:15px;">Selecione uma unidade no campo acima para ver o saldo físico.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>`;
 
   document.getElementById('selectFiltroClienteLocacao').addEventListener('change', filtrarEquipamentosDoCliente);
   document.getElementById('btnGravarMovimentacao').addEventListener('click', processarMovimentacaoLocacao);
-  document.getElementById('movTipo').addEventListener('change', alternarFiltroTagsForm);
+  document.getElementById('movTipo').addEventListener('change', atualizarDatalistTags);
+  
+  atualizarDatalistTags();
 }
 
-function alternarFiltroTagsForm() {
-  const tipo = this.value;
-  const selectTag = document.getElementById('movTag');
-  selectTag.innerHTML = '<option value="">Escolha a TAG do Equipamento</option>';
+// Inteligência de Autocompletar Dinâmico (Datalist) baseado no Tipo de Operação
+function atualizarDatalistTags() {
+  const datalist = document.getElementById('listaTagsAutocomplete');
+  if(!datalist) return;
+  datalist.innerHTML = '';
   
-  if(tipo === 'ENVIO') {
-    appState.patrimonio.filter(p => p.status === 'DISPONÍVEL EM ESTOQUE').forEach(p => selectTag.innerHTML += `<option value="${p.tag}">${p.tag} - ${p.equipamento}</option>`);
-  } else {
-    appState.patrimonio.filter(p => p.status === 'LOCADO').forEach(p => selectTag.innerHTML += `<option value="${p.tag}">${p.tag} - ${p.equipamento} (Em: ${p.localizacao})</option>`);
-  }
+  const tipo = document.getElementById('movTipo').value;
+  
+  // Se for ENVIO, busca ativos disponíveis na Sede. Se for RETORNO, busca os que estão locados.
+  const ativosFiltrados = appState.patrimonio.filter(p => {
+    return tipo === 'ENVIO' ? p.status === 'DISPONÍVEL EM ESTOQUE' : p.status === 'LOCADO';
+  });
+
+  ativosFiltrados.forEach(p => {
+    const option = document.createElement('option');
+    option.value = p.tag;
+    option.text = `${p.equipamento} | Série: ${p.serie} ${p.localizacao ? '('+p.localizacao+')' : ''}`;
+    datalist.appendChild(option);
+  });
 }
 
 function filtrarEquipamentosDoCliente() {
   const cliente = this.value;
   const tbody = document.getElementById('tbodyItensLocadosCliente');
-  if(!cliente) { tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:10px;">Selecione uma unidade acima para ver o saldo físico.</td></tr>`; return; }
+  if(!cliente) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px;">Selecione uma unidade no campo acima para ver o saldo físico.</td></tr>`; return; }
 
-  // Filtra dinamicamente na aba de patrimônio quem está alocado na localização selecionada
   const locados = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === cliente);
   tbody.innerHTML = '';
 
   if(locados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#dc2626; font-weight:bold; padding:10px;">⚠️ Nenhum equipamento alocado nesta unidade!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#dc2626; font-weight:bold; padding:15px;">⚠️ Nenhum equipamento alocado nesta unidade no momento.</td></tr>`;
     return;
   }
 
   locados.forEach(p => {
     const tr = document.createElement('tr');
-    tr.style.borderBottom = '1px solid #e2e8f0';
-    tr.innerHTML = `<td style="padding:8px;"><b>${p.tag}</b></td><td style="padding:8px;">${p.equipamento}</td><td style="padding:8px;">${p.serie}</td>`;
+    tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td>`;
     tbody.appendChild(tr);
   });
 }
 
 function processarMovimentacaoLocacao() {
   const tipo = document.getElementById('movTipo').value;
-  const tag = document.getElementById('movTag').value;
+  const tag = document.getElementById('movTagInput').value.toUpperCase().trim();
   const cliente = document.getElementById('movCliente').value;
   const obs = document.getElementById('movObs').value;
 
-  if(!tag || !cliente) return alert('Por favor, selecione a TAG e a Unidade do Cliente!');
+  if(!tag || !cliente) return alert('Por favor, informe a TAG e selecione a Unidade do Cliente!');
 
-  const itemPat = appState.patrimonio.find(p => p.tag === tag);
+  const itemPat = appState.patrimonio.find(p => p.tag.toUpperCase() === tag);
+  if(!itemPat) return alert('A TAG digitada não foi encontrada no Inventário Central! Verifique o código.');
+
+  // Validação extra de segurança operacional
+  if(tipo === 'ENVIO' && itemPat.status !== 'DISPONÍVEL EM ESTOQUE') {
+    return alert(`Atenção: Este equipamento consta atualmente como ${itemPat.status} em: ${itemPat.localizacao}. Não é possível enviá-lo.`);
+  }
+
   const pacoteMov = {
     tag: tag,
-    equipamento: itemPat ? itemPat.equipamento : '',
+    equipamento: itemPat.equipamento,
     origem: tipo === 'ENVIO' ? 'Sede Linemed' : cliente,
     destino: tipo === 'ENVIO' ? cliente : 'Sede Linemed',
     tipo: tipo,
@@ -439,7 +485,7 @@ function processarMovimentacaoLocacao() {
   };
 
   const btn = document.getElementById('btnGravarMovimentacao');
-  btn.disabled = true; btn.innerText = '⏳ Processando Movimentação...';
+  btn.disabled = true; btn.innerText = '⏳ Processando...';
 
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacoteMov))}`, { method: 'POST', mode: 'no-cors' })
   .then(() => {
@@ -447,7 +493,7 @@ function processarMovimentacaoLocacao() {
     sincronizarDadosPlanilha();
     setTimeout(() => { abrirTela('locacao'); }, 1200);
   })
-  .catch(err => { console.error(err); btn.disabled = false; btn.innerText = '💾 Confirmar e Registrar Movimentação'; });
+  .catch(err => { console.error(err); btn.disabled = false; btn.innerText = '💾 Confirmar Movimentação'; });
 }
 
 // ==========================================
