@@ -39,12 +39,12 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .topbar p { color: #64748b; margin-top: 4px; }
 .content { padding: 25px; flex-grow: 1; }
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 20px; }
-button { border: none; padding: 12px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all .25s ease; }
-button:hover { transform: translateY(-2px); filter: brightness(1.05); }
+button { border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all .25s ease; }
+button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .hidden { display: none !important; }
 
 .tabela-container { width: 100%; overflow-x: auto; margin-top: 15px; }
-.tabela-sistema { width: 100%; border-collapse: collapse; min-width: 800px; }
+.tabela-sistema { width: 100%; border-collapse: collapse; min-width: 1100px; }
 .tabela-sistema th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #e2e8f0; }
 .tabela-sistema td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; background: white; white-space: nowrap; }
 
@@ -55,7 +55,6 @@ button:hover { transform: translateY(-2px); filter: brightness(1.05); }
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
 <div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:99999;">
   <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
     <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">⚡ ORIZON</div>
@@ -67,7 +66,6 @@ button:hover { transform: translateY(-2px); filter: brightness(1.05); }
   </div>
 </div>
 
-<!-- CONTAINER PRINCIPAL -->
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
   <div class="sidebar">
     <div class="logo" id="logoInicio">⚡ ORIZON</div>
@@ -101,10 +99,11 @@ const appState = {
   veiculos: [],
   rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
   usuarios: [],
-  usuarioLogado: null
+  usuarioLogado: null,
+  idClienteEmEdicao: null // Controla se o formulário está salvando um novo ou editando
 };
 
-// Vinculação de eventos via JavaScript Nativo
+// Eventos de clique do menu
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
@@ -119,18 +118,13 @@ function fazerLogin() {
   const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
   const passIn = document.getElementById('loginPass').value;
 
-  // Verificação temporária local caso a planilha esteja sincronizando pela primeira vez
   if ((userIn === 'admin' && passIn === '@181989Di') || (userIn === 'visitante' && passIn === '123')) {
     liberarPainel({ nome: userIn === 'admin' ? 'Administrador' : 'Visitante', perfil: userIn.toUpperCase() });
     return;
   }
 
   const conta = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
-  if (conta) {
-    liberarPainel(conta);
-  } else {
-    alert('Usuário ou senha incorretos!');
-  }
+  if (conta) { liberarPainel(conta); } else { alert('Usuário ou senha incorretos!'); }
 }
 
 function liberarPainel(usuario) {
@@ -163,26 +157,27 @@ function verificarSessaoAtiva() {
   }
 }
 
-// SINCRONIZAÇÃO COMPATÍVEL COM O SEU DO_GET (acao=listarCadastros)
 function sincronizarDadosPlanilha() {
+  const btnSync = document.getElementById('btnSyncClientesPlanilha');
+  if(btnSync) { btnSync.innerText = '⏳ Sincronizando...'; btnSync.disabled = true; }
+
   fetch(`${WEB_APP_URL}?acao=listarCadastros`)
     .then(res => res.json())
     .then(res => {
       if (res.sucesso) {
         appState.clientes = res.clientes || [];
         appState.usuarios = res.usuarios || [];
-        
-        if (res.veiculos && res.veiculos.length > 0) {
-          appState.veiculos = res.veiculos.map(v => v.modelo);
-        }
+        if (res.veiculos && res.veiculos.length > 0) appState.veiculos = res.veiculos.map(v => v.modelo);
 
         localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
-        
-        const tbody = document.getElementById('listaClientesTbody');
-        if (tbody) atualizarTabelaClientesLocal();
+        atualizarTabelaClientesLocal();
       }
+      if(btnSync) { btnSync.innerText = '🔄 Sincronizar Planilha'; btnSync.disabled = false; }
     })
-    .catch(err => console.error("Erro na leitura remota dos dados: ", err));
+    .catch(err => {
+      console.error("Erro na leitura remota: ", err);
+      if(btnSync) { btnSync.innerText = '🔄 Sincronizar Planilha'; btnSync.disabled = false; }
+    });
 }
 
 function abrirTela(menu) {
@@ -201,53 +196,91 @@ function abrirTela(menu) {
   } else if (menu === 'rotas') {
     renderizarTelaRotas(principal);
   } else {
-    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Módulo integrado à planilha em homologação técnica.</p>`;
+    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Módulo integrado em homologação técnica.</p>`;
   }
 }
 
 function voltarInicio() { abrirTela('inicio'); }
 
-// ==========================================
-// FORMULÁRIO COMPATÍVEL COM BANCO DE DADOS CLIENTES
-// ==========================================
+// =========================================================================
+// INTERFACE DE GERENCIAMENTO DE CLIENTES AJUSTADA
+// =========================================================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h2>🏥 Cadastro e Listagem de Clientes</h2>
-        <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="padding:8px 12px; font-size:12px;">🔄 Sincronizar Planilha</button>
+        <button id="btnSyncClientesPlanilha" class="btn-secondary" style="font-size:12px;">🔄 Sincronizar Planilha</button>
       </div>
       
       <div class="card-padrao" style="margin-bottom: 25px;">
-        <h3 style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro do Cliente</h3>
+        <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro do Cliente</h3>
         <div class="form-grid">
           <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente"></div>
           <div class="form-grupo"><label>CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
           <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao" placeholder="Nº Contrato"></div>
-          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>CEP (Busca Automática)</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
           <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao" placeholder="Rua / Av"></div>
           <div class="form-grupo"><label>Número</label><input type="text" id="formNumero" class="input-padrao" placeholder="Nº"></div>
           <div class="form-grupo"><label>Complemento</label><input type="text" id="formComplemento" class="input-padrao" placeholder="Sala, Bloco..."></div>
           <div class="form-grupo"><label>Bairro</label><input type="text" id="formBairro" class="input-padrao" placeholder="Bairro"></div>
           <div class="form-grupo"><label>Cidade</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
           <div class="form-grupo"><label>UF</label><input type="text" id="formUf" class="input-padrao" value="SP" maxlength="2"></div>
-          <div class="form-grupo"><label>Região</label><input type="text" id="formRegiao" class="input-padrao" placeholder="Ex: Sul, Monte Azul"></div>
+          <div class="form-grupo"><label>Região</label><input type="text" id="formRegiao" class="input-padrao" placeholder="Ex: Norte, Sul, Monte Azul"></div>
           <div class="form-grupo"><label>Responsável</label><input type="text" id="formResponsavel" class="input-padrao" placeholder="Nome do contato"></div>
           <div class="form-grupo"><label>Telefone</label><input type="text" id="formTelefone" class="input-padrao" placeholder="(11) 99999-0000"></div>
           <div class="form-grupo"><label>E-mail</label><input type="email" id="formEmail" class="input-padrao" placeholder="email@provedor.com"></div>
+          <div class="form-grupo">
+            <label>Status</label>
+            <select id="formStatus" class="select-padrao">
+              <option value="ATIVO">ATIVO</option>
+              <option value="INATIVO">INATIVO</option>
+            </select>
+          </div>
         </div>
         <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservacao" class="input-padrao" placeholder="Observações operacionais do cliente"></div></div>
-        <button id="btnSalvarClientePlanilha" class="btn-success" style="margin-top:15px; width:100%; padding:14px;">💾 Gravar na Planilha Google</button>
+        
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
+          <button id="btnCancelarEdicao" class="btn-secondary hidden">Cancelar Edição</button>
+          <button id="btnSalvarClientePlanilha" class="btn-success" style="min-width: 180px;">💾 Salvar Cliente</button>
+        </div>
       </div>
 
       <div class="card-padrao">
         <h3 style="margin-bottom:10px;">Clientes na Base</h3>
-        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th><th>STATUS</th><th style="text-align:center; width:140px;">AÇÕES</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
       </div>
     </div>`;
 
+  document.getElementById('btnSyncClientesPlanilha').addEventListener('click', sincronizarDadosPlanilha);
   document.getElementById('btnSalvarClientePlanilha').addEventListener('click', enviarClientePlanilha);
+  document.getElementById('btnCancelarEdicao').addEventListener('click', limparFormularioCliente);
+  document.getElementById('formCep').addEventListener('blur', buscarCepAutomatico);
+  
+  appState.idClienteEmEdicao = null;
   atualizarTabelaClientesLocal();
+}
+
+function buscarCepAutomatico() {
+  const cep = this.value.replace(/\D/g, '');
+  if (cep.length !== 8) return;
+
+  document.getElementById('formLogradouro').value = '⏳ Buscando...';
+  
+  fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(res => res.json())
+    .then(dados => {
+      if (!dados.erro) {
+        document.getElementById('formLogradouro').value = dados.logradouro || '';
+        document.getElementById('formBairro').value = dados.bairro || '';
+        document.getElementById('formCidade').value = dados.localidade || 'SÃO PAULO';
+        document.getElementById('formUf').value = dados.uf || 'SP';
+      } else {
+        document.getElementById('formLogradouro').value = '';
+        alert('CEP não encontrado.');
+      }
+    })
+    .catch(() => { document.getElementById('formLogradouro').value = ''; });
 }
 
 function atualizarTabelaClientesLocal() {
@@ -256,62 +289,146 @@ function atualizarTabelaClientesLocal() {
   tbody.innerHTML = '';
 
   if (appState.clientes.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b;">Nenhum cliente carregado. Clique em Sincronizar.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#64748b;">Nenhum cliente carregado. Clique em Sincronizar.</td></tr>`;
     return;
   }
 
-  appState.clientes.forEach(c => {
+  appState.clientes.forEach((c, index) => {
     const tr = document.createElement('tr');
+    const statusTxt = c.status || 'ATIVO';
+    const badgColor = statusTxt === 'ATIVO' ? '#dcfce7; color:#16a34a;' : '#fee2e2; color:#dc2626;';
+
     tr.innerHTML = `
       <td style="font-weight:600; color:#1e293b;">${c.nome || ''}</td>
-      <td>${c.contrato || ''}</td>
-      <td>${c.endereco || ''}</td>
-      <td>-</td>
+      <td>${c.cnpj || '-'}</td>
+      <td>${c.contrato || '-'}</td>
+      <td>${c.logradouro || ''}${c.numero ? ', ' + c.numero : ''}</td>
+      <td>${c.bairro || '-'}</td>
       <td>${c.cidade || ''}</td>
-      <td>${c.responsavel || ''}</td>
+      <td>${c.responsavel || '-'}</td>
+      <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${badgColor}">${statusTxt}</span></td>
+      <td style="text-align:center;">
+        <button class="btn-primary" style="padding:5px 10px; font-size:12px; margin-right:5px;" onclick="prepararEdicaoCliente(${index})">📝 Editar</button>
+        <button class="btn-danger" style="padding:5px 10px; font-size:12px;" onclick="alterarStatusClienteRemoto(${index})">${statusTxt === 'ATIVO' ? 'Inativar' : 'Ativar'}</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-// POST INTEGRADO COM SEU DO_POST (acao=salvarCadastro & tipo=CLIENTE)
+window.prepararEdicaoCliente = function(index) {
+  const c = appState.clientes[index];
+  if(!c) return;
+
+  appState.idClienteEmEdicao = c.id;
+  document.getElementById('tituloFormCliente').innerText = `📝 Editando: ${c.nome}`;
+  document.getElementById('formCliente').value = c.nome || '';
+  document.getElementById('formCnpj').value = c.cnpj || '';
+  document.getElementById('formContrato').value = c.contrato || '';
+  document.getElementById('formCep').value = c.cep || '';
+  document.getElementById('formLogradouro').value = c.logradouro || '';
+  document.getElementById('formNumero').value = c.numero || '';
+  document.getElementById('formComplemento').value = c.complemento || '';
+  document.getElementById('formBairro').value = c.bairro || '';
+  document.getElementById('formCidade').value = c.cidade || 'SÃO PAULO';
+  document.getElementById('formUf').value = c.uf || 'SP';
+  document.getElementById('formRegiao').value = c.regiao || '';
+  document.getElementById('formResponsavel').value = c.responsavel || '';
+  document.getElementById('formTelefone').value = c.telefone || '';
+  document.getElementById('formEmail').value = c.email || '';
+  document.getElementById('formStatus').value = c.status || 'ATIVO';
+  document.getElementById('formObservacao').value = c.observacao || '';
+
+  document.getElementById('btnCancelarEdicao').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+function limparFormularioCliente() {
+  appState.idClienteEmEdicao = null;
+  document.getElementById('tituloFormCliente').innerText = "Ficha de Cadastro do Cliente";
+  document.getElementById('btnCancelarEdicao').classList.add('hidden');
+  
+  document.getElementById('formCliente').value = '';
+  document.getElementById('formCnpj').value = '';
+  document.getElementById('formContrato').value = '';
+  document.getElementById('formCep').value = '';
+  document.getElementById('formLogradouro').value = '';
+  document.getElementById('formNumero').value = '';
+  document.getElementById('formComplemento').value = '';
+  document.getElementById('formBairro').value = '';
+  document.getElementById('formCidade').value = 'SÃO PAULO';
+  document.getElementById('formUf').value = 'SP';
+  document.getElementById('formRegiao').value = '';
+  document.getElementById('formResponsavel').value = '';
+  document.getElementById('formTelefone').value = '';
+  document.getElementById('formEmail').value = '';
+  document.getElementById('formStatus').value = 'ATIVO';
+  document.getElementById('formObservacao').value = '';
+}
+
 function enviarClientePlanilha() {
   const clienteNome = document.getElementById('formCliente').value.trim();
   if (!clienteNome) { alert('O campo Cliente é obrigatório!'); return; }
 
   const objetoDados = {
-    id: 'cli_' + Date.now(),
+    id: appState.idClienteEmEdicao || 'cli_' + Date.now(),
     nome: clienteNome,
-    contrato: document.getElementById('formContrato').value,
-    endereco: `${document.getElementById('formLogradouro').value}, ${document.getElementById('formNumero').value}`,
-    cidade: document.getElementById('formCidade').value,
-    responsavel: document.getElementById('formResponsavel').value
+    cnpj: document.getElementById('formCnpj').value.trim(),
+    contrato: document.getElementById('formContrato').value.trim(),
+    cep: document.getElementById('formCep').value.trim(),
+    logradouro: document.getElementById('formLogradouro').value.trim(),
+    numero: document.getElementById('formNumero').value.trim(),
+    complemento: document.getElementById('formComplemento').value.trim(),
+    bairro: document.getElementById('formBairro').value.trim(),
+    cidade: document.getElementById('formCidade').value.trim(),
+    uf: document.getElementById('formUf').value.trim(),
+    regiao: document.getElementById('formRegiao').value.trim(),
+    responsavel: document.getElementById('formResponsavel').value.trim(),
+    telefone: document.getElementById('formTelefone').value.trim(),
+    email: document.getElementById('formEmail').value.trim(),
+    status: document.getElementById('formStatus').value,
+    observacao: document.getElementById('formObservacao').value.trim()
   };
 
   const btn = document.getElementById('btnSalvarClientePlanilha');
-  btn.innerText = 'Enviando dados...';
+  btn.innerText = '💾 Gravando...';
   btn.disabled = true;
 
-  // Montagem da URL no padrão do seu e.parameter.acao do Apps Script
-  const urlEnvio = `${WEB_APP_URL}?acao=salvarCadastro&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(objetoDados))}`;
+  // Decide se usa a ação de criar ou atualizar
+  const acaoAPI = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  const urlEnvio = `${WEB_APP_URL}?acao=${acaoAPI}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(objetoDados))}`;
 
   fetch(urlEnvio, { method: 'POST', mode: 'no-cors' })
   .then(() => {
-    alert('Solicitação de cadastro gravada na Planilha Google!');
-    btn.innerText = '💾 Gravar na Planilha Google';
+    alert('Operação concluída com sucesso na Planilha Google!');
+    btn.innerText = '💾 Salvar Cliente';
     btn.disabled = false;
-    document.getElementById('formCliente').value = '';
-    document.getElementById('formContrato').value = '';
-    document.getElementById('formLogradouro').value = '';
-    document.getElementById('formNumero').value = '';
-    setTimeout(sincronizarDadosPlanilha, 1500);
+    limparFormularioCliente();
+    setTimeout(sincronizarDadosPlanilha, 1000);
   })
   .catch(err => {
-    alert('Erro ao enviar dados.');
+    alert('Erro de conexão.');
     console.error(err);
     btn.disabled = false;
   });
 }
+
+window.alterarStatusClienteRemoto = function(index) {
+  const c = appState.clientes[index];
+  if(!c) return;
+
+  const novoStatus = c.status === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+  if(!confirm(`Deseja alterar o status do cliente ${c.nome} para ${novoStatus}?`)) return;
+
+  c.status = novoStatus;
+  const urlEnvio = `${WEB_APP_URL}?acao=editarCadastro&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(c))}`;
+
+  fetch(urlEnvio, { method: 'POST', mode: 'no-cors' })
+  .then(() => {
+    alert('Status alterado com sucesso!');
+    sincronizarDadosPlanilha();
+  });
+};
 
 // ==========================================
 // MÓDULO DE ROTAS DIÁRIAS
@@ -370,7 +487,7 @@ function adicionarClienteRota() {
   const container = document.getElementById('clientesRotaContainer');
   const clienteId = 'cli_' + Date.now();
   let optionsClientes = '<option value="">Escolher Cliente</option>';
-  appState.clientes.forEach(c => optionsClientes += `<option value="${c.nome}">${c.nome}</option>`);
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optionsClientes += `<option value="${c.nome}">${c.nome}</option>`);
 
   const div = document.createElement('div');
   div.className = 'card-padrao bloco-cliente-rota';
@@ -437,23 +554,19 @@ function salvarRotaPlanilhaReal() {
       }
     });
 
-    if(nome) {
-      clientesMontados.push({ cliente: nome, endereco: end, observacao: '', chamados: chamados });
-    }
+    if(nome) clientesMontados.push({ cliente: nome, endereco: end, observacao: '', chamados: chamados });
   });
 
   const pacoteRota = { numeroRota: nr, data: dt, tecnico1: t1, tecnico2: t2 === 'Selecionar técnico' ? '' : t2, veiculo: ve, clientes: clientesMontados };
-
   const btn = document.getElementById('btnGravarRotaFinal');
   btn.innerText = 'Gravando Rota...';
   btn.disabled = true;
 
-  // Envio casado com o seu doPost de salvar Rota por parâmetro de dados
   const urlEnvio = `${WEB_APP_URL}?dados=${encodeURIComponent(JSON.stringify(pacoteRota))}`;
 
   fetch(urlEnvio, { method: 'POST', mode: 'no-cors' })
   .then(() => {
-    alert('Rota integrada e salva nas abas ROTAS, ROTAS_CLIENTES e ROTA_OS!');
+    alert('Rota salva com sucesso!');
     appState.rotas.push(pacoteRota);
     localStorage.setItem('orizonRotas', JSON.stringify(appState.rotas));
     abrirTela('rotas');
@@ -469,10 +582,10 @@ function salvarRotaPlanilhaReal() {
 function abrirHistoricoRotas() {
   let html = '<h2>📋 Histórico Operacional</h2><div style="margin-top:15px;">';
   if (appState.rotas.length === 0) {
-    html += '<p class="card-padrao">Nenhuma rota salva nesta sessão de testes.</p>';
+    html += '<p class="card-padrao">Nenhuma rota salva nesta sessão.</p>';
   } else {
     appState.rotas.forEach(r => {
-      html += `<div class="card-padrao" style="margin-bottom:10px;"><strong>${r.numeroRota}</strong> - ${r.data} | Técnico: ${r.tecnico1} | Veículo: ${r.veiculo} (${r.clientes.length} clientes vinculados)</div>`;
+      html += `<div class="card-padrao" style="margin-bottom:10px;"><strong>${r.numeroRota}</strong> - ${r.data} | Técnico: ${r.tecnico1} | Veículo: ${r.veiculo} (${r.clientes.length} clientes)</div>`;
     });
   }
   html += `</div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>`;
