@@ -203,7 +203,7 @@ function abrirTela(menu) {
 function voltarInicio() { abrirTela('inicio'); }
 
 // =========================================================================
-// MÓDULO CLIENTES COMPLETO COM TODAS AS FUNÇÕES E COMPATIBILIDADE CPF/CNPJ
+// MÓDULO CLIENTES COMPLETO
 // =========================================================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
@@ -282,7 +282,7 @@ function renderizarTelaClientes(container) {
 }
 
 // ==========================================
-// FUNÇÕES DE TRATAMENTO DE INTERFACE E APIS
+// OPERAÇÕES E APIS DE CLIENTES
 // ==========================================
 function verificarDocumentoEReceita() {
   const documentoDigitado = this.value.trim();
@@ -327,7 +327,7 @@ function verificarDocumentoEReceita() {
         btnSalvar.innerText = '💾 Salvar Cliente';
       })
       .catch(() => {
-        alert('Não foi possível autocompletar por CNPJ. Preencha manualmente.');
+        alert('Não foi possível autocompletar por CNPJ (API instável ou CNPJ muito recente). Por favor, preencha o restante manualmente.');
         document.getElementById('formCliente').value = '';
         btnSalvar.disabled = false;
         btnSalvar.innerText = '💾 Salvar Cliente';
@@ -335,7 +335,7 @@ function verificarDocumentoEReceita() {
   }
 }
 
-// MÁSCARA INTELIGENTE DO CPF/CNPJ CORRIGIDA PASSO A PASSO
+// CORREÇÃO: MÁSCARA DO CPF EVITA APAGAR NO NONO DÍGITO
 function aplicarMascaraDocumento() {
   let v = this.value.replace(/\D/g, '');
   const tipo = document.getElementById('formTipoPessoa').value;
