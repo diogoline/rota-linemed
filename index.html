@@ -84,7 +84,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
   <div class="main">
     <div class="topbar">
       <h1>ORIZON</h1>
-      <p id="subtituloTopbar">Gestão inteligente de rotas e operações</p>
+      <p id="subtituloTopbar">Gestão inteligente de rotas e operations</p>
     </div>
     <div class="content" id="conteudoPrincipal"></div>
   </div>
@@ -203,7 +203,7 @@ function abrirTela(menu) {
 function voltarInicio() { abrirTela('inicio'); }
 
 // =========================================================================
-// MÓDULO CLIENTES COM TIPO DE CADASTRO E MÁSCARAS AUTOMÁTICAS
+// MÓDULO CLIENTES COM CONSULTA DE CNPJ NA RECEITA E TRAVA DE DUPLICIDADE
 // =========================================================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
@@ -216,7 +216,6 @@ function renderizarTelaClientes(container) {
       <div class="card-padrao" style="margin-bottom: 25px;">
         <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro do Cliente</h3>
         <div class="form-grid">
-          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente / UBS"></div>
           <div class="form-grupo">
             <label>Tipo de Pessoa</label>
             <select id="formTipoPessoa" class="select-padrao">
@@ -224,9 +223,10 @@ function renderizarTelaClientes(container) {
               <option value="FISICA">Pessoa Física (CPF)</option>
             </select>
           </div>
-          <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
+          <div class="form-grupo"><label id="labelDocumento">CNPJ (Consulta Auto Receita)</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
+          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente / UBS"></div>
           <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao" placeholder="Nº Contrato"></div>
-          <div class="form-grupo"><label>CEP (Busca Automática)</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
           <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao" placeholder="Rua / Av"></div>
           <div class="form-grupo"><label>Número</label><input type="text" id="formNumero" class="input-padrao" placeholder="Nº"></div>
           <div class="form-grupo"><label>Complemento</label><input type="text" id="formComplemento" class="input-padrao" placeholder="Sala, Bloco..."></div>
@@ -264,17 +264,16 @@ function renderizarTelaClientes(container) {
   document.getElementById('btnSalvarClientePlanilha').addEventListener('click', enviarClientePlanilha);
   document.getElementById('btnCancelarEdicao').addEventListener('click', limparFormularioCliente);
   document.getElementById('formCep').addEventListener('blur', buscarCepAutomatico);
+  document.getElementById('formCnpj').addEventListener('blur', verificarDocumentoEReceita);
   
-  // Evento para alternar tipo de pessoa e placeholder
   document.getElementById('formTipoPessoa').addEventListener('change', function() {
     const docInput = document.getElementById('formCnpj');
     const docLabel = document.getElementById('labelDocumento');
     docInput.value = '';
-    if(this.value === 'JURIDICA') { docLabel.innerText = 'CNPJ'; docInput.placeholder = '00.000.000/0001-00'; }
-    else { docLabel.innerText = 'CPF'; docInput.placeholder = '000.000.000-00'; }
+    if(this.value === 'JURIDICA') { docLabel.innerText = 'CNPJ (Consulta Auto Receita)'; docInput.placeholder = '00.000.000/0001-00'; }
+    else { docLabel.innerText = 'CPF (Trava Duplicidade)'; docInput.placeholder = '000.000.000-00'; }
   });
 
-  // Gatilhos de aplicação de Máscaras em tempo real
   document.getElementById('formCnpj').addEventListener('input', aplicarMascaraDocumento);
   document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
   document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
@@ -284,12 +283,72 @@ function renderizarTelaClientes(container) {
 }
 
 // ==========================================
-// FUNÇÕES DE MÁSCARAS (REGEXP)
+// AUTOMATIZAÇÃO RECEITA FEDERAL & TRATAMENTO DUPLICIDADE
+// ==========================================
+function verificarDocumentoEReceita() {
+  const documentoDigitado = this.value.trim();
+  if (!documentoDigitado) return;
+
+  // 1. TRAVA DE DUPLICIDADE: Varre a base para checar se o documento já existe (apenas se não estiver editando o mesmo cliente)
+  const duplicado = appState.clientes.find(c => c.cnpj === documentoDigitado && c.id !== appState.idClienteEmEdicao);
+  if (duplicado) {
+    alert(`🚨 ATENÇÃO: O documento ${documentoDigitado} já está cadastrado para o cliente "${duplicado.nome}"! O registro foi bloqueado para evitar duplicidade.`);
+    this.value = '';
+    return;
+  }
+
+  const tipoPessoa = document.getElementById('formTipoPessoa').value;
+  const numLimpo = documentoDigitado.replace(/\D/g, '');
+
+  // 2. BUSCA AUTOMÁTICA NA RECEITA FEDERAL (Via BrasilAPI - Apenas para CNPJ Válido)
+  if (tipoPessoa === 'JURIDICA' && numLimpo.length === 14) {
+    const btnSalvar = document.getElementById('btnSalvarClientePlanilha');
+    btnSalvar.disabled = true;
+    btnSalvar.innerText = '🔍 Consultando Receita...';
+
+    document.getElementById('formCliente').value = '⏳ Carregando dados da Receita...';
+
+    fetch(`https://brasilapi.com.br/api/cnpj/v1/${numLimpo}`)
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(dados => {
+        // Preenchimento inteligente dos campos com o retorno oficial da Receita
+        document.getElementById('formCliente').value = dados.razao_social || dados.nome_fantasia || '';
+        document.getElementById('formCep').value = dados.cep ? dados.cep.replace(/^(\d{5})(\d)/, "$1-$2") : '';
+        document.getElementById('formLogradouro').value = dados.logradouro || '';
+        document.getElementById('formNumero').value = dados.numero || '';
+        document.getElementById('formComplemento').value = dados.complemento || '';
+        document.getElementById('formBairro').value = dados.bairro || '';
+        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
+        document.getElementById('formUf').value = dados.uf || 'SP';
+        
+        if (dados.ddd_telefone_1) {
+          let tel = dados.ddd_telefone_1.replace(/\D/g, '');
+          document.getElementById('formTelefone').value = tel.length > 10 ? `(${tel.substring(0,2)}) ${tel.substring(2,7)}-${tel.substring(7)}` : `(${tel.substring(0,2)}) ${tel.substring(2,6)}-${tel.substring(6)}`;
+        }
+        document.getElementById('formEmail').value = dados.email || '';
+        document.getElementById('formObservacao').value = `Situação Cadastral: ${dados.descricao_situacao_cadastral || 'ATIVA'} - Abertura: ${dados.data_inicio_atividade || ''}`;
+
+        btnSalvar.disabled = false;
+        btnSalvar.innerText = '💾 Salvar Cliente';
+      })
+      .catch(() => {
+        alert('Não foi possível autocompletar os dados por CNPJ. Prossiga com o preenchimento manual.');
+        document.getElementById('formCliente').value = '';
+        btnSalvar.disabled = false;
+        btnSalvar.innerText = '💾 Salvar Cliente';
+      });
+  }
+}
+
+// ==========================================
+// FUNÇÕES DE MÁSCARAS
 // ==========================================
 function aplicarMascaraDocumento() {
   let v = this.value.replace(/\D/g, '');
   const tipo = document.getElementById('formTipoPessoa').value;
-  
   if (tipo === 'JURIDICA') {
     v = v.substring(0, 14);
     v = v.replace(/^(\d{2})(\d)/, "$1.$2");
@@ -314,20 +373,15 @@ function aplicarMascaraCep() {
 function aplicarMascaraTelefone() {
   let v = this.value.replace(/\D/g, '').substring(0, 11);
   v = v.replace(/^(\d{2})(\d)/, "($1) $2");
-  if (v.length > 9) {
-    v = v.replace(/(\d{5})(\d)/, "$1-$2"); // Celular: (11) 99999-9999
-  } else {
-    v = v.replace(/(\d{4})(\d)/, "$1-$2"); // Fixo: (11) 4444-4444
-  }
+  if (v.length > 9) { v = v.replace(/(\d{5})(\d)/, "$1-$2"); } 
+  else { v = v.replace(/(\d{4})(\d)/, "$1-$2"); }
   this.value = v;
 }
 
 function buscarCepAutomatico() {
   const cep = this.value.replace(/\D/g, '');
   if (cep.length !== 8) return;
-
   document.getElementById('formLogradouro').value = '⏳ Buscando...';
-  
   fetch(`https://viacep.com.br/ws/${cep}/json/`)
     .then(res => res.json())
     .then(dados => {
@@ -340,8 +394,7 @@ function buscarCepAutomatico() {
         document.getElementById('formLogradouro').value = '';
         alert('CEP não encontrado.');
       }
-    })
-    .catch(() => { document.getElementById('formLogradouro').value = ''; });
+    }).catch(() => { document.getElementById('formLogradouro').value = ''; });
 }
 
 function atualizarTabelaClientesLocal() {
@@ -400,7 +453,6 @@ window.prepararEdicaoCliente = function(index) {
   document.getElementById('formStatus').value = c.status || 'ATIVO';
   document.getElementById('formObservacao').value = c.observacao || '';
 
-  // Tenta prever se é CPF ou CNPJ pelo tamanho salvo
   const limpo = (c.cnpj || '').replace(/\D/g, '');
   document.getElementById('formTipoPessoa').value = limpo.length <= 11 ? 'FISICA' : 'JURIDICA';
   document.getElementById('labelDocumento').innerText = limpo.length <= 11 ? 'CPF' : 'CNPJ';
@@ -615,7 +667,7 @@ function salvarRotaPlanilhaReal() {
     b.querySelectorAll('.tabela-os-cliente tbody tr').forEach(r => {
       const inputs = r.querySelectorAll('input');
       if(inputs[0].value || inputs[1].value) {
-        chamados.push({ os: inputs[0].value, atividade: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
+        chamados.push({ os: inputs[0].value, activity: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
       }
     });
 
