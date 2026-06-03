@@ -163,6 +163,9 @@ function verificarSessaoAtiva() {
 }
 
 function sincronizarDadosPlanilha() {
+  const btnSync = document.getElementById('btnSyncClientesPlanilha');
+  if(btnSync) { btnSync.innerText = '⏳ Sincronizando...'; btnSync.disabled = true; }
+
   fetch(`${WEB_APP_URL}?acao=listarCadastros`)
     .then(res => res.json())
     .then(res => {
@@ -175,13 +178,17 @@ function sincronizarDadosPlanilha() {
 
         localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
         
-        // Renderiza apenas se os elementos estiverem construídos na DOM (Evita erros)
+        // Renderiza apenas se os elementos estiverem construídos na DOM
         if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
         if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
         if (document.getElementById('listaTagsAutocomplete')) atualizarDatalistTags();
       }
+      if(btnSync) { btnSync.innerText = '🔄 Sincronizar Planilha'; btnSync.disabled = false; }
     })
-    .catch(err => console.error("Erro na leitura remota: ", err));
+    .catch(err => {
+      console.error("Erro na leitura remota: ", err);
+      if(btnSync) { btnSync.innerText = '🔄 Sincronizar Planilha'; btnSync.disabled = false; }
+    });
 }
 
 function abrirTela(menu) {
@@ -265,6 +272,7 @@ function renderizarTelaClientes(container) {
       </div>
     </div>`;
 
+  // Vinculação de eventos correta com as IDs geradas
   document.getElementById('btnSyncClientesPlanilha').addEventListener('click', sincronizarDadosPlanilha);
   document.getElementById('btnSalvarClientePlanilha').addEventListener('click', verificarESalvarCliente);
   document.getElementById('btnCancelarEdicao').addEventListener('click', limparFormularioCliente);
@@ -344,29 +352,6 @@ function atualizarTabelaClientesLocal() {
   });
 }
 
-function prepararEdicaoCliente(index) {
-  const c = appState.clientes[index]; if(!c) return;
-  appState.idClienteEmEdicao = c.id;
-  document.getElementById('tituloFormCliente').innerText = `📝 Editando: ${c.nome}`;
-  document.getElementById('formCliente').value = c.nome || '';
-  document.getElementById('formCnpj').value = c.cnpj || '';
-  document.getElementById('formContrato').value = c.contrato || '';
-  document.getElementById('formCep').value = c.cep || '';
-  document.getElementById('formLogradouro').value = c.logradouro || '';
-  document.getElementById('formNumero').value = c.numero || '';
-  document.getElementById('formComplemento').value = c.complemento || '';
-  document.getElementById('formBairro').value = c.bairro || '';
-  document.getElementById('formCidade').value = c.cidade || 'SÃO PAULO';
-  document.getElementById('formUf').value = c.uf || 'SP';
-  document.getElementById('formRegiao').value = c.regiao || '';
-  document.getElementById('formResponsavel').value = c.responsavel || '';
-  document.getElementById('formTelefone').value = c.telefone || '';
-  document.getElementById('formEmail').value = c.email || '';
-  document.getElementById('formStatus').value = c.status || 'ATIVO';
-  document.getElementById('formObservacao').value = c.observacao || '';
-  document.getElementById('btnCancelarEdicao').classList.remove('hidden');
-}
-
 function verificarESalvarCliente() {
   const nome = document.getElementById('formCliente').value.trim();
   const statusPretendido = document.getElementById('formStatus').value;
@@ -381,16 +366,16 @@ function verificarESalvarCliente() {
   }
 
   const objetoDados = {
-    id: appState.idClienteEmEdicao || 'cli_' + Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value.trim(), contrato: document.getElementById('formContrato').value.trim(), cep: document.getElementById('formCep').value.trim(), logradouro: document.getElementById('formLogradouro').value.trim(), numero: document.getElementById('formNumero').value.trim(), complemento: document.getElementById('formComplemento').value.trim(), bairro: document.getElementById('formBairro').value.trim(), cidade: document.getElementById('formCidade').value.trim(), uf: document.getElementById('formUf').value.trim(), regiao: document.getElementById('formRegiao').value.trim(), responsavel: document.getElementById('formResponsavel').value.trim(), telefone: document.getElementById('formTelefone').value.trim(), email: document.getElementById('formEmail').value.trim(), status: statusPretendido, observacao: document.getElementById('formObservacao').value.trim()
+    id: appState.idClienteEmEdicao || 'cli_' + Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value.trim(), contrato: document.getElementById('formContrato').value.trim(), cep: document.getElementById('formCep').value.trim(), logradouro: document.getElementById('formLogradouro').value.trim(), numero: document.getElementById('formNumero').value.trim(), complemento: document.getElementById('formComplemento').value.trim(), bairro: document.getElementById('formBairro').value.trim(), city: document.getElementById('formCidade').value.trim(), cidade: document.getElementById('formCidade').value.trim(), uf: document.getElementById('formUf').value.trim(), regiao: document.getElementById('formRegiao').value.trim(), responsavel: document.getElementById('formResponsavel').value.trim(), telefone: document.getElementById('formTelefone').value.trim(), email: document.getElementById('formEmail').value.trim(), status: statusPretendido, observacao: document.getElementById('formObservacao').value.trim()
   };
 
   fetch(`${WEB_APP_URL}?acao=${appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro'}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(objetoDados))}`, { method: 'POST', mode: 'no-cors' })
-  .then(() => { alert('Ficha salva na planilha!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
+  .then(() => { alert('Ficha salva com sucesso!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
 }
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 
 // =========================================================================
-// MÓDULO LOCAÇÕES COM DUPLO FILTRO E CAMPOS INTELIGENTES (COM AUTOCOMPLETAR)
+// MÓDULO LOCAÇÕES 
 // =========================================================================
 function renderizarTelaLocacao(container) {
   const totalAlocados = appState.patrimonio.filter(p => p.status === 'LOCADO').length;
@@ -495,7 +480,7 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// MÓDULO: INVENTÁRIO / PATRIMÔNIO CENTRAL
+// MÓDULO: INVENTÁRIO
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
   container.innerHTML = `<h2>📦 Inventário Geral de Ativos</h2><div class="card-padrao" style="margin-top:15px;"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>STATUS</th><th>LOCALIZAÇÃO ATUAL</th></tr></thead><tbody id="listaPatrimonioTbody"></tbody></table></div></div>`;
@@ -619,7 +604,6 @@ function abrirHistoricoRotas() {
   document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
 }
 
-// Inicialização automática segura da sessão
 verificarSessaoAtiva();
 </script>
 </body>
