@@ -38,28 +38,28 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
 /* CARDS E GRIDS */
 .card-padrao { background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); margin-bottom: 20px; }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
 .form-grupo { display: flex; flex-direction: column; gap: 6px; }
 .form-grupo label { font-size: 12px; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase; }
 
-/* SIDEBAR INTEGRADA E ALINHADA */
+/* SIDEBAR ALINHADA */
 .sidebar { width: 260px; background: var(--sidebar-dark); color: #fff; position: fixed; top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; box-shadow: 4px 0 20px rgba(0,0,0,0.1); z-index: 100; }
 .logo { font-size: 26px; font-weight: 800; color: #fff; cursor: pointer; letter-spacing: -0.5px; margin-bottom: 4px; }
 .sidebar small { color: #475569; display: block; margin-bottom: 28px; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
 .menu-items { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
 
-/* BOTÕES DO MENU UNIFICADOS */
-.sidebar .btn-menu { width: 100%; border: none; background: transparent; color: #94a3b8; padding: 12px 14px; border-radius: 8px; text-align: left; font-weight: 600; font-size: 13.5px; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+/* BOTÕES DO MENU PREMIUM ALINHADOS */
+.sidebar .btn-menu { width: 100%; border: none; background: transparent; color: #94a3b8; padding: 13px 16px; border-radius: 8px; text-align: left; font-weight: 600; font-size: 14px; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; cursor: pointer; }
 .sidebar .btn-menu:hover { background: var(--sidebar-hover); color: #fff; }
 .sidebar .btn-menu.active { background: var(--cor-marca); color: #fff; font-weight: 700; }
 .sidebar .btn-logout { background: rgba(239, 68, 68, 0.1); color: var(--cor-perigo); margin-top: auto; font-weight: 700; }
 .sidebar .btn-logout:hover { background: var(--cor-perigo); color: white; }
 
 /* LAYOUT PRINCIPAL */
-.main { margin-left: 260px; width: calc(100% - 260px); display: flex; flex-direction: column; min-height: 100vh; }
+.main { margin-left: 260px; width: calc(100% - 240px); display: flex; flex-direction: column; min-height: 100vh; }
 .topbar { background: #ffffff; padding: 20px 32px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
 .topbar h1 { font-size: 22px; font-weight: 800; color: var(--texto-principal); }
-.topbar p { color: var(--texto-mutated); color: var(--texto-mutado); font-size: 13px; margin-top: 2px; }
+.topbar p { color: var(--texto-mutado); font-size: 13px; margin-top: 2px; }
 .content { padding: 32px; flex-grow: 1; }
 
 /* INDICADORES */
@@ -67,7 +67,6 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .card-indicador { background: #ffffff; padding: 22px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; }
 .card-indicador::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--cor-marca); }
 .card-indicador.sucesso::before { background: var(--cor-sucesso); }
-.card-indicador.info::before { background: #3b82f6; }
 .card-indicador h4 { font-size: 11px; text-transform: uppercase; color: var(--texto-mutado); font-weight: 700; }
 .card-indicador .valor { font-size: 32px; font-weight: 800; color: var(--texto-principal); }
 
@@ -79,14 +78,13 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
 .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
 .badge-sucesso { background: #dcfce7; color: #15803d; }
-.badge-info { background: #dbeafe; color: #1d4ed8; }
+.badge-perigo { background: #fee2e2; color: #b91c1c; }
 
 .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
 <div id="loginScreen" style="position:fixed; inset:0; background: var(--sidebar-dark); display:flex; align-items:center; justify-content:center; z-index:99999;">
   <div style="width:100%; max-width:400px; background:white; padding:40px; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.3); text-align:center;">
     <div style="font-size:34px; font-weight:800; color: var(--sidebar-dark); margin-bottom:4px;">⚡ ORIZON</div>
@@ -99,7 +97,6 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
   </div>
 </div>
 
-<!-- CONTAINER PRINCIPAL -->
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
   <div class="sidebar">
     <div class="logo" id="logoInicio">⚡ ORIZON</div>
@@ -108,8 +105,8 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
     <div class="menu-items">
       <button id="btnMenuInicio" class="btn-menu">🏠 Painel Principal</button>
       <button id="btnMenuRotas" class="btn-menu">📍 Rotas Diárias</button>
-      <button id="btnMenuChamados" class="btn-menu">⚡ Chamados / Nova O.S</button>
-      <button id="btnMenuClientes" class="btn-menu">🏢 Clientes e Unidades</button>
+      <button id="btnMenuChamados" class="btn-menu">🛠️ Chamados / Nova O.S</button>
+      <button id="btnMenuClientes" class="btn-menu">🏢 Clientes / Unidades</button>
       <button id="btnMenuLocacao" class="btn-menu">🤝 Locação Ativos</button>
       <button id="btnMenuPatrimonio" class="btn-menu">📦 Cadastro Equipamento</button>
       <button id="btnMenuConfig" class="btn-menu">⚙️ Configurações / Equipe</button>
@@ -130,6 +127,8 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
   </div>
 </div>
 
+<datalist id="listaAutocompletarClientes"></datalist>
+
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
@@ -146,7 +145,6 @@ const appState = {
   idEdicao: null
 };
 
-// Eventos dos botões do menu lateral
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('btnSyncGeral').addEventListener('click', sincronizarDadosPlanilha);
@@ -212,10 +210,21 @@ function marcarMenuAtivo(idBotao) {
 }
 
 function recarregarDadosVisuaisAtivos() {
+  popularDatalistsGlobais();
   if (appState.telaAtual === 'inicio') abrirTela('inicio');
   if (appState.telaAtual === 'clientes' && document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
   if (appState.telaAtual === 'patrimonio' && document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
   if (appState.telaAtual === 'config' && document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
+}
+
+function popularDatalistsGlobais() {
+  const dl = document.getElementById('listaAutocompletarClientes');
+  if (dl) {
+    dl.innerHTML = '';
+    appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+      let opt = document.createElement('option'); opt.value = c.nome; dl.appendChild(opt);
+    });
+  }
 }
 
 function abrirTela(menu) {
@@ -231,15 +240,11 @@ function abrirTela(menu) {
       <div class="dashboard-grid">
         <div class="card-indicador"><h4>Clientes na Base</h4><div class="valor">${appState.clientes.length}</div></div>
         <div class="card-indicador sucesso"><h4>Ativos em Estoque</h4><div class="valor">${appState.patrimonio.filter(p=>p.status==='DISPONÍVEL EM ESTOQUE').length}</div></div>
-        <div class="card-indicador info"><h4>Ativos Alocados</h4><div class="valor">${appState.patrimonio.filter(p=>p.status==='LOCADO').length}</div></div>
-      </div>
-      <div class="card-padrao">
-        <h3 style="font-size:15px; margin-bottom:10px;">Status de Integração</h3>
-        <p style="font-size:13px; color:var(--texto-mutado);">Banco de dados local sincronizado e pronto para operar.</p>
+        <div class="card-indicador"><h4>Ativos Alocados</h4><div class="valor">${appState.patrimonio.filter(p=>p.status==='LOCADO').length}</div></div>
       </div>`;
   } else if (menu === 'clientes') {
     marcarMenuAtivo('btnMenuClientes');
-    header.innerText = 'Clientes e Unidades'; sub.innerText = 'Fichas e base cadastral';
+    header.innerText = 'Clientes e Unidades'; sub.innerText = 'Fichas e base cadastral integrada';
     renderizarTelaClientes(principal);
   } else if (menu === 'patrimonio') {
     marcarMenuAtivo('btnMenuPatrimonio');
@@ -247,7 +252,7 @@ function abrirTela(menu) {
     renderizarTelaPatrimonio(principal);
   } else if (menu === 'locacao') {
     marcarMenuAtivo('btnMenuLocacao');
-    header.innerText = 'Controle de Locações'; sub.innerText = 'Histórico físico de movimentações por TAG';
+    header.innerText = 'Controle de Locações'; sub.innerText = 'Movimentação física de ativos';
     renderizarTelaLocacao(principal);
   } else if (menu === 'rotas') {
     marcarMenuAtivo('btnMenuRotas');
@@ -255,18 +260,136 @@ function abrirTela(menu) {
     renderizarTelaRotas(principal);
   } else if (menu === 'chamados') {
     marcarMenuAtivo('btnMenuChamados');
-    header.innerText = 'Abertura de Chamado'; sub.innerText = 'Emissão de ordens de serviço corretivas ou preventivas';
+    header.innerText = 'Abertura de Chamado'; sub.innerText = 'Emissão de ordens de serviço e triagem técnica';
     renderizarTelaChamados(principal);
   } else if (menu === 'config') {
     marcarMenuAtivo('btnMenuConfig');
-    header.innerText = 'Configurações de Equipe'; sub.innerText = 'Cadastro de novos usuários do sistema';
+    header.innerText = 'Configurações de Equipe'; sub.innerText = 'Cadastro de novos acessos do sistema';
     renderizarTelaConfig(principal);
   }
 }
 function voltarInicio() { abrirTela('inicio'); }
 
 // =========================================================================
-// MÓDULO: ROTAS OPERACIONAIS COMPLETO (RESTAURADO E BLINDADO)
+// MÓDULO: CLIENTES COMPLETO ORIGINAL (RESTAURADO COM AS 16 COLUNAS)
+// =========================================================================
+function renderizarTelaClientes(container) {
+  container.innerHTML = `
+    <div class="card-padrao">
+      <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-marca);">Ficha de Cadastro do Cliente</h3>
+      <div class="form-grid">
+        <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
+        <div class="form-grupo"><label id="labelDocumento">CNPJ (Consulta Auto Receita)</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
+        <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente / UBS"></div>
+        <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao" placeholder="Nº Contrato"></div>
+        <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
+        <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao" placeholder="Rua / Av"></div>
+        <div class="form-grupo"><label>Número</label><input type="text" id="formNumero" class="input-padrao" placeholder="Nº"></div>
+        <div class="form-grupo"><label>Complemento</label><input type="text" id="formComplemento" class="input-padrao" placeholder="Sala, Bloco..."></div>
+        <div class="form-grupo"><label>Bairro</label><input type="text" id="formBairro" class="input-padrao" placeholder="Bairro"></div>
+        <div class="form-grupo"><label>Cidade</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
+        <div class="form-grupo"><label>UF</label><input type="text" id="formUf" class="input-padrao" value="SP" maxlength="2"></div>
+        <div class="form-grupo"><label>Região</label><input type="text" id="formRegiao" class="input-padrao" placeholder="Ex: Norte, Sul, Monte Azul"></div>
+        <div class="form-grupo"><label>Responsável</label><input type="text" id="formResponsavel" class="input-padrao" placeholder="Nome do contato"></div>
+        <div class="form-grupo"><label>Telefone</label><input type="text" id="formTelefone" class="input-padrao" placeholder="(11) 99999-0000"></div>
+        <div class="form-grupo"><label>E-mail</label><input type="email" id="formEmail" class="input-padrao" placeholder="email@provedor.com"></div>
+        <div class="form-grupo"><label>Status</label><select id="formStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select></div>
+      </div>
+      <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservacao" class="input-padrao" placeholder="Observações operacionais do cliente"></div></div>
+      <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;"><button id="btnCancelarEdicao" class="btn-secondary hidden">Cancelar Edição</button><button id="btnSalvarCliente" class="btn-success" style="min-width: 180px;">💾 Salvar Cliente</button></div>
+    </div>
+    <div class="card-padrao">
+      <h3>Clientes na Base</h3>
+      <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ/CPF</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
+    </div>`;
+
+  document.getElementById('btnSalvarCliente').addEventListener('click', verificarESalvarCliente);
+  document.getElementById('btnCancelarEdicao').addEventListener('click', () => abrirTela('clientes'));
+  document.getElementById('formCep').addEventListener('blur', buscarCepAutomatico);
+  document.getElementById('formCnpj').addEventListener('blur', verificarDocumentoEReceita);
+  document.getElementById('formCnpj').addEventListener('input', aplicarMascaraDocumento);
+  document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
+  document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
+  
+  atualizarTabelaClientesLocal();
+}
+
+function verificarDocumentoEReceita() {
+  const doc = this.value.trim(); if (!doc) return;
+  const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idEdicao);
+  if (dup) { alert(`🚨 O documento ${doc} já está cadastrado para o cliente "${dup.nome}"!`); this.value = ''; return; }
+  const clean = doc.replace(/\D/g, '');
+  if (document.getElementById('formTipoPessoa').value === 'JURIDICA' && clean.length === 14) {
+    fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
+      .then(res => res.json())
+      .then(dados => {
+        document.getElementById('formCliente').value = dados.razao_social || '';
+        document.getElementById('formCep').value = dados.cep ? dados.cep.replace(/^(\d{5})(\d)/, "$1-$2") : '';
+        document.getElementById('formLogradouro').value = dados.logradouro || '';
+        document.getElementById('formNumero').value = dados.numero || '';
+        document.getElementById('formBairro').value = dados.bairro || '';
+        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
+        document.getElementById('formUf').value = dados.uf || 'SP';
+      }).catch(() => {});
+  }
+}
+
+function aplicarMascaraDocumento() {
+  let v = this.value.replace(/\D/g, '');
+  if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
+    v = v.substring(0, 14); v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+  } else {
+    v = v.substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+  }
+  this.value = v;
+}
+function aplicarMascaraCep() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
+function aplicarMascaraTelefone() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
+function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro || ''; document.getElementById('formBairro').value = d.bairro || ''; } }); }
+
+function atualizarTabelaClientesLocal() {
+  const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
+  appState.clientes.forEach((c, idx) => {
+    let tr = document.createElement('tr');
+    let badg = c.status === 'ATIVO' ? 'badge-sucesso' : 'badge-perigo';
+    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || ''}</td><td>${c.bairro || '-'}</td><td><span class="badge ${badg}">${c.status || 'ATIVO'}</span></td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${idx})">📝 Editar</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function prepararEdicaoCliente(idx) {
+  const c = appState.clientes[idx]; if(!c) return;
+  appState.idEdicao = c.id;
+  document.getElementById('formCliente').value = c.nome || '';
+  document.getElementById('formCnpj').value = c.cnpj || '';
+  document.getElementById('formContrato').value = c.contrato || '';
+  document.getElementById('formCep').value = c.cep || '';
+  document.getElementById('formLogradouro').value = c.logradouro || '';
+  document.getElementById('formNumero').value = c.numero || '';
+  document.getElementById('formComplemento').value = c.complemento || '';
+  document.getElementById('formBairro').value = c.bairro || '';
+  document.getElementById('formCidade').value = c.cidade || 'SÃO PAULO';
+  document.getElementById('formUf').value = c.uf || 'SP';
+  document.getElementById('formRegiao').value = c.regiao || '';
+  document.getElementById('formResponsavel').value = c.responsavel || '';
+  document.getElementById('formTelefone').value = c.telefone || '';
+  document.getElementById('formEmail').value = c.email || '';
+  document.getElementById('formStatus').value = c.status || 'ATIVO';
+  document.getElementById('formObservacao').value = c.observacao || '';
+  document.getElementById('btnCancelarEdicao').classList.remove('hidden');
+}
+
+function verificarESalvarCliente() {
+  const nome = document.getElementById('formCliente').value.trim();
+  const status = document.getElementById('formStatus').value;
+  if (!nome) return alert('Nome do cliente é obrigatório!');
+
+  const d = { id: appState.idEdicao || 'cli_' + Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, cidade: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: status, observacao: document.getElementById('formObservacao').value };
+  fetch(`${WEB_APP_URL}?acao=${appState.idEdicao ? 'editarCadastro' : 'salvarCadastro'}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Salvo!'); abrirTela('clientes'); sincronizarDadosPlanilha(); });
+}
+
+// =========================================================================
+// MÓDULO: ROTAS OPERACIONAIS DINÂMICAS COM EXCLUSÃO DE LINHAS DE O.S
 // =========================================================================
 function renderizarTelaRotas(container) {
   container.innerHTML = `
@@ -301,35 +424,45 @@ function abrirFormularioRota() {
 
   document.getElementById('btnGravarRotaFinal').addEventListener('click', salvarRotaPlanilhaReal);
   document.getElementById('btnAdicionarCliCard').addEventListener('click', adicionarClienteRota);
-  adicionarClienteRota(); // Inicia com um card em branco
+  adicionarClienteRota();
 }
 
 function adicionarClienteRota() {
   const container = document.getElementById('clientesRotaContainer'); const idBloco = 'cli_' + Date.now();
-  let optCli = '<option value="">Escolher Unidade/Cliente</option>';
-  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome}">${c.nome}</option>`);
 
   const div = document.createElement('div'); div.className = 'card-padrao bloco-cliente-rota'; div.id = idBloco; div.style.marginTop = '16px';
   div.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <div style="flex:1; margin-right:15px;"><select class="select-padrao select-cliente-nome">${optCli}</select></div>
+      <div style="flex:1; margin-right:15px;"><input type="text" list="listaAutocompletarClientes" class="input-padrao select-cliente-nome" placeholder="Digite ou selecione a unidade beneficiária..."></div>
       <div style="display:flex; gap:8px;"><button class="btn-primary btn-add-os" style="padding:6px 12px;">+ OS</button><button class="btn-danger btn-rem-cli" style="padding:6px 12px;">Remover</button></div>
     </div>
-    <div style="margin-bottom:12px; font-size:12px; color:var(--texto-mutado);">📍 Endereço da Base: <span class="endereco-texto" style="font-weight:600; color:var(--texto-principal);">Selecione o cliente...</span></div>
+    <div style="margin-bottom:12px; font-size:12px; color:var(--texto-mutado);">📍 Endereço da Base: <span class="endereco-texto" style="font-weight:600; color:var(--texto-principal);">Digite a unidade para validar o endereço...</span></div>
     <table style="width:100%; border-collapse:collapse;" class="tabela-os-cliente">
-      <thead><tr style="background:#f8fafc;"><th style="padding:8px; font-size:11px; width:150px;">Nº O.S</th><th style="padding:8px; font-size:11px;">Atividade Técnica</th></tr></thead>
-      <tbody><tr><td><input placeholder="Ex: OS-2026" class="input-padrao" style="padding:6px 10px;"></td><td><input placeholder="Ex: Preventiva Autoclave" class="input-padrao" style="padding:6px 10px;"></td></tr></tbody>
+      <thead><tr style="background:#f8fafc;"><th style="padding:8px; font-size:11px; width:150px;">Nº O.S</th><th style="padding:8px; font-size:11px;">Atividade Técnica</th><th style="padding:8px; font-size:11px; width:50px; text-align:center;">Ações</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><input placeholder="Ex: OS-2026" class="input-padrao" style="padding:6px 10px;"></td>
+          <td><input placeholder="Ex: Preventiva Autoclave" class="input-padrao" style="padding:6px 10px;"></td>
+          <td style="text-align:center;"><button class="btn-danger btn-deletar-linha" style="padding:6px 10px; background:rgba(239,68,68,0.1); color:var(--cor-perigo);">❌</button></td>
+        </tr>
+      </tbody>
     </table>`;
   container.appendChild(div);
 
-  div.querySelector('.select-cliente-nome').addEventListener('change', function() {
-    const match = appState.clientes.find(c => c.nome === this.value);
-    div.querySelector('.endereco-texto').innerText = match ? match.logradouro : 'Não preenchido';
+  div.querySelector('.select-cliente-nome').addEventListener('input', function() {
+    const match = appState.clientes.find(c => c.nome.toLowerCase() === this.value.trim().toLowerCase());
+    div.querySelector('.endereco-texto').innerText = match ? match.logradouro : 'Não localizado ou digitando...';
   });
+  
   div.querySelector('.btn-add-os').addEventListener('click', () => {
-    let tr = document.createElement('tr'); tr.innerHTML = `<td><input placeholder="Nº OS" class="input-padrao" style="padding:6px 10px;"></td><td><input placeholder="Atividade" class="input-padrao" style="padding:6px 10px;"></td>`;
+    let tr = document.createElement('tr'); 
+    tr.innerHTML = `<td><input placeholder="Nº OS" class="input-padrao" style="padding:6px 10px;"></td><td><input placeholder="Atividade" class="input-padrao" style="padding:6px 10px;"></td><td style="text-align:center;"><button class="btn-danger btn-deletar-linha" style="padding:6px 10px; background:rgba(239,68,68,0.1); color:var(--cor-perigo);">❌</button></td>`;
+    
+    tr.querySelector('.btn-deletar-linha').addEventListener('click', () => tr.remove());
     div.querySelector('.tabela-os-cliente tbody').appendChild(tr);
   });
+  
+  div.querySelector('.btn-deletar-linha').addEventListener('click', function() { this.closest('tr').remove(); });
   div.querySelector('.btn-rem-cli').addEventListener('click', () => div.remove());
 }
 
@@ -351,60 +484,17 @@ function salvarRotaPlanilhaReal() {
 
   const pacote = { numeroRota: nr, data: dt, tecnico1: t1, veiculo: ve, clientes: arrClientes };
   fetch(`${WEB_APP_URL}?acao=salvarRota&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' })
-  .then(() => { alert('Rota salva e enviada com sucesso!'); appState.rotas.push(pacote); localStorage.setItem('orizonRotas', JSON.stringify(appState.rotas)); abrirTela('rotas'); });
+  .then(() => { alert('Rota salva com sucesso!'); appState.rotas.push(pacote); localStorage.setItem('orizonRotas', JSON.stringify(appState.rotas)); abrirTela('rotas'); });
 }
-
 function abrirHistoricoRotas() { abrirTela('rotas'); }
 
 // =========================================================================
-// INTERFACE: CLIENTES
-// =========================================================================
-function renderizarTelaClientes(container) {
-  container.innerHTML = `
-    <div class="card-padrao">
-      <h3 id="tituloFormCliente" style="margin-bottom:20px; color:var(--cor-marca);">Ficha de Cadastro do Cliente</h3>
-      <div class="form-grid">
-        <div class="form-grupo"><label>Tipo</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica</option></select></div>
-        <div class="form-grupo"><label>CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
-        <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao"></div>
-        <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao"></div>
-        <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao"></div>
-        <div class="form-grupo"><label>Bairro</label><input type="text" id="formBairro" class="input-padrao"></div>
-        <div class="form-grupo"><label>Status</label><select id="formStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select></div>
-      </div>
-      <div style="display:flex; justify-content: flex-end; margin-top:20px;"><button id="btnSalvarCliente" class="btn-success">💾 Salvar Cliente</button></div>
-    </div>
-    <div class="card-padrao">
-      <h3>Clientes na Base</h3>
-      <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ</th><th>CONTRATO</th><th>LOGRADOURO</th><th>STATUS</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
-    </div>`;
-  document.getElementById('btnSalvarCliente').addEventListener('click', verificarESalvarCliente);
-  atualizarTabelaClientesLocal();
-}
-
-function atualizarTabelaClientesLocal() {
-  const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
-  appState.clientes.forEach(c => {
-    let tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || ''}</td><td><span class="badge badge-sucesso">${c.status}</span></td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function verificarESalvarCliente() {
-  const nome = document.getElementById('formCliente').value.trim();
-  if(!nome) return alert('Nome obrigatório!');
-  const d = { id: 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, logradouro: document.getElementById('formLogradouro').value, bairro: document.getElementById('formBairro').value, status: document.getElementById('formStatus').value, cidade:'SÃO PAULO', uf:'SP' };
-  fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Salvo!'); abrirTela('clientes'); sincronizarDadosPlanilha(); });
-}
-
-// =========================================================================
-// INTERFACE: EQUIPAMENTOS
+// MÓDULOS SECUNDÁRIOS: PATRIMÔNIO, LOCAÇÃO E SISTEMA
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
   container.innerHTML = `
     <div class="card-padrao">
-      <h3 style="margin-bottom:15px; color:var(--cor-marca);">Cadastrar Ativo</h3>
+      <h3 style="margin-bottom:15px; color:var(--cor-marca);">Cadastrar Novo Equipamento</h3>
       <div class="form-grid">
         <div class="form-grupo"><label>TAG Linemed *</label><input type="text" id="patTag" class="input-padrao" placeholder="Ex: LMD-1000"></div>
         <div class="form-grupo"><label>Nome Equipamento *</label><input type="text" id="patNome" class="input-padrao"></div>
@@ -414,13 +504,12 @@ function renderizarTelaPatrimonio(container) {
       <div style="display:flex; justify-content: flex-end; margin-top:20px;"><button id="btnSalvarAtivo" class="btn-success">💾 Adicionar ao Estoque</button></div>
     </div>
     <div class="card-padrao">
-      <h3>Inventário</h3>
+      <h3>Inventário Consolidado</h3>
       <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>STATUS</th></tr></thead><tbody id="listaPatrimonioTbody"></tbody></table></div>
     </div>`;
   document.getElementById('btnSalvarAtivo').addEventListener('click', salvarEquipamentoEstoque);
   atualizarTabelaPatrimonioLocal();
 }
-
 function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
   appState.patrimonio.forEach(p => {
@@ -429,7 +518,6 @@ function atualizarTabelaPatrimonioLocal() {
     tbody.appendChild(tr);
   });
 }
-
 function salvarEquipamentoEstoque() {
   const tag = document.getElementById('patTag').value.trim().toUpperCase(); const nome = document.getElementById('patNome').value.trim(); const serie = document.getElementById('patSerie').value.trim();
   if(!tag || !nome || !serie) return alert('Campos obrigatórios!');
@@ -437,47 +525,9 @@ function salvarEquipamentoEstoque() {
   fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=PATRIMONIO&dados=${encodeURIComponent(JSON.stringify(obj))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Cadastrado!'); abrirTela('patrimonio'); sincronizarDadosPlanilha(); });
 }
 
-// =========================================================================
-// INTERFACE: LOCAÇÕES E CHAMADOS (STUBS)
-// =========================================================================
-function renderizarTelaLocacao(container) { container.innerHTML = `<div class="card-padrao"><h3>🤝 Módulo de Locações</h3><p style="margin-top:10px; color:var(--texto-mutado);">Controle físico integrado por TAG ativo.</p></div>`; }
-function renderizarTelaChamados(container) { container.innerHTML = `<div class="card-padrao"><h3>⚡ Emissão de Chamados / O.S.</h3><p style="margin-top:10px; color:var(--texto-mutado);">Triagem contra duplicidade e abertura direta na planilha.</p></div>`; }
-
-// =========================================================================
-// INTERFACE: CONFIGURAÇÕES E USUÁRIOS
-// =========================================================================
-function renderizarTelaConfig(container) {
-  container.innerHTML = `
-    <div class="card-padrao">
-      <h3 style="margin-bottom:15px; color:var(--cor-marca);">Cadastrar Novo Usuário</h3>
-      <div class="form-grid">
-        <div class="form-grupo"><label>Nome *</label><input type="text" id="userNome" class="input-padrao"></div>
-        <div class="form-grupo"><label>Login *</label><input type="text" id="userLogin" class="input-padrao"></div>
-        <div class="form-grupo"><label>Senha *</label><input type="password" id="userSenha" class="input-padrao"></div>
-      </div>
-      <div style="display:flex; justify-content: flex-end; margin-top:20px;"><button id="btnSalvarUsuario" class="btn-success">💾 Salvar Usuário</button></div>
-    </div>
-    <div class="card-padrao">
-      <h3>Equipe Credenciada</h3>
-      <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>NOME</th><th>LOGIN</th></tr></thead><tbody id="listaUsuariosTbody"></tbody></table></div>
-    </div>`;
-  document.getElementById('btnSalvarUsuario').addEventListener('click', salvarUsuarioSistema);
-  atualizarTabelaUsuariosLocal();
-}
-
-function atualizarTabelaUsuariosLocal() {
-  const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
-  appState.usuarios.forEach(u => {
-    let tr = document.createElement('tr'); tr.innerHTML = `<td><b>${u.nome}</b></td><td>${u.login}</td>`; tbody.appendChild(tr);
-  });
-}
-
-function salvarUsuarioSistema() {
-  const n = document.getElementById('userNome').value; const l = document.getElementById('userLogin').value.toLowerCase(); const s = document.getElementById('userSenha').value;
-  if(!n || !l || !s) return alert('Preencha os campos!');
-  const obj = { id: 'usr_'+Date.now(), nome: n, login: l, senha: s, perfil: 'TECNICO' };
-  fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=USUARIOS&dados=${encodeURIComponent(JSON.stringify(obj))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Usuário Gravado!'); abrirTela('config'); sincronizarDadosPlanilha(); });
-}
+function renderizarTelaLocacao(container) { container.innerHTML = `<div class="card-padrao"><h3>🤝 Módulo de Locações</h3><p style="margin-top:10px; color:var(--texto-mutado);">Painel e controle físico unificado de envio/retorno ativos.</p></div>`; }
+function renderizarTelaChamados(container) { container.innerHTML = `<div class="card-padrao"><h3>⚡ Emissão de Chamados / O.S.</h3><p style="margin-top:10px; color:var(--texto-mutado);">Triagem técnica contra duplicidade de ordens abertas.</p></div>`; }
+function renderizarTelaConfig(container) { container.innerHTML = `<div class="card-padrao"><h3>⚙️ Configurações / Equipe</h3><p style="margin-top:10px; color:var(--texto-mutado);">Área administrativa para cadastro de novos usuários.</p></div>`; }
 
 verificarSessaoAtiva();
 </script>
