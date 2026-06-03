@@ -25,7 +25,7 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .btn-secondary { background: var(--cor-secundaria); color: white; }
 
 .card-padrao { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; margin-bottom: 25px; }
-.sidebar { width: 240px; background: linear-gradient(180deg, #0f172a, #111827); color: #fff; position: fixed; top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; z-index: 100; }
+.sidebar { width: 240px; background: linear-gradient(180deg, #0f172a, #111827); color: #fff; position: fixed; top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; }
 .menu-items { flex-grow: 1; }
 .logo { font-size: 34px; font-weight: bold; color: #60a5fa; cursor: pointer; margin-bottom: 8px; }
 .sidebar small { color: #94a3b8; display: block; margin-bottom: 28px; }
@@ -56,7 +56,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .tabela-sistema th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #e2e8f0; }
 .tabela-sistema td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; background: white; white-space: nowrap; }
 
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
 .form-grid label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
 .form-grupo { display: flex; flex-direction: column; margin-bottom: 8px; }
 </style>
@@ -98,24 +98,20 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
-// Carregamento seguro inicial do LocalStorage para evitar quebras
-let clientesIniciais = [];
-try {
-  const localData = localStorage.getItem('orizonClientes');
-  if (localData) clientesIniciais = JSON.parse(localData);
-} catch (e) { console.error("Erro ao ler localStorage", e); }
-
 const appState = {
-  clientes: Array.isArray(clientesIniciais) ? clientesIniciais : [],
+  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   patrimonio: [],
   movimentacoes: [],
-  usuarios: [], 
+  usuarios: [],
   tecnicos: ['Diogo', 'Fagner Lima', 'Administrador'],
+  veiculos: [],
+  rotas: JSON.parse(localStorage.getItem('orizonRotas')) || [],
   usuarioLogado: null,
   idClienteEmEdicao: null,
   telaAtual: 'inicio'
 };
 
+// Eventos de clique do menu lateral
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
@@ -132,15 +128,8 @@ function fazerLogin() {
     liberarPainel({ nome: userIn === 'admin' ? 'Administrador' : 'Visitante', perfil: userIn.toUpperCase() });
     return;
   }
-  
-  if (appState.usuarios && appState.usuarios.length > 0) {
-    const conta = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
-    if (conta) { 
-      liberarPainel(conta); 
-      return;
-    }
-  }
-  alert('Usuário ou senha incorretos!');
+  const conta = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
+  if (conta) { liberarPainel(conta); } else { alert('Usuário ou senha incorretos!'); }
 }
 
 function liberarPainel(usuario) {
@@ -149,14 +138,12 @@ function liberarPainel(usuario) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('wrapperSistema').classList.remove('hidden');
   document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome}`;
-  
-  // Primeiro monta a tela inicial básica para o usuário ver o menu completo
-  voltarInicio();
-  // Depois busca a atualização em background
   sincronizarDadosPlanilha();
+  voltarInicio();
 }
 
 function efetuarLogout() {
+  if (!confirm('Deseja realmente sair do sistema?')) return;
   appState.usuarioLogado = null;
   sessionStorage.removeItem('orizonUsuarioAtivo');
   document.getElementById('wrapperSistema').classList.add('hidden');
@@ -166,16 +153,12 @@ function efetuarLogout() {
 function verificarSessaoAtiva() {
   const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
   if (sessaoSalva) {
-    try {
-      appState.usuarioLogado = JSON.parse(sessaoSalva);
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('wrapperSistema').classList.remove('hidden');
-      document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
-      voltarInicio();
-      sincronizarDadosPlanilha();
-    } catch(e) {
-      efetuarLogout();
-    }
+    appState.usuarioLogado = JSON.parse(sessaoSalva);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('wrapperSistema').classList.remove('hidden');
+    document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
+    sincronizarDadosPlanilha();
+    voltarInicio();
   }
 }
 
@@ -185,197 +168,229 @@ function sincronizarDadosPlanilha() {
     .then(res => {
       if (res.sucesso) {
         appState.clientes = res.clientes || [];
+        appState.usuarios = res.usuarios || [];
         appState.patrimonio = res.patrimonio || [];
         appState.movimentacoes = res.movimentacoes || [];
-        appState.usuarios = res.usuarios || [];
-        
-        try {
-          localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
-        } catch(e){}
-        
-        // Atualiza de forma segura apenas os elementos ativos na tela atual
-        recarregarDadosVisuaisDaTelaAtual();
-      }
-    }).catch(err => console.error('Erro na sincronização:', err));
-}
+        if (res.veiculos && res.veiculos.length > 0) appState.veiculos = res.veiculos.map(v => v.modelo);
 
-// PROTEÇÃO CENTRAL: Só renderiza tabelas se o usuário estiver na tela correspondente
-function recarregarDadosVisuaisDaTelaAtual() {
-  popularDatalistsGlobais();
-  if (appState.telaAtual === 'clientes' && document.getElementById('listaClientesTbody')) {
-    atualizarTabelaClientesLocal();
-  }
-  if (appState.telaAtual === 'patrimonio' && document.getElementById('listaPatrimonioTbody')) {
-    atualizarTabelaPatrimonioLocal();
-  }
-  if (appState.telaAtual === 'locacao') {
-    // Recarrega os counters dinâmicos da locação
-    const totalAlocados = appState.patrimonio.filter(p => p.status === 'LOCADO').length;
-    const totalEstoque = appState.patrimonio.filter(p => p.status === 'DISPONÍVEL EM ESTOQUE').length;
-    const clientesComAtivos = [...new Set(appState.patrimonio.filter(p => p.status === 'LOCADO').map(p => p.localizacao))].length;
-    
-    if(document.getElementById('valAlocados')) document.getElementById('valAlocados').innerText = totalAlocados;
-    if(document.getElementById('valEstoque')) document.getElementById('valEstoque').innerText = totalEstoque;
-    if(document.getElementById('valContratos')) document.getElementById('valContratos').innerText = clientesComAtivos;
-    atualizarDatalistTags();
-  }
+        localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
+        
+        // Renderiza apenas se os elementos estiverem construídos na DOM (Evita erros)
+        if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
+        if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
+        if (document.getElementById('listaTagsAutocomplete')) atualizarDatalistTags();
+      }
+    })
+    .catch(err => console.error("Erro na leitura remota: ", err));
 }
 
 function abrirTela(menu) {
   appState.telaAtual = menu;
   const principal = document.getElementById('conteudoPrincipal');
-  
   if (menu === 'inicio') {
     principal.innerHTML = `
-      <h2>Painel Principal ORIZON</h2>
+      <h2>Bem-vindo ao ORIZON</h2>
       <div class="dashboard-grid" style="margin-top:20px;">
-        <div class="card-padrao"><h3>📍 Rotas Diárias</h3><p>Controle diário de distribuição.</p></div>
-        <div class="card-padrao"><h3>🏥 Clientes</h3><p>Unidades e validações de contratos.</p></div>
-        <div class="card-padrao"><h3>🤝 Locação</h3><p>Rastreio físico e operacional.</p></div>
+        <div class="card-padrao"><h3>📍 Controle de Rotas</h3><p>Planejamento operacional e acompanhamento diário.</p></div>
+        <div class="card-padrao"><h3>🏥 Clientes</h3><p>Cadastro integrado com o Google Sheets.</p></div>
+        <div class="card-padrao"><h3>🤝 Locação de Equipamentos</h3><p>Controle quantitativo e histórico operacional.</p></div>
+        <div class="card-padrao"><h3>📦 Patrimônio</h3><p>Inventário por unidade de atendimento.</p></div>
       </div>`;
   } else if (menu === 'clientes') {
     renderizarTelaClientes(principal);
+  } else if (menu === 'rotas') {
+    renderizarTelaRotas(principal);
   } else if (menu === 'patrimonio') {
     renderizarTelaPatrimonio(principal);
   } else if (menu === 'locacao') {
     renderizarTelaLocacao(principal);
-  } else if (menu === 'rotas') {
-    renderizarTelaRotas(principal);
   }
 }
 function voltarInicio() { abrirTela('inicio'); }
 
-function popularDatalistsGlobais() {
-  const dlCli = document.getElementById('listaAutocompletarClientes');
-  if (dlCli) {
-    dlCli.innerHTML = '';
-    appState.clientes.forEach(c => {
-      let opt = document.createElement('option');
-      opt.value = c.nome;
-      dlCli.appendChild(opt);
-    });
-  }
-}
-
 // =========================================================================
-// MÓDULO: CLIENTES 
+// MÓDULO CLIENTES ORIGINAL COMPLETO (RESTAURADO)
 // =========================================================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2>🏥 Cadastro e Fichas de Unidades</h2>
-        <button id="btnSyncClientes" class="btn-secondary">🔄 Atualizar Base</button>
+        <h2>🏥 Cadastro e Listagem de Clientes</h2>
+        <button id="btnSyncClientesPlanilha" class="btn-secondary" style="font-size:12px;">🔄 Sincronizar Planilha</button>
       </div>
       
       <div class="card-padrao">
-        <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Dados Gerais do Cliente</h3>
+        <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro do Cliente</h3>
         <div class="form-grid">
           <div class="form-grupo">
-            <label>Cliente / Unidade *</label>
-            <input type="text" id="formCliente" list="listaAutocompletarClientes" class="input-padrao" placeholder="Digite ou selecione o nome...">
-            <datalist id="listaAutocompletarClientes"></datalist>
+            <label>Tipo de Pessoa</label>
+            <select id="formTipoPessoa" class="select-padrao">
+              <option value="JURIDICA">Pessoa Jurídica (CNPJ)</option>
+              <option value="FISICA">Pessoa Física (CPF)</option>
+            </select>
           </div>
-          <div class="form-grupo"><label>CNPJ / CPF</label><input type="text" id="formCnpj" class="input-padrao"></div>
-          <div class="form-grupo"><label>Contrato de Locação</label><input type="text" id="formContrato" class="input-padrao" placeholder="Ex: CT-2026-04"></div>
-          <div class="form-grupo"><label>Cidade</label><input type="text" id="formCidade" list="listaCidadesSugeridas" class="input-padrao" value="SÃO PAULO"><datalist id="listaCidadesSugeridas"><option value="SÃO PAULO"><option value="GUARULHOS"><option value="SÃO BERNARDO DO CAMPO"></datalist></div>
+          <div class="form-grupo"><label id="labelDocumento">CNPJ (Consulta Auto Receita)</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
+          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao" placeholder="Nome do Cliente / UBS"></div>
+          <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao" placeholder="Nº Contrato"></div>
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao" placeholder="Rua / Av"></div>
+          <div class="form-grupo"><label>Número</label><input type="text" id="formNumero" class="input-padrao" placeholder="Nº"></div>
+          <div class="form-grupo"><label>Complemento</label><input type="text" id="formComplemento" class="input-padrao" placeholder="Sala, Bloco..."></div>
+          <div class="form-grupo"><label>Bairro</label><input type="text" id="formBairro" class="input-padrao" placeholder="Bairro"></div>
+          <div class="form-grupo"><label>Cidade</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUf" class="input-padrao" value="SP" maxlength="2"></div>
+          <div class="form-grupo"><label>Região</label><input type="text" id="formRegiao" class="input-padrao" placeholder="Ex: Norte, Sul, Monte Azul"></div>
+          <div class="form-grupo"><label>Responsável</label><input type="text" id="formResponsavel" class="input-padrao" placeholder="Nome do contato"></div>
+          <div class="form-grupo"><label>Telefone</label><input type="text" id="formTelefone" class="input-padrao" placeholder="(11) 99999-0000"></div>
+          <div class="form-grupo"><label>E-mail</label><input type="email" id="formEmail" class="input-padrao" placeholder="email@provedor.com"></div>
           <div class="form-grupo">
-            <label>Status Operacional</label>
+            <label>Status</label>
             <select id="formStatus" class="select-padrao">
               <option value="ATIVO">ATIVO</option>
               <option value="INATIVO">INATIVO</option>
             </select>
           </div>
         </div>
-        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
-          <button id="btnCancelarEdicao" class="btn-secondary hidden">Cancelar Ajuste</button>
-          <button id="btnSalvarCliente" class="btn-success">💾 Salvar Ficha</button>
+        <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservacao" class="input-padrao" placeholder="Observações operacionais do cliente"></div></div>
+        
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
+          <button id="btnCancelarEdicao" class="btn-secondary hidden">Cancelar Edição</button>
+          <button id="btnSalvarClientePlanilha" class="btn-success" style="min-width: 180px;">💾 Salvar Cliente</button>
         </div>
       </div>
 
       <div class="card-padrao">
-        <h3>Unidades Cadastradas</h3>
-        <div class="tabela-container">
-          <table class="tabela-sistema">
-            <thead><tr><th>CLIENTE / UNIDADE</th><th>CNPJ/CPF</th><th>CONTRATO ATIVO</th><th>CIDADE</th><th>STATUS</th><th style="text-align:center;">AÇÕES OPERACIONAIS</th></tr></thead>
-            <tbody id="listaClientesTbody"></tbody>
-          </table>
-        </div>
+        <h3 style="margin-bottom:10px;">Clientes na Base</h3>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ/CPF</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th><th>STATUS</th><th style="text-align:center; width:140px;">AÇÕES</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
       </div>
     </div>`;
 
-  document.getElementById('btnSyncClientes').addEventListener('click', sincronizarDadosPlanilha);
-  document.getElementById('btnSalvarCliente').addEventListener('click', verificarESalvarCliente);
+  document.getElementById('btnSyncClientesPlanilha').addEventListener('click', sincronizarDadosPlanilha);
+  document.getElementById('btnSalvarClientePlanilha').addEventListener('click', verificarESalvarCliente);
   document.getElementById('btnCancelarEdicao').addEventListener('click', limparFormularioCliente);
+  document.getElementById('formCep').addEventListener('blur', buscarCepAutomatico);
+  document.getElementById('formCnpj').addEventListener('blur', verificarDocumentoEReceita);
+  
+  document.getElementById('formTipoPessoa').addEventListener('change', function() {
+    const docInput = document.getElementById('formCnpj');
+    const docLabel = document.getElementById('labelDocumento');
+    docInput.value = '';
+    if(this.value === 'JURIDICA') { docLabel.innerText = 'CNPJ (Consulta Auto Receita)'; docInput.placeholder = '00.000.000/0001-00'; }
+    else { docLabel.innerText = 'CPF (Trava Duplicidade)'; docInput.placeholder = '000.000.000-00'; }
+  });
+
+  document.getElementById('formCnpj').addEventListener('input', aplicarMascaraDocumento);
+  document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
+  document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
   
   atualizarTabelaClientesLocal();
-  popularDatalistsGlobais();
 }
+
+function verificarDocumentoEReceita() {
+  const documentoDigitado = this.value.trim(); if (!documentoDigitado) return;
+  const duplicado = appState.clientes.find(c => c.cnpj === documentoDigitado && c.id !== appState.idClienteEmEdicao);
+  if (duplicado) { alert(`🚨 O documento ${documentoDigitado} já está cadastrado para o cliente "${duplicado.nome}"!`); this.value = ''; return; }
+
+  const tipoPessoa = document.getElementById('formTipoPessoa').value;
+  const numLimpo = documentoDigitado.replace(/\D/g, '');
+
+  if (tipoPessoa === 'JURIDICA' && numLimpo.length === 14) {
+    const btnSalvar = document.getElementById('btnSalvarClientePlanilha');
+    btnSalvar.disabled = true; btnSalvar.innerText = '🔍 Consultando Receita...';
+    document.getElementById('formCliente').value = '⏳ Carregando dados da Receita...';
+
+    fetch(`https://brasilapi.com.br/api/cnpj/v1/${numLimpo}`)
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(dados => {
+        document.getElementById('formCliente').value = dados.razao_social || dados.nome_fantasia || '';
+        document.getElementById('formCep').value = dados.cep ? dados.cep.replace(/^(\d{5})(\d)/, "$1-$2") : '';
+        document.getElementById('formLogradouro').value = dados.logradouro || '';
+        document.getElementById('formNumero').value = dados.numero || '';
+        document.getElementById('formComplemento').value = dados.complemento || '';
+        document.getElementById('formBairro').value = dados.bairro || '';
+        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
+        document.getElementById('formUf').value = dados.uf || 'SP';
+        btnSalvar.disabled = false; btnSalvar.innerText = '💾 Salvar Cliente';
+      })
+      .catch(() => {
+        alert('Não foi possível autocompletar por CNPJ. Preencha manualmente.');
+        document.getElementById('formCliente').value = '';
+        btnSalvar.disabled = false; btnSalvar.innerText = '💾 Salvar Cliente';
+      });
+  }
+}
+
+function aplicarMascaraDocumento() {
+  let v = this.value.replace(/\D/g, '');
+  if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
+    v = v.substring(0, 14); v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+  } else {
+    v = v.substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+  }
+  this.value = v;
+}
+function aplicarMascaraCep() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
+function aplicarMascaraTelefone() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
+function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro || ''; document.getElementById('formBairro').value = d.bairro || ''; } }); }
 
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
-  appState.clientes.forEach((c, i) => {
+  appState.clientes.forEach((c, index) => {
     const tr = document.createElement('tr');
-    const badgeColor = c.status === 'ATIVO' ? '#dcfce7; color:#16a34a;' : '#fee2e2; color:#dc2626;';
-    tr.innerHTML = `
-      <td><b>${c.nome}</b></td>
-      <td>${c.cnpj || '-'}</td>
-      <td>${c.contrato || 'Nenhum contrato'}</td>
-      <td>${c.cidade}</td>
-      <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${badgeColor}">${c.status}</span></td>
-      <td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${i})">📝 Editar</button></td>`;
+    const statusTxt = c.status || 'ATIVO';
+    const badgColor = statusTxt === 'ATIVO' ? '#dcfce7; color:#16a34a;' : '#fee2e2; color:#dc2626;';
+    tr.innerHTML = `<td><b>${c.nome || ''}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || ''}</td><td>${c.bairro || '-'}</td><td>${c.cidade || ''}</td><td>${c.responsavel || '-'}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${badgColor}">${statusTxt}</span></td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${index})">📝 Editar</button></td>`;
     tbody.appendChild(tr);
   });
 }
 
-function prepararEdicaoCliente(i) {
-  const c = appState.clientes[i]; 
+function prepararEdicaoCliente(index) {
+  const c = appState.clientes[index]; if(!c) return;
   appState.idClienteEmEdicao = c.id;
-  document.getElementById('formCliente').value = c.nome; 
-  document.getElementById('formCnpj').value = c.cnpj; 
-  document.getElementById('formContrato').value = c.contrato; 
-  document.getElementById('formCidade').value = c.cidade; 
-  document.getElementById('formStatus').value = c.status; 
+  document.getElementById('tituloFormCliente').innerText = `📝 Editando: ${c.nome}`;
+  document.getElementById('formCliente').value = c.nome || '';
+  document.getElementById('formCnpj').value = c.cnpj || '';
+  document.getElementById('formContrato').value = c.contrato || '';
+  document.getElementById('formCep').value = c.cep || '';
+  document.getElementById('formLogradouro').value = c.logradouro || '';
+  document.getElementById('formNumero').value = c.numero || '';
+  document.getElementById('formComplemento').value = c.complemento || '';
+  document.getElementById('formBairro').value = c.bairro || '';
+  document.getElementById('formCidade').value = c.cidade || 'SÃO PAULO';
+  document.getElementById('formUf').value = c.uf || 'SP';
+  document.getElementById('formRegiao').value = c.regiao || '';
+  document.getElementById('formResponsavel').value = c.responsavel || '';
+  document.getElementById('formTelefone').value = c.telefone || '';
+  document.getElementById('formEmail').value = c.email || '';
+  document.getElementById('formStatus').value = c.status || 'ATIVO';
+  document.getElementById('formObservacao').value = c.observacao || '';
   document.getElementById('btnCancelarEdicao').classList.remove('hidden');
 }
 
 function verificarESalvarCliente() {
   const nome = document.getElementById('formCliente').value.trim();
   const statusPretendido = document.getElementById('formStatus').value;
-  if (!nome) return alert('Por favor, indique o nome do Cliente/Unidade.');
+  if (!nome) return alert('O campo Cliente é obrigatório!');
 
   if (statusPretendido === 'INATIVO') {
-    const equipamentosRetidos = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === nome);
-    if (equipamentosRetidos.length > 0) {
-      let tags = equipamentosRetidos.map(p => p.tag).join(', ');
-      alert(`❌ BLOQUEIO DE SEGURANÇA:\nNão é permitido inativar a unidade "${nome}" porque existem contratos de locação vinculados e ativos neste local.\n\nEquipamentos retidos no cliente: [TAGs: ${tags}].\n\nFaça o recolhimento ou retorno dos ativos antes de desativar.`);
-      document.getElementById('formStatus').value = 'ATIVO';
-      return;
+    const vinculados = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === nome);
+    if (vinculados.length > 0) {
+      alert(`❌ SEGURANÇA: Não é possível inativar este cliente porque ele possui contratos de locação vinculados e ativos.\nEquipamentos retidos: [${vinculados.map(p => p.tag).join(', ')}]. Recolha os ativos primeiro!`);
+      document.getElementById('formStatus').value = 'ATIVO'; return;
     }
   }
 
-  const d = { 
-    id: appState.idClienteEmEdicao || 'cli_' + Date.now(), 
-    nome: nome, 
-    cnpj: document.getElementById('formCnpj').value, 
-    contrato: document.getElementById('formContrato').value, 
-    cidade: document.getElementById('formCidade').value, 
-    status: statusPretendido 
+  const objetoDados = {
+    id: appState.idClienteEmEdicao || 'cli_' + Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value.trim(), contrato: document.getElementById('formContrato').value.trim(), cep: document.getElementById('formCep').value.trim(), logradouro: document.getElementById('formLogradouro').value.trim(), numero: document.getElementById('formNumero').value.trim(), complemento: document.getElementById('formComplemento').value.trim(), bairro: document.getElementById('formBairro').value.trim(), cidade: document.getElementById('formCidade').value.trim(), uf: document.getElementById('formUf').value.trim(), regiao: document.getElementById('formRegiao').value.trim(), responsavel: document.getElementById('formResponsavel').value.trim(), telefone: document.getElementById('formTelefone').value.trim(), email: document.getElementById('formEmail').value.trim(), status: statusPretendido, observacao: document.getElementById('formObservacao').value.trim()
   };
-  
-  const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
-  fetch(`${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' })
-  .then(() => { 
-    alert('Ficha atualizada com sucesso!'); 
-    limparFormularioCliente(); 
-    setTimeout(sincronizarDadosPlanilha, 1000); 
-  });
-}
 
+  fetch(`${WEB_APP_URL}?acao=${appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro'}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(objetoDados))}`, { method: 'POST', mode: 'no-cors' })
+  .then(() => { alert('Ficha salva na planilha!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
+}
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 
 // =========================================================================
-// MÓDULO: LOCAÇÕES
+// MÓDULO LOCAÇÕES COM DUPLO FILTRO E CAMPOS INTELIGENTES (COM AUTOCOMPLETAR)
 // =========================================================================
 function renderizarTelaLocacao(container) {
   const totalAlocados = appState.patrimonio.filter(p => p.status === 'LOCADO').length;
@@ -387,18 +402,9 @@ function renderizarTelaLocacao(container) {
       <h2>🤝 Controle de Locações e Movimentações</h2>
       
       <div class="dashboard-grid" style="margin-top: 15px;">
-        <div class="card-indicador">
-          <h4>Ativos Alocados (Em Campo)</h4>
-          <div class="valor" id="valAlocados">${totalAlocados}</div>
-        </div>
-        <div class="card-indicador sucesso">
-          <h4>Disponíveis em Estoque</h4>
-          <div class="valor" id="valEstoque">${totalEstoque}</div>
-        </div>
-        <div class="card-indicador alerta">
-          <h4>Unidades com Contrato Ativo</h4>
-          <div class="valor" id="valContratos">${clientesComAtivos}</div>
-        </div>
+        <div class="card-indicador"><h4>Ativos Alocados (Em Campo)</h4><div class="valor">${totalAlocados}</div></div>
+        <div class="card-indicador sucesso"><h4>Disponíveis em Estoque</h4><div class="valor">${totalEstoque}</div></div>
+        <div class="card-indicador alerta"><h4>Unidades com Contrato Ativo</h4><div class="valor">${clientesComAtivos}</div></div>
       </div>
       
       <div class="card-padrao">
@@ -406,10 +412,7 @@ function renderizarTelaLocacao(container) {
         <div class="form-grid">
           <div class="form-grupo">
             <label>Tipo de Operação</label>
-            <select id="movTipo" class="select-padrao">
-              <option value="ENVIO">ENVIO PARA O CLIENTE</option>
-              <option value="RETORNO">RETORNO PARA A LINEMED</option>
-            </select>
+            <select id="movTipo" class="select-padrao"><option value="ENVIO">ENVIO PARA O CLIENTE</option><option value="RETORNO">RETORNO PARA A LINEMED</option></select>
           </div>
           <div class="form-grupo">
             <label>Equipamento (Digite TAG, Nome ou Série)</label>
@@ -418,30 +421,23 @@ function renderizarTelaLocacao(container) {
           </div>
           <div class="form-grupo">
             <label>Cliente / Unidade Destino</label>
-            <input type="text" id="movClienteInput" list="listaAutocompletarClientes" class="input-padrao" placeholder="Digite o nome da unidade...">
+            <input type="text" id="movClienteInput" list="listaAutocompletarClientes" class="input-padrao" placeholder="Digite para buscar o cliente...">
+            <datalist id="listaAutocompletarClientes"></datalist>
           </div>
           <div class="form-grupo"><label>Observações</label><input type="text" id="movObs" class="input-padrao" placeholder="Motivo ou número da O.S."></div>
         </div>
-        <div style="display:flex; justify-content: flex-end; margin-top:15px;">
-          <button id="btnGravarMovimentacao" class="btn-success">💾 Confirmar Movimentação</button>
-        </div>
+        <div style="display:flex; justify-content: flex-end; margin-top:15px;"><button id="btnGravarMovimentacao" class="btn-success">💾 Confirmar Movimentação</button></div>
       </div>
 
       <div class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
           <h3>📋 Equipamentos Instalados na Unidade</h3>
-          <div style="width:350px;">
-            <input type="text" id="selectFiltroClienteLocacao" list="listaAutocompletarClientes" class="input-padrao" placeholder="Digite para filtrar a unidade...">
-          </div>
+          <div style="width:350px;"><input type="text" id="selectFiltroClienteLocacao" list="listaAutocompletarClientes" class="input-padrao" placeholder="Digite a unidade para filtrar..."></div>
         </div>
         <div class="tabela-container">
           <table class="tabela-sistema">
-            <thead>
-              <tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th></tr>
-            </thead>
-            <tbody id="tbodyItensLocadosCliente">
-              <tr><td colspan="6" style="text-align:center; color:#64748b; padding:15px;">Digite e confirme a unidade no campo acima para puxar o saldo de equipamentos.</td></tr>
-            </tbody>
+            <thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th></tr></thead>
+            <tbody id="tbodyItensLocadosCliente"><tr><td colspan="6" style="text-align:center; padding:15px;">Digite a unidade no campo superior para ver o saldo físico.</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -455,17 +451,18 @@ function renderizarTelaLocacao(container) {
   popularDatalistsGlobais();
 }
 
+function popularDatalistsGlobais() {
+  const dlCli = document.getElementById('listaAutocompletarClientes'); if(!dlCli) return; dlCli.innerHTML = '';
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+    let opt = document.createElement('option'); opt.value = c.nome; dlCli.appendChild(opt);
+  });
+}
+
 function atualizarDatalistTags() {
   const datalist = document.getElementById('listaTagsAutocomplete'); if(!datalist) return; datalist.innerHTML = '';
   const tipo = document.getElementById('movTipo').value;
-  
-  const ativosFiltrados = appState.patrimonio.filter(p => {
-    return tipo === 'ENVIO' ? p.status === 'DISPONÍVEL EM ESTOQUE' : p.status === 'LOCADO';
-  });
-
-  ativosFiltrados.forEach(p => {
-    const option = document.createElement('option');
-    option.value = p.tag;
+  appState.patrimonio.filter(p => tipo === 'ENVIO' ? p.status === 'DISPONÍVEL EM ESTOQUE' : p.status === 'LOCADO').forEach(p => {
+    const option = document.createElement('option'); option.value = p.tag;
     option.text = `${p.equipamento} | Série: ${p.serie} ${p.localizacao ? '['+p.localizacao+']' : ''}`;
     datalist.appendChild(option);
   });
@@ -473,17 +470,10 @@ function atualizarDatalistTags() {
 
 function filtrarEquipamentosDoCliente() {
   const cliente = this.value.trim().toLowerCase();
-  const tbody = document.getElementById('tbodyItensLocadosCliente');
-  if(!cliente) return;
-
+  const tbody = document.getElementById('tbodyItensLocadosCliente'); if(!cliente) return;
   const locados = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao.toLowerCase() === cliente);
   tbody.innerHTML = '';
-
-  if(locados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ea580c; padding:15px;">Nenhum ativo alocado para esta unidade no momento.</td></tr>`;
-    return;
-  }
-
+  if(locados.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ea580c; padding:15px;">Nenhum ativo alocado para esta unidade.</td></tr>`; return; }
   locados.forEach(p => {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td>`;
@@ -495,33 +485,17 @@ function processarMovimentacaoLocacao() {
   const tipo = document.getElementById('movTipo').value;
   const tag = document.getElementById('movTagInput').value.toUpperCase().trim();
   const cliente = document.getElementById('movClienteInput').value.trim();
-  const obs = document.getElementById('movObs').value;
-
-  if(!tag || !cliente) return alert('Por favor, digite a TAG e selecione a Unidade do Cliente!');
+  if(!tag || !cliente) return alert('Informe a TAG e a Unidade!');
 
   const itemPat = appState.patrimonio.find(p => p.tag.toUpperCase() === tag);
-  if(!itemPat) return alert('A TAG digitada não existe no inventário central.');
+  if(!itemPat) return alert('TAG não encontrada.');
 
-  const pacoteMov = {
-    tag: tag,
-    equipamento: itemPat.equipamento,
-    origem: tipo === 'ENVIO' ? 'Sede Linemed' : cliente,
-    destino: tipo === 'ENVIO' ? cliente : 'Sede Linemed',
-    tipo: tipo,
-    responsavel: appState.usuarioLogado ? appState.usuarioLogado.nome : 'Sistema Orizon',
-    observacao: obs
-  };
-
-  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacoteMov))}`, { method: 'POST', mode: 'no-cors' })
-  .then(() => {
-    alert(`Movimentação da TAG ${tag} registrada.`);
-    sincronizarDadosPlanilha();
-    setTimeout(() => { abrirTela('locacao'); }, 1200);
-  });
+  const pacoteMov = { tag: tag, equipamento: itemPat.equipamento, origem: tipo === 'ENVIO' ? 'Sede Linemed' : cliente, destino: tipo === 'ENVIO' ? cliente : 'Sede Linemed', tipo: tipo, responsavel: appState.usuarioLogado ? appState.usuarioLogado.nome : 'Sistema Orizon', observacao: document.getElementById('movObs').value };
+  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacoteMov))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Movimentação registrada!'); sincronizarDadosPlanilha(); setTimeout(() => abrirTela('locacao'), 1000); });
 }
 
 // =========================================================================
-// MÓDULO: INVENTÁRIO
+// MÓDULO: INVENTÁRIO / PATRIMÔNIO CENTRAL
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
   container.innerHTML = `<h2>📦 Inventário Geral de Ativos</h2><div class="card-padrao" style="margin-top:15px;"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>STATUS</th><th>LOCALIZAÇÃO ATUAL</th></tr></thead><tbody id="listaPatrimonioTbody"></tbody></table></div></div>`;
@@ -537,13 +511,115 @@ function atualizarTabelaPatrimonioLocal() {
 }
 
 // =========================================================================
-// MÓDULO: ROTAS
+// MÓDULO ROTAS OPERACIONAIS DINÂMICAS COMPLETO (RESTAURADO)
 // =========================================================================
 function renderizarTelaRotas(container) {
-  container.innerHTML = `<div><h2>📍 Módulo de Rotas Diárias</h2><p style="margin-top:10px; color:#64748b;">Integração e programação de itinerários ativa.</p></div>`;
+  container.innerHTML = `
+    <div>
+      <h2>📍 Módulo de Rotas</h2>
+      <div class="dashboard-grid">
+        <div class="card-padrao"><h3>Nova Rota</h3><p>Criar rota diária vinculando clientes e ordens de serviço.</p><button id="btnCriarFormRota" class="btn-primary" style="margin-top:12px;">Abrir formulário</button></div>
+        <div class="card-padrao"><h3>📋 Histórico</h3><p>Consultar rotas anteriores salvas na base.</p><button id="btnAbrirHistRotas" class="btn-secondary" style="margin-top:12px;">Abrir histórico</button></div>
+      </div>
+    </div>`;
+  document.getElementById('btnCriarFormRota').addEventListener('click', abrirFormularioRota);
+  document.getElementById('btnAbrirHistRotas').addEventListener('click', abrirHistoricoRotas);
 }
 
-// Inicializador automático de segurança do sistema
+function abrirFormularioRota() {
+  const numRotaSugerido = `ROT-${new Date().getFullYear()}-${String(appState.rotas.length + 1).padStart(4, '0')}`;
+  let optionsTecnicos = '<option>Selecionar técnico</option>';
+  appState.tecnicos.forEach(t => optionsTecnicos += `<option>${t}</option>`);
+  let optionsVeiculos = '<option>Selecionar veículo</option><option>Strada</option><option>Fiorino</option>';
+
+  document.getElementById('conteudoPrincipal').innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <h2>📍 Criar Nova Rota</h2>
+        <div><button id="btnGravarRotaFinal" class="btn-success">💾 Salvar Rota</button><button id="btnCancelarFormRota" class="btn-secondary">Cancelar</button></div>
+      </div>
+      <div class="card-padrao" style="margin-bottom:20px;">
+        <div class="form-grid">
+          <div><label>Nº Rota</label><input id="numeroRota" value="${numRotaSugerido}" readonly class="input-padrao" style="background:#f1f5f9;"></div>
+          <div><label>Data</label><input type="date" id="dataRota" class="input-padrao"></div>
+          <div><label>Técnico 1</label><select id="tecnico1Rota" class="select-padrao">${optionsTecnicos}</select></div>
+          <div><label>Técnico 2</label><select id="tecnico2Rota" class="select-padrao">${optionsTecnicos}</select></div>
+          <div><label>Veículo</label><select id="veiculoRota" class="select-padrao">${optionsVeiculos}</select></div>
+        </div>
+      </div>
+      <div id="clientesRotaContainer"></div>
+      <div style="margin-top:20px; text-align:center;"><button id="btnAdicionarCliCard" class="btn-secondary">➕ Adicionar Cliente à Rota</button></div>
+    </div>`;
+
+  document.getElementById('btnGravarRotaFinal').addEventListener('click', salvarRotaPlanilhaReal);
+  document.getElementById('btnCancelarFormRota').addEventListener('click', () => abrirTela('rotas'));
+  document.getElementById('btnAdicionarCliCard').addEventListener('click', adicionarClienteRota);
+  adicionarClienteRota();
+}
+
+function adicionarClienteRota() {
+  const container = document.getElementById('clientesRotaContainer'); const clienteId = 'cli_' + Date.now();
+  let optionsClientes = '<option value="">Escolher Cliente</option>';
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optionsClientes += `<option value="${c.nome}">${c.nome}</option>`);
+
+  const div = document.createElement('div'); div.className = 'card-padrao bloco-cliente-rota'; div.style.marginTop = '15px'; div.id = clienteId;
+  div.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="flex:1; margin-right:10px;"><select class="select-padrao select-cliente-nome">${optionsClientes}</select></div>
+      <div><button class="btn-primary btn-add-os">+ OS</button><button class="btn-danger btn-rem-cli">Remover</button></div>
+    </div>
+    <div style="margin-bottom:10px; font-size:13px; color:#475569;">📍 Endereço da Planilha: <span class="endereco-texto" style="font-weight:bold;">Selecione o cliente</span></div>
+    <table style="width:100%; border-collapse:collapse;" class="tabela-os-cliente">
+      <thead><tr style="background:#f8fafc;"><th style="padding:6px; text-align:left;">Nº O.S</th><th style="padding:6px; text-align:left;">Atividade</th></tr></thead>
+      <tbody><tr><td><input placeholder="Nº OS" class="input-padrao" style="padding:6px;"></td><td><input placeholder="Serviço" class="input-padrao" style="padding:6px;"></td></tr></tbody>
+    </table>`;
+  container.appendChild(div);
+
+  div.querySelector('.select-cliente-nome').addEventListener('change', function() {
+    const local = appState.clientes.find(c => c.nome === this.value);
+    div.querySelector('.endereco-texto').innerText = local ? local.endereco : 'Não encontrado';
+  });
+  div.querySelector('.btn-add-os').addEventListener('click', () => {
+    const tr = document.createElement('tr'); tr.innerHTML = `<td><input placeholder="Nº OS" class="input-padrao" style="padding:6px;"></td><td><input placeholder="Serviço" class="input-padrao" style="padding:6px;"></td>`;
+    div.querySelector('.tabela-os-cliente tbody').appendChild(tr);
+  });
+  div.querySelector('.btn-rem-cli').addEventListener('click', () => div.remove());
+}
+
+function salvarRotaPlanilhaReal() {
+  const nr = document.getElementById('numeroRota').value; const dt = document.getElementById('dataRota').value;
+  const t1 = document.getElementById('tecnico1Rota').value; const ve = document.getElementById('veiculoRota').value;
+  if (!dt || t1.includes('Selecionar') || ve.includes('Selecionar')) return alert('Preencha os campos obrigatórios!');
+
+  const blocos = document.querySelectorAll('.bloco-cliente-rota'); let clientesMontados = [];
+  blocos.forEach(b => {
+    const nome = b.querySelector('.select-cliente-nome').value; const end = b.querySelector('.endereco-texto').innerText;
+    let chamados = [];
+    b.querySelectorAll('.tabela-os-cliente tbody tr').forEach(r => {
+      const inputs = r.querySelectorAll('input');
+      if(inputs[0].value || inputs[1].value) chamados.push({ os: inputs[0].value, atividade: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
+    });
+    if(nome) clientesMontados.push({ cliente: nome, endereco: end, observacao: '', chamados: chamados });
+  });
+
+  const pacoteRota = { numeroRota: nr, data: dt, tecnico1: t1, tecnico2: document.getElementById('tecnico2Rota').value === 'Selecionar técnico' ? '' : document.getElementById('tecnico2Rota').value, veiculo: ve, clientes: clientesMontados };
+  const btn = document.getElementById('btnGravarRotaFinal'); btn.disabled = true; btn.innerText = 'Gravando...';
+
+  fetch(`${WEB_APP_URL}?acao=salvarRota&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}`, { method: 'POST', mode: 'no-cors' })
+  .then(() => { alert('Rota salva com sucesso!'); appState.rotas.push(pacoteRota); localStorage.setItem('orizonRotas', JSON.stringify(appState.rotas)); abrirTela('rotas'); })
+  .catch(() => { alert('Erro de conexão.'); btn.disabled = false; btn.innerText = '💾 Salvar Rota'; });
+}
+
+function abrirHistoricoRotas() {
+  let html = '<h2>📋 Histórico Operacional</h2><div style="margin-top:15px;">';
+  if (appState.rotas.length === 0) { html += '<p class="card-padrao">Nenhuma rota salva nesta sessão.</p>'; } 
+  else { appState.rotas.forEach(r => { html += `<div class="card-padrao" style="margin-bottom:10px;"><strong>${r.numeroRota}</strong> - ${r.data} | Técnico: ${r.tecnico1} | Veículo: ${r.veiculo} (${r.clientes.length} clientes)</div>`; }); }
+  html += `</div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>`;
+  document.getElementById('conteudoPrincipal').innerHTML = html;
+  document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
+}
+
+// Inicialização automática segura da sessão
 verificarSessaoAtiva();
 </script>
 </body>
