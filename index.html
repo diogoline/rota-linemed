@@ -25,7 +25,7 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .btn-secondary { background: var(--cor-secundaria); color: white; }
 
 .card-padrao { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; margin-bottom: 25px; }
-.sidebar { width: 240px; background: linear-gradient(180deg, #0f172a, #111827); color: #fff; position: fixed; top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; }
+.sidebar { width: 240px; background: linear-gradient(180deg, #0f172a, #111827); color: #fff; position: fixed; top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; z-index: 100; }
 .menu-items { flex-grow: 1; }
 .logo { font-size: 34px; font-weight: bold; color: #60a5fa; cursor: pointer; margin-bottom: 8px; }
 .sidebar small { color: #94a3b8; display: block; margin-bottom: 28px; }
@@ -98,14 +98,22 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
+// Carregamento seguro inicial do LocalStorage para evitar quebras
+let clientesIniciais = [];
+try {
+  const localData = localStorage.getItem('orizonClientes');
+  if (localData) clientesIniciais = JSON.parse(localData);
+} catch (e) { console.error("Erro ao ler localStorage", e); }
+
 const appState = {
-  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
+  clientes: Array.isArray(clientesIniciais) ? clientesIniciais : [],
   patrimonio: [],
   movimentacoes: [],
-  usuarios: [], // CORREÇÃO: Declarado explicitamente para não travar o carregamento do script
+  usuarios: [], 
   tecnicos: ['Diogo', 'Fagner Lima', 'Administrador'],
   usuarioLogado: null,
-  idClienteEmEdicao: null
+  idClienteEmEdicao: null,
+  telaAtual: 'inicio'
 };
 
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
@@ -141,8 +149,11 @@ function liberarPainel(usuario) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('wrapperSistema').classList.remove('hidden');
   document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome}`;
-  sincronizarDadosPlanilha();
+  
+  // Primeiro monta a tela inicial básica para o usuário ver o menu completo
   voltarInicio();
+  // Depois busca a atualização em background
+  sincronizarDadosPlanilha();
 }
 
 function efetuarLogout() {
@@ -152,16 +163,19 @@ function efetuarLogout() {
   document.getElementById('loginScreen').style.display = 'flex';
 }
 
-// CORREÇÃO: Mantém a sessão do usuário ativa caso ele dê F5 (Atualizar)
 function verificarSessaoAtiva() {
   const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
   if (sessaoSalva) {
-    appState.usuarioLogado = JSON.parse(sessaoSalva);
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('wrapperSistema').classList.remove('hidden');
-    document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
-    sincronizarDadosPlanilha();
-    voltarInicio();
+    try {
+      appState.usuarioLogado = JSON.parse(sessaoSalva);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('wrapperSistema').classList.remove('hidden');
+      document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
+      voltarInicio();
+      sincronizarDadosPlanilha();
+    } catch(e) {
+      efetuarLogout();
+    }
   }
 }
 
@@ -174,17 +188,43 @@ function sincronizarDadosPlanilha() {
         appState.patrimonio = res.patrimonio || [];
         appState.movimentacoes = res.movimentacoes || [];
         appState.usuarios = res.usuarios || [];
-        localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
         
-        if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
-        if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
-        popularDatalistsGlobais();
+        try {
+          localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
+        } catch(e){}
+        
+        // Atualiza de forma segura apenas os elementos ativos na tela atual
+        recarregarDadosVisuaisDaTelaAtual();
       }
     }).catch(err => console.error('Erro na sincronização:', err));
 }
 
+// PROTEÇÃO CENTRAL: Só renderiza tabelas se o usuário estiver na tela correspondente
+function recarregarDadosVisuaisDaTelaAtual() {
+  popularDatalistsGlobais();
+  if (appState.telaAtual === 'clientes' && document.getElementById('listaClientesTbody')) {
+    atualizarTabelaClientesLocal();
+  }
+  if (appState.telaAtual === 'patrimonio' && document.getElementById('listaPatrimonioTbody')) {
+    atualizarTabelaPatrimonioLocal();
+  }
+  if (appState.telaAtual === 'locacao') {
+    // Recarrega os counters dinâmicos da locação
+    const totalAlocados = appState.patrimonio.filter(p => p.status === 'LOCADO').length;
+    const totalEstoque = appState.patrimonio.filter(p => p.status === 'DISPONÍVEL EM ESTOQUE').length;
+    const clientesComAtivos = [...new Set(appState.patrimonio.filter(p => p.status === 'LOCADO').map(p => p.localizacao))].length;
+    
+    if(document.getElementById('valAlocados')) document.getElementById('valAlocados').innerText = totalAlocados;
+    if(document.getElementById('valEstoque')) document.getElementById('valEstoque').innerText = totalEstoque;
+    if(document.getElementById('valContratos')) document.getElementById('valContratos').innerText = clientesComAtivos;
+    atualizarDatalistTags();
+  }
+}
+
 function abrirTela(menu) {
+  appState.telaAtual = menu;
   const principal = document.getElementById('conteudoPrincipal');
+  
   if (menu === 'inicio') {
     principal.innerHTML = `
       <h2>Painel Principal ORIZON</h2>
@@ -218,7 +258,7 @@ function popularDatalistsGlobais() {
 }
 
 // =========================================================================
-// MÓDULO: CLIENTES (MANTENDO EXCLUSIVAMENTE O BOTÃO DE SALVAR)
+// MÓDULO: CLIENTES 
 // =========================================================================
 function renderizarTelaClientes(container) {
   container.innerHTML = `
@@ -335,7 +375,7 @@ function verificarESalvarCliente() {
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 
 // =========================================================================
-// MÓDULO: LOCAÇÕES (COM OS CARDS DE METAS E RESUMOS OPERACIONAIS)
+// MÓDULO: LOCAÇÕES
 // =========================================================================
 function renderizarTelaLocacao(container) {
   const totalAlocados = appState.patrimonio.filter(p => p.status === 'LOCADO').length;
@@ -349,15 +389,15 @@ function renderizarTelaLocacao(container) {
       <div class="dashboard-grid" style="margin-top: 15px;">
         <div class="card-indicador">
           <h4>Ativos Alocados (Em Campo)</h4>
-          <div class="valor">${totalAlocados}</div>
+          <div class="valor" id="valAlocados">${totalAlocados}</div>
         </div>
         <div class="card-indicador sucesso">
           <h4>Disponíveis em Estoque</h4>
-          <div class="valor">${totalEstoque}</div>
+          <div class="valor" id="valEstoque">${totalEstoque}</div>
         </div>
         <div class="card-indicador alerta">
           <h4>Unidades com Contrato Ativo</h4>
-          <div class="valor">${clientesComAtivos}</div>
+          <div class="valor" id="valContratos">${clientesComAtivos}</div>
         </div>
       </div>
       
@@ -503,7 +543,7 @@ function renderizarTelaRotas(container) {
   container.innerHTML = `<div><h2>📍 Módulo de Rotas Diárias</h2><p style="margin-top:10px; color:#64748b;">Integração e programação de itinerários ativa.</p></div>`;
 }
 
-// Inicializador automático do sistema
+// Inicializador automático de segurança do sistema
 verificarSessaoAtiva();
 </script>
 </body>
