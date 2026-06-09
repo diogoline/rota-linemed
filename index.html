@@ -114,11 +114,9 @@ const appState = {
   idUsuarioEmEdicao: null
 };
 
-// Carregamento inicial de segurança
 sincronizarDadosPlanilha();
 verificarSessaoAtiva();
 
-// Eventos do menu lateral
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
@@ -146,8 +144,7 @@ function fazerLogin() {
       return;
     }
   }
-  
-  alert('Usuário ou senha incorretos ou base ainda carregando! Tente novamente em instantes.');
+  alert('Usuário ou senha incorretos ou base ainda carregando!');
 }
 
 function liberarPainel(usuario) {
@@ -159,16 +156,12 @@ function liberarPainel(usuario) {
   voltarInicio();
 }
 
-function prevenirSair() {
+function efetuarLogout() {
   if (!confirm('Deseja realmente sair?')) return;
   appState.usuarioLogado = null;
   sessionStorage.removeItem('orizonUsuarioAtivo');
   document.getElementById('wrapperSistema').classList.add('hidden');
   document.getElementById('loginScreen').style.display = 'flex';
-}
-
-function efetuarLogout() {
-  prevenirSair();
 }
 
 function verificarSessaoAtiva() {
@@ -372,7 +365,7 @@ function atualizarTabelaPatrimonioLocal() {
   appState.patrimonio.forEach(p => {
     const tr = document.createElement('tr');
     const bColor = p.status === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
-    tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bColor}">${p.status}</span></td><td><b>${p.localizacao || 'Sede Linemed'}</b></td>`;
+    tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bColor}">${p.status}</span></td><td><b>${p.localizacao || 'Sede Central'}</b></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -395,7 +388,7 @@ function renderizarTelaLocacao(container) {
             <label>Tipo de Operação</label>
             <select id="movTipo" class="select-padrao">
               <option value="ENVIO">ENVIO PARA O CLIENTE</option>
-              <option value="RETORNO">RETORNO PARA A LINEMED</option>
+              <option value="RETORNO">RETORNO PARA A SEDE</option>
             </select>
           </div>
           
@@ -510,8 +503,8 @@ function processarMovimentacaoLocacao() {
   const pacoteMov = {
     tag: tag,
     equipamento: itemPat.equipamento,
-    origem: tipo === 'ENVIO' ? 'Sede Linemed' : cliente,
-    destino: tipo === 'ENVIO' ? cliente : 'Sede Linemed',
+    origem: tipo === 'ENVIO' ? 'Sede Central' : cliente,
+    destino: tipo === 'ENVIO' ? cliente : 'Sede Central',
     tipo: tipo,
     responsavel: appState.usuarioLogado ? appState.usuarioLogado.nome : 'Sistema Orizon',
     observacao: obs
@@ -550,7 +543,6 @@ function abrirFormularioRota() {
   
   let optionsTecnicos = '<option value="">Selecionar técnico</option>';
   if (appState.usuarios && appState.usuarios.length > 0) {
-    // Filtra apenas colaboradores ATIVOS para irem para a rua na montagem de rota
     appState.usuarios.filter(u => u.status !== 'INATIVO').forEach(u => {
       optionsTecnicos += `<option value="${u.nome}">${u.nome}</option>`;
     });
@@ -561,7 +553,7 @@ function abrirFormularioRota() {
   let optionsVeiculos = '<option value="">Selecionar veículo</option>';
   if (appState.veiculos && appState.veiculos.length > 0) {
     appState.veiculos.forEach(v => {
-      optionsVeiculos += `<option value="${v.nome || v}">${v.nome || v}</option>`;
+      optionsVeiculos += `<option value="${v.nome || v.modelo || v}">${v.nome || v.modelo || v}</option>`;
     });
   } else {
     optionsVeiculos += '<option value="Strada">Strada</option><option value="Fiorino">Fiorino</option>';
@@ -693,22 +685,25 @@ function abrirHistoricoRotas() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (EVOLUÍDO COM DOSSIÊ COMPLETO DO COLABORADOR)
+// INTERFACE: MÓDULO GESTÃO (INTEGRADA E AMARRADA VIA INNERHTML COM SUCESSO)
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
       <h2>⚙️ Painel Administrativo e Gestão</h2>
-      <p style="color:#64748b; font-size:13px; margin-top:4px; margin-bottom:20px;">Gerenciamento interno de parâmetros do sistema Linemed</p>
+      <p style="color:#64748b; font-size:13px; margin-top:4px; margin-bottom:20px;">Gerenciamento interno de parâmetros do sistema Orizon</p>
       
       <div class="tabs-gestao">
-        <div class="tab-item active" id="tabColaboradores" onclick="alternarSubAbaGestao('colaboradores')">👤 Colaboradores / Usuários</div>
-        <div class="tab-item" id="tabConfiguracoes" onclick="alternarSubAbaGestao('configuracoes')">🛠️ Parâmetros Gerais</div>
+        <div class="tab-item active" id="tabColaboradores">👤 Colaboradores / Usuários</div>
+        <div class="tab-item" id="tabConfiguracoes">🛠️ Parâmetros Gerais</div>
       </div>
       
       <div id="subConteudoGestao"></div>
     </div>`;
     
+  document.getElementById('tabColaboradores').addEventListener('click', () => alternarSubAbaGestao('colaboradores'));
+  document.getElementById('tabConfiguracoes').addEventListener('click', () => alternarSubAbaGestao('configuracoes'));
+  
   alternarSubAbaGestao('colaboradores');
 }
 
@@ -727,7 +722,7 @@ function alternarSubAbaGestao(aba) {
         <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🔑 Credenciais e Acesso</h4>
         <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>Nome Completo *</label><input type="text" id="formUserNome" class="input-padrao"></div>
-          <div class="form-grupo"><label>Usuário / Login *</label><input type="text" id="formUserLogin" class="input-padrao" placeholder="ex: diogo.linemed"></div>
+          <div class="form-grupo"><label>Usuário / Login *</label><input type="text" id="formUserLogin" class="input-padrao" placeholder="ex: diogo.orizon"></div>
           <div class="form-grupo"><label>Senha de Acesso *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
           <div class="form-grupo">
             <label>Perfil do Usuário</label>
@@ -750,14 +745,10 @@ function alternarSubAbaGestao(aba) {
         <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
           <div class="form-grupo"><label>Logradouro / Rua</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
-          <div class="form-grid" style="grid-template-columns: 80px 1fr; gap: 10px;">
-            <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
-            <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
-          </div>
-          <div class="form-grid" style="grid-template-columns: 1fr 80px; gap: 10px;">
-            <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
-            <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
-          </div>
+          <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
         </div>
 
         <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 Contrato e Status</h4>
@@ -765,20 +756,17 @@ function alternarSubAbaGestao(aba) {
           <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
           <div class="form-grupo">
             <label>Status Operacional</label>
-            <select id="formUserStatus" class="select-padrao" onchange="verificarStatusDesligamento(this.value)">
+            <select id="formUserStatus" class="select-padrao">
               <option value="ATIVO">ATIVO</option>
               <option value="INATIVO">INATIVO</option>
             </select>
           </div>
-          <div class="form-grupo" style="grid-column: span 2;">
-            <label>Motivo do Desligamento</label>
-            <input type="text" id="formUserMotivo" class="input-padrao" placeholder="Preenchimento obrigatório apenas se inativado" disabled style="background:#f1f5f9;">
-          </div>
+          <div class="form-grupo"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Se inativado" disabled style="background:#f1f5f9;"></div>
         </div>
 
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
-          <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden" onclick="limparFormularioUsuario()">Cancelar</button>
-          <button id="btnSalvarUsuarioPlanilha" class="btn-success" onclick="enviarUsuarioPlanilha()">💾 Salvar Colaborador</button>
+          <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden">Cancelar</button>
+          <button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 Salvar Colaborador</button>
         </div>
       </div>
 
@@ -794,11 +782,21 @@ function alternarSubAbaGestao(aba) {
         </div>
       </div>`;
 
-    // Vincula as máscaras automáticas e preenchimento de endereço
     document.getElementById('formUserCep').addEventListener('input', aplicarMascaraCepUsuario);
     document.getElementById('formUserCep').addEventListener('blur', buscarCepUsuarioAutomatico);
     document.getElementById('formUserTelefone').addEventListener('input', aplicarMascaraTelefoneUsuario);
     document.getElementById('formUserCpf').addEventListener('input', aplicarMascaraCpfUsuario);
+    document.getElementById('formUserStatus').addEventListener('change', function() {
+      const inputMotivo = document.getElementById('formUserMotivo');
+      if (this.value === 'INATIVO') {
+        inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus();
+      } else {
+        inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
+      }
+    });
+
+    document.getElementById('btnCancelarEdicaoUsuario').addEventListener('click', limparFormularioUsuario);
+    document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
 
     atualizarTabelaUsuariosLocal();
   } else {
@@ -808,20 +806,6 @@ function alternarSubAbaGestao(aba) {
         <h3>🛠️ Parâmetros do Sistema</h3>
         <p style="color:#64748b; font-size:13px; margin-top:8px;">Configurações avançadas de frota, veículos e controle de auditoria de dados.</p>
       </div>`;
-  }
-}
-
-// Funções de inteligência de formulário e máscaras
-function verificarStatusDesligamento(status) {
-  const inputMotivo = document.getElementById('formUserMotivo');
-  if (status === 'INATIVO') {
-    inputMotivo.disabled = false;
-    inputMotivo.style.background = 'white';
-    inputMotivo.focus();
-  } else {
-    inputMotivo.disabled = true;
-    inputMotivo.value = '';
-    inputMotivo.style.background = '#f1f5f9';
   }
 }
 
@@ -857,7 +841,7 @@ function atualizarTabelaUsuariosLocal() {
   tbody.innerHTML = '';
   
   if (!appState.usuarios || appState.usuarios.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário secundário localizado. Logado via credenciais mestre.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário localizado.</td></tr>`;
     return;
   }
   
@@ -871,7 +855,7 @@ function atualizarTabelaUsuariosLocal() {
       <td><b>${u.nome || ''}</b></td>
       <td>${u.login || '-'}</td>
       <td>${u.cpf || '-'}</td>
-      <td>${formatarDataBr(u.admissao)}</td>
+      <td>${u.admissao ? formatarDataBr(u.admissao) : '-'}</td>
       <td>${u.perfil || 'Técnico'}</td>
       <td><span style="padding:4px 8px; background:${badgeBg}; color:${badgeColor}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td>
       <td style="text-align:center;"><button class="btn-primary" style="padding: 5px 10px;" onclick="prepararEdicaoUsuario(${idx})">📝</button></td>`;
@@ -881,7 +865,7 @@ function atualizarTabelaUsuariosLocal() {
 
 function prepararEdicaoUsuario(idx) {
   const u = appState.usuarios[idx];
-  appState.idUsuarioEmEdicao = u.id || 'usr_' + idx;
+  appState.idUsuarioEmEdicao = u.id;
   
   document.getElementById('formUserNome').value = u.nome || '';
   document.getElementById('formUserLogin').value = u.login || '';
@@ -901,7 +885,13 @@ function prepararEdicaoUsuario(idx) {
   
   const statusAtual = u.status || 'ATIVO';
   document.getElementById('formUserStatus').value = statusAtual;
-  verificarStatusDesligamento(statusAtual);
+  
+  const inputMotivo = document.getElementById('formUserMotivo');
+  if (statusAtual === 'INATIVO') {
+    inputMotivo.disabled = false; inputMotivo.style.background = 'white';
+  } else {
+    inputMotivo.disabled = true; inputMotivo.style.background = '#f1f5f9';
+  }
   document.getElementById('formUserMotivo').value = u.motivoDesligamento || '';
   
   document.getElementById('btnCancelarEdicaoUsuario').classList.remove('hidden');
@@ -927,10 +917,11 @@ function limparFormularioUsuario() {
   document.getElementById('formUserUf').value = 'SP';
   document.getElementById('formUserAdmissao').value = '';
   document.getElementById('formUserStatus').value = 'ATIVO';
-  verificarStatusDesligamento('ATIVO');
   
-  const btnCancel = document.getElementById('btnCancelarEdicaoUsuario');
-  if(btnCancel) btnCancel.classList.add('hidden');
+  const inputMotivo = document.getElementById('formUserMotivo');
+  inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
+  
+  document.getElementById('btnCancelarEdicaoUsuario').classList.add('hidden');
   document.getElementById('tituloFormUsuario').innerText = 'Ficha do Colaborador';
   document.getElementById('tituloFormUsuario').style.color = 'var(--cor-primaria)';
 }
@@ -943,28 +934,24 @@ function enviarUsuarioPlanilha() {
   const status = document.getElementById('formUserStatus').value;
   const motivo = document.getElementById('formUserMotivo').value.trim();
   
-  if (!nome || !login || !senha) return alert('Por favor, preencha todos os campos obrigatórios (*)!');
-  if (status === 'INATIVO' && !motivo) return alert('Para inativar um colaborador, informe obrigatoriamente o motivo do desligamento!');
+  if (!nome || !login || !senha) return alert('Por favor, preencha os campos obrigatórios (*)!');
+  if (status === 'INATIVO' && !motivo) return alert('Informe o motivo do desligamento!');
   
   const d = {
     id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(),
-    nome: nome,
-    login: login,
-    senha: senha,
-    perfil: perfil,
-    cpf: document.getElementById('formUserCpf').value.trim(),
-    rg: document.getElementById('formUserRg').value.trim(),
-    cnh: document.getElementById('formUserCnh').value.trim(),
-    telefone: document.getElementById('formUserTelefone').value.trim(),
-    cep: document.getElementById('formUserCep').value.trim(),
-    logradouro: document.getElementById('formUserLogradouro').value.trim(),
-    numero: document.getElementById('formUserNumero').value.trim(),
-    bairro: document.getElementById('formUserBairro').value.trim(),
-    cidade: document.getElementById('formUserCidade').value.trim(),
-    uf: document.getElementById('formUserUf').value.trim(),
+    nome: nome, login: login, senha: senha, perfil: perfil,
+    cpf: document.getElementById('formUserCpf').value,
+    rg: document.getElementById('formUserRg').value,
+    cnh: document.getElementById('formUserCnh').value,
+    telefone: document.getElementById('formUserTelefone').value,
+    cep: document.getElementById('formUserCep').value,
+    logradouro: document.getElementById('formUserLogradouro').value,
+    numero: document.getElementById('formUserNumero').value,
+    bairro: document.getElementById('formUserBairro').value,
+    cidade: document.getElementById('formUserCidade').value,
+    uf: document.getElementById('formUserUf').value,
     admissao: document.getElementById('formUserAdmissao').value,
-    status: status,
-    motivoDesligamento: motivo
+    status: status, motivoDesligamento: motivo
   };
   
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
@@ -973,13 +960,12 @@ function enviarUsuarioPlanilha() {
   
   fetch(`${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' })
   .then(() => { 
-    alert('Dossiê do Colaborador atualizado com sucesso na planilha!'); 
+    alert('Salvo com sucesso!'); 
     limparFormularioUsuario(); 
     setTimeout(sincronizarDadosPlanilha, 1000); 
   })
   .catch(err => {
     console.error(err);
-    alert('Erro ao processar envio. Verifique a conexão.');
     btn.disabled = false; btn.innerText = '💾 Salvar Colaborador';
   });
 }
