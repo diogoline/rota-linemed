@@ -245,7 +245,7 @@ function renderizarTelaClientes(container) {
       <div class="card-padrao">
         <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro</h3>
         <div class="form-grid">
-          <div class="form-grid"><div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div></div>
+          <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
           <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
           <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao"></div>
           <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao"></div>
@@ -327,7 +327,7 @@ function prepararEdicaoCliente(i) {
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 function enviarClientePlanilha() {
   const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
-  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, cidade: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
+  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, city: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
   const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   fetch(`${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Salvo!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
 }
@@ -910,7 +910,18 @@ function prepararEdicaoUsuarioPeloId(id) {
   document.getElementById('formUserBairro').value = u.bairro || '';
   document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
   document.getElementById('formUserUf').value = u.uf || 'SP';
-  document.getElementById('formUserAdmissao').value = (u.admissao && !u.admissao.includes('ATIVO') && !u.admissao.includes('INATIVO')) ? u.admissao : '';
+  
+  // MOTOR DE CONVERSÃO BR -> ISO (Impede que a data suma ao carregar a edição)
+  let dataISO = '';
+  if (u.admissao && !u.admissao.includes('ATIVO') && !u.admissao.includes('INATIVO')) {
+    if (u.admissao.includes('/')) {
+      const p = u.admissao.split('/');
+      dataISO = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+    } else {
+      dataISO = u.admissao;
+    }
+  }
+  document.getElementById('formUserAdmissao').value = dataISO;
   
   const statusAtual = (u.status || 'ATIVO').toUpperCase();
   document.getElementById('formUserStatus').value = statusAtual;
@@ -957,7 +968,6 @@ function limparFormularioUsuario() {
   document.getElementById('tituloFormUsuario').style.color = 'var(--cor-primaria)';
 }
 
-// INJEÇÃO DA FUNÇÃO GLOBAL DE RETORNO (ELIMINA O DELAY DO CORS DEFINITIVAMENTE)
 window.processarRetornoGoogleSheets = function(respostaServer) {
   const btn = document.getElementById('btnSalvarUsuarioPlanilha');
   if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Colaborador'; }
@@ -1000,7 +1010,6 @@ function enviarUsuarioPlanilha() {
   const btn = document.getElementById('btnSalvarUsuarioPlanilha');
   btn.disabled = true; btn.innerText = '⏳ Gravando...';
   
-  // TÉCNICA SAAS AVANÇADA: Envia usando elemento script dinâmico com callback atrelado (Contorna o bloqueio de CORS da Resposta)
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
   
   const scriptAntigo = document.getElementById('jsonp_execution_script');
