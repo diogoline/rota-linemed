@@ -550,7 +550,8 @@ function abrirFormularioRota() {
   
   let optionsTecnicos = '<option value="">Selecionar técnico</option>';
   if (appState.usuarios && appState.usuarios.length > 0) {
-    appState.usuarios.forEach(u => {
+    // Filtra apenas colaboradores ATIVOS para irem para a rua na montagem de rota
+    appState.usuarios.filter(u => u.status !== 'INATIVO').forEach(u => {
       optionsTecnicos += `<option value="${u.nome}">${u.nome}</option>`;
     });
   } else {
@@ -692,7 +693,7 @@ function abrirHistoricoRotas() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (EXPANDIDO COM TELEFONE E ENDEREÇO)
+// INTERFACE: MÓDULO GESTÃO (EVOLUÍDO COM DOSSIÊ COMPLETO DO COLABORADOR)
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -722,7 +723,9 @@ function alternarSubAbaGestao(aba) {
     subContainer.innerHTML = `
       <div class="card-padrao">
         <h3 id="tituloFormUsuario" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha do Colaborador</h3>
-        <div class="form-grid">
+        
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🔑 Credenciais e Acesso</h4>
+        <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>Nome Completo *</label><input type="text" id="formUserNome" class="input-padrao"></div>
           <div class="form-grupo"><label>Usuário / Login *</label><input type="text" id="formUserLogin" class="input-padrao" placeholder="ex: diogo.linemed"></div>
           <div class="form-grupo"><label>Senha de Acesso *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
@@ -733,15 +736,47 @@ function alternarSubAbaGestao(aba) {
               <option value="Gestor">Gestor</option>
             </select>
           </div>
+        </div>
+
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🪪 Documentação</h4>
+        <div class="form-grid" style="margin-bottom:15px;">
+          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
+          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
+          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="Nº de Registro"></div>
           <div class="form-grupo"><label>Telefone / Celular</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
+        </div>
+
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">📍 Endereço Residencial</h4>
+        <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
           <div class="form-grupo"><label>Logradouro / Rua</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
           <div class="form-grid" style="grid-template-columns: 80px 1fr; gap: 10px;">
             <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
             <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
           </div>
+          <div class="form-grid" style="grid-template-columns: 1fr 80px; gap: 10px;">
+            <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
+            <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
+          </div>
         </div>
-        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
+
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 Contrato e Status</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
+          <div class="form-grupo">
+            <label>Status Operacional</label>
+            <select id="formUserStatus" class="select-padrao" onchange="verificarStatusDesligamento(this.value)">
+              <option value="ATIVO">ATIVO</option>
+              <option value="INATIVO">INATIVO</option>
+            </select>
+          </div>
+          <div class="form-grupo" style="grid-column: span 2;">
+            <label>Motivo do Desligamento</label>
+            <input type="text" id="formUserMotivo" class="input-padrao" placeholder="Preenchimento obrigatório apenas se inativado" disabled style="background:#f1f5f9;">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
           <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden" onclick="limparFormularioUsuario()">Cancelar</button>
           <button id="btnSalvarUsuarioPlanilha" class="btn-success" onclick="enviarUsuarioPlanilha()">💾 Salvar Colaborador</button>
         </div>
@@ -752,17 +787,18 @@ function alternarSubAbaGestao(aba) {
         <div class="tabela-container">
           <table class="tabela-sistema">
             <thead>
-              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>TELEFONE</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
+              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>CPF</th><th>ADMISSÃO</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
             </thead>
             <tbody id="listaUsuariosTbody"></tbody>
           </table>
         </div>
       </div>`;
 
-    // Vincula as máscaras automáticas e preenchimento de endereço por CEP para o usuário
+    // Vincula as máscaras automáticas e preenchimento de endereço
     document.getElementById('formUserCep').addEventListener('input', aplicarMascaraCepUsuario);
     document.getElementById('formUserCep').addEventListener('blur', buscarCepUsuarioAutomatico);
     document.getElementById('formUserTelefone').addEventListener('input', aplicarMascaraTelefoneUsuario);
+    document.getElementById('formUserCpf').addEventListener('input', aplicarMascaraCpfUsuario);
 
     atualizarTabelaUsuariosLocal();
   } else {
@@ -775,9 +811,24 @@ function alternarSubAbaGestao(aba) {
   }
 }
 
-// Funções de utilidade exclusivas para o cadastro de usuários (Mascara e CEP)
+// Funções de inteligência de formulário e máscaras
+function verificarStatusDesligamento(status) {
+  const inputMotivo = document.getElementById('formUserMotivo');
+  if (status === 'INATIVO') {
+    inputMotivo.disabled = false;
+    inputMotivo.style.background = 'white';
+    inputMotivo.focus();
+  } else {
+    inputMotivo.disabled = true;
+    inputMotivo.value = '';
+    inputMotivo.style.background = '#f1f5f9';
+  }
+}
+
 function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
 function aplicarMascaraTelefoneUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
+function aplicarMascaraCpfUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2"); this.value = v; }
+
 function buscarCepUsuarioAutomatico() { 
   const cep = this.value.replace(/\D/g, ''); 
   if (cep.length !== 8) return; 
@@ -787,8 +838,17 @@ function buscarCepUsuarioAutomatico() {
       if (!d.erro) { 
         document.getElementById('formUserLogradouro').value = d.logradouro || ''; 
         document.getElementById('formUserBairro').value = d.bairro || ''; 
+        document.getElementById('formUserCidade').value = d.localidade || 'SÃO PAULO'; 
+        document.getElementById('formUserUf').value = d.uf || 'SP'; 
       } 
     }); 
+}
+
+function formatarDataBr(dataUs) {
+  if(!dataUs) return '-';
+  const partes = dataUs.split('-');
+  if(partes.length !== 3) return dataUs;
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 function atualizarTabelaUsuariosLocal() {
@@ -797,18 +857,23 @@ function atualizarTabelaUsuariosLocal() {
   tbody.innerHTML = '';
   
   if (!appState.usuarios || appState.usuarios.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário secundário localizado. Logado via credenciais mestre.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário secundário localizado. Logado via credenciais mestre.</td></tr>`;
     return;
   }
   
   appState.usuarios.forEach((u, idx) => {
     const tr = document.createElement('tr');
+    const isAtivo = (u.status || 'ATIVO') === 'ATIVO';
+    const badgeBg = isAtivo ? '#dcfce7' : '#fee2e2';
+    const badgeColor = isAtivo ? '#16a34a' : '#dc2626';
+    
     tr.innerHTML = `
       <td><b>${u.nome || ''}</b></td>
       <td>${u.login || '-'}</td>
-      <td>${u.telefone || '-'}</td>
+      <td>${u.cpf || '-'}</td>
+      <td>${formatarDataBr(u.admissao)}</td>
       <td>${u.perfil || 'Técnico'}</td>
-      <td><span style="padding:4px 8px; background:#dcfce7; color:#16a34a; border-radius:6px; font-size:11px; font-weight:bold;">ATIVO</span></td>
+      <td><span style="padding:4px 8px; background:${badgeBg}; color:${badgeColor}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td>
       <td style="text-align:center;"><button class="btn-primary" style="padding: 5px 10px;" onclick="prepararEdicaoUsuario(${idx})">📝</button></td>`;
     tbody.appendChild(tr);
   });
@@ -822,11 +887,22 @@ function prepararEdicaoUsuario(idx) {
   document.getElementById('formUserLogin').value = u.login || '';
   document.getElementById('formUserSenha').value = u.senha || '';
   document.getElementById('formUserPerfil').value = u.perfil || 'Técnico';
+  document.getElementById('formUserCpf').value = u.cpf || '';
+  document.getElementById('formUserRg').value = u.rg || '';
+  document.getElementById('formUserCnh').value = u.cnh || '';
   document.getElementById('formUserTelefone').value = u.telefone || '';
   document.getElementById('formUserCep').value = u.cep || '';
   document.getElementById('formUserLogradouro').value = u.logradouro || '';
   document.getElementById('formUserNumero').value = u.numero || '';
   document.getElementById('formUserBairro').value = u.bairro || '';
+  document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
+  document.getElementById('formUserUf').value = u.uf || 'SP';
+  document.getElementById('formUserAdmissao').value = u.admissao || '';
+  
+  const statusAtual = u.status || 'ATIVO';
+  document.getElementById('formUserStatus').value = statusAtual;
+  verificarStatusDesligamento(statusAtual);
+  document.getElementById('formUserMotivo').value = u.motivoDesligamento || '';
   
   document.getElementById('btnCancelarEdicaoUsuario').classList.remove('hidden');
   document.getElementById('tituloFormUsuario').innerText = 'Editar Colaborador';
@@ -839,11 +915,19 @@ function limparFormularioUsuario() {
   document.getElementById('formUserLogin').value = '';
   document.getElementById('formUserSenha').value = '';
   document.getElementById('formUserPerfil').value = 'Técnico';
+  document.getElementById('formUserCpf').value = '';
+  document.getElementById('formUserRg').value = '';
+  document.getElementById('formUserCnh').value = '';
   document.getElementById('formUserTelefone').value = '';
   document.getElementById('formUserCep').value = '';
   document.getElementById('formUserLogradouro').value = '';
   document.getElementById('formUserNumero').value = '';
   document.getElementById('formUserBairro').value = '';
+  document.getElementById('formUserCidade').value = 'SÃO PAULO';
+  document.getElementById('formUserUf').value = 'SP';
+  document.getElementById('formUserAdmissao').value = '';
+  document.getElementById('formUserStatus').value = 'ATIVO';
+  verificarStatusDesligamento('ATIVO');
   
   const btnCancel = document.getElementById('btnCancelarEdicaoUsuario');
   if(btnCancel) btnCancel.classList.add('hidden');
@@ -856,13 +940,11 @@ function enviarUsuarioPlanilha() {
   const login = document.getElementById('formUserLogin').value.trim();
   const senha = document.getElementById('formUserSenha').value;
   const perfil = document.getElementById('formUserPerfil').value;
-  const telefone = document.getElementById('formUserTelefone').value.trim();
-  const cep = document.getElementById('formUserCep').value.trim();
-  const logradouro = document.getElementById('formUserLogradouro').value.trim();
-  const numero = document.getElementById('formUserNumero').value.trim();
-  const bairro = document.getElementById('formUserBairro').value.trim();
+  const status = document.getElementById('formUserStatus').value;
+  const motivo = document.getElementById('formUserMotivo').value.trim();
   
   if (!nome || !login || !senha) return alert('Por favor, preencha todos os campos obrigatórios (*)!');
+  if (status === 'INATIVO' && !motivo) return alert('Para inativar um colaborador, informe obrigatoriamente o motivo do desligamento!');
   
   const d = {
     id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(),
@@ -870,11 +952,19 @@ function enviarUsuarioPlanilha() {
     login: login,
     senha: senha,
     perfil: perfil,
-    telefone: telefone,
-    cep: cep,
-    logradouro: logradouro,
-    numero: numero,
-    bairro: bairro
+    cpf: document.getElementById('formUserCpf').value.trim(),
+    rg: document.getElementById('formUserRg').value.trim(),
+    cnh: document.getElementById('formUserCnh').value.trim(),
+    telefone: document.getElementById('formUserTelefone').value.trim(),
+    cep: document.getElementById('formUserCep').value.trim(),
+    logradouro: document.getElementById('formUserLogradouro').value.trim(),
+    numero: document.getElementById('formUserNumero').value.trim(),
+    bairro: document.getElementById('formUserBairro').value.trim(),
+    cidade: document.getElementById('formUserCidade').value.trim(),
+    uf: document.getElementById('formUserUf').value.trim(),
+    admissao: document.getElementById('formUserAdmissao').value,
+    status: status,
+    motivoDesligamento: motivo
   };
   
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
@@ -883,7 +973,7 @@ function enviarUsuarioPlanilha() {
   
   fetch(`${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' })
   .then(() => { 
-    alert('Colaborador gravado com sucesso na planilha!'); 
+    alert('Dossiê do Colaborador atualizado com sucesso na planilha!'); 
     limparFormularioUsuario(); 
     setTimeout(sincronizarDadosPlanilha, 1000); 
   })
