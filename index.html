@@ -147,6 +147,15 @@ function fazerLogin() {
   alert('Usuário ou senha incorretos ou base ainda carregando!');
 }
 
+functionerarPainel(usuario) {
+  appState.usuarioLogado = usuario;
+  sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('wrapperSistema').classList.remove('hidden');
+  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil || 'USUÁRIO'})`;
+  voltarInicio();
+}
+
 function liberarPainel(usuario) {
   appState.usuarioLogado = usuario;
   sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
@@ -327,7 +336,7 @@ function prepararEdicaoCliente(i) {
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 function enviarClientePlanilha() {
   const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
-  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, city: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
+  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, cidade: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
   const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   fetch(`${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Salvo!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
 }
@@ -911,17 +920,34 @@ function prepararEdicaoUsuarioPeloId(id) {
   document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
   document.getElementById('formUserUf').value = u.uf || 'SP';
   
-  // MOTOR DE CONVERSÃO BR -> ISO (Impede que a data suma ao carregar a edição)
-  let dataISO = '';
-  if (u.admissao && !u.admissao.includes('ATIVO') && !u.admissao.includes('INATIVO')) {
-    if (u.admissao.includes('/')) {
-      const p = u.admissao.split('/');
-      dataISO = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
-    } else {
-      dataISO = u.admissao;
+  // NOVO MOTOR ULTRA-RESILIENTE DE TRATAMENTO DE DATA BR / ISO / TIMESTAMP
+  let dataFinalISO = '';
+  if (u.admissao) {
+    let strData = String(u.admissao).trim();
+    // Remove resíduos de ISO string como 'T00:00:00...' se existirem
+    if (strData.includes('T')) {
+      strData = strData.split('T')[0];
+    }
+    
+    if (strData.includes('/')) {
+      // Formato pt-BR (dd/MM/yyyy) -> converte para yyyy-MM-dd
+      const partes = strData.split(' ')[0].split('/');
+      if (partes.length === 3) {
+        let ano = partes[2];
+        let mes = partes[1].padStart(2, '0');
+        let dia = partes[0].padStart(2, '0');
+        dataFinalISO = `${ano}-${mes}-${dia}`;
+      }
+    } else if (strData.includes('-')) {
+      // Já está em formato ISO (yyyy-MM-dd)
+      const partes = strData.split('-');
+      if (partes.length === 3) {
+        dataFinalISO = strData;
+      }
     }
   }
-  document.getElementById('formUserAdmissao').value = dataISO;
+  
+  document.getElementById('formUserAdmissao').value = dataFinalISO;
   
   const statusAtual = (u.status || 'ATIVO').toUpperCase();
   document.getElementById('formUserStatus').value = statusAtual;
