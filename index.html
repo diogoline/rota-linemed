@@ -147,15 +147,6 @@ function fazerLogin() {
   alert('Usuário ou senha incorretos ou base ainda carregando!');
 }
 
-functionerarPainel(usuario) {
-  appState.usuarioLogado = usuario;
-  sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('wrapperSistema').classList.remove('hidden');
-  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil || 'USUÁRIO'})`;
-  voltarInicio();
-}
-
 function liberarPainel(usuario) {
   appState.usuarioLogado = usuario;
   sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
@@ -920,17 +911,14 @@ function prepararEdicaoUsuarioPeloId(id) {
   document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
   document.getElementById('formUserUf').value = u.uf || 'SP';
   
-  // NOVO MOTOR ULTRA-RESILIENTE DE TRATAMENTO DE DATA BR / ISO / TIMESTAMP
   let dataFinalISO = '';
   if (u.admissao) {
     let strData = String(u.admissao).trim();
-    // Remove resíduos de ISO string como 'T00:00:00...' se existirem
     if (strData.includes('T')) {
       strData = strData.split('T')[0];
     }
     
     if (strData.includes('/')) {
-      // Formato pt-BR (dd/MM/yyyy) -> converte para yyyy-MM-dd
       const partes = strData.split(' ')[0].split('/');
       if (partes.length === 3) {
         let ano = partes[2];
@@ -939,7 +927,6 @@ function prepararEdicaoUsuarioPeloId(id) {
         dataFinalISO = `${ano}-${mes}-${dia}`;
       }
     } else if (strData.includes('-')) {
-      // Já está em formato ISO (yyyy-MM-dd)
       const partes = strData.split('-');
       if (partes.length === 3) {
         dataFinalISO = strData;
@@ -954,9 +941,9 @@ function prepararEdicaoUsuarioPeloId(id) {
   
   const inputMotivo = document.getElementById('formUserMotivo');
   if (statusAtual === 'INATIVO') {
-    inputMotivo.disabled = false; inputMotivo.style.background = 'white';
+    inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus();
   } else {
-    inputMotivo.disabled = true; inputMotivo.style.background = '#f1f5f9';
+    inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
   }
   document.getElementById('formUserMotivo').value = u.motivoDesligamento || '';
   
