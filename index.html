@@ -685,7 +685,7 @@ function abrirHistoricoRotas() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (INTEGRADA E AMARRADA VIA INNERHTML COM SUCESSO)
+// INTERFACE: MÓDULO GESTÃO (PREVENÇÃO DE ERROS DE DATA FIXA)
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -729,6 +729,8 @@ function alternarSubAbaGestao(aba) {
             <select id="formUserPerfil" class="select-padrao">
               <option value="Técnico">Técnico</option>
               <option value="Gestor">Gestor</option>
+              <option value="Visualizador">Visualizador</option>
+              <option value="Admin">Admin</option>
             </select>
           </div>
         </div>
@@ -761,7 +763,7 @@ function alternarSubAbaGestao(aba) {
               <option value="INATIVO">INATIVO</option>
             </select>
           </div>
-          <div class="form-grupo"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Se inativado" disabled style="background:#f1f5f9;"></div>
+          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Se inativado" disabled style="background:#f1f5f9;"></div>
         </div>
 
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
@@ -830,6 +832,7 @@ function buscarCepUsuarioAutomatico() {
 
 function formatarDataBr(dataUs) {
   if(!dataUs) return '-';
+  if(dataUs.includes('/')) return dataUs; // Proteção para dados legados já salvos em formato BR
   const partes = dataUs.split('-');
   if(partes.length !== 3) return dataUs;
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
