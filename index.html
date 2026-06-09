@@ -52,7 +52,6 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .form-grid label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
 .form-grupo { display: flex; flex-direction: column; margin-bottom: 8px; }
 
-/* Estilos para abas internas do painel Gestão */
 .tabs-gestao { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--borda); padding-bottom: 5px; }
 .tab-item { padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 2px solid transparent; }
 .tab-item.active { color: var(--cor-primaria); border-color: var(--cor-primaria); }
@@ -111,7 +110,8 @@ const appState = {
   usuarios: [], 
   usuarioLogado: null,
   idClienteEmEdicao: null,
-  idUsuarioEmEdicao: null
+  idUsuarioEmEdicao: null,
+  filtroStatusUsuario: 'ATIVO' // Estado inicial para ocultar inativos por padrão
 };
 
 sincronizarDadosPlanilha();
@@ -201,7 +201,7 @@ function sincronizarDadosPlanilha() {
         if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
       }
     })
-    .catch(err => console.error("Erro na sincronização automática:", err));
+    .catch(err => console.error("Erro na sincronização:", err));
 }
 
 function abrirTela(menu) {
@@ -516,7 +516,7 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// MÓDULO DE ROTAS DIÁRIAS
+// MÓDULO DE ROTAS DIÁRIAS (COM BLOQUEIO DE INATIVOS)
 // =========================================================================
 function renderizarTelaRotas(container) {
   container.innerHTML = `
@@ -536,7 +536,8 @@ function abrirFormularioRota() {
   
   let optionsTecnicos = '<option value="">Selecionar técnico</option>';
   if (appState.usuarios && appState.usuarios.length > 0) {
-    appState.usuarios.filter(u => u.status !== 'INATIVO').forEach(u => {
+    // PROTEÇÃO: Filtra os colaboradores ocultando quem estiver INATIVO para sumir das novas rotas
+    appState.usuarios.filter(u => (u.status || 'ATIVO') === 'ATIVO').forEach(u => {
       optionsTecnicos += `<option value="${u.nome}">${u.nome}</option>`;
     });
   } else {
@@ -678,7 +679,7 @@ function abrirHistoricoRotas() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (PREVENÇÃO DE ERROS DE DATA FIXA)
+// INTERFACE: MÓDULO GESTÃO (COM FILTRAGEM INTELIGENTE DE COLABORADORES)
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -756,7 +757,7 @@ function alternarSubAbaGestao(aba) {
               <option value="INATIVO">INATIVO</option>
             </select>
           </div>
-          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Se inativado" disabled style="background:#f1f5f9;"></div>
+          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Preenchimento obrigatório caso inativado" disabled style="background:#f1f5f9;"></div>
         </div>
 
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
@@ -766,7 +767,17 @@ function alternarSubAbaGestao(aba) {
       </div>
 
       <div class="card-padrao">
-        <h3>👥 Funcionários Cadastrados</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>👥 Funcionários Cadastrados</h3>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
+            <select id="selectFiltroStatusGrid" class="select-padrao" style="width:160px; padding:6px;">
+              <option value="ATIVO">Apenas Ativos</option>
+              <option value="INATIVO">Apenas Inativos</option>
+              <option value="TODOS">Todos os Registros</option>
+            </select>
+          </div>
+        </div>
         <div class="tabela-container">
           <table class="tabela-sistema">
             <thead>
@@ -792,6 +803,13 @@ function alternarSubAbaGestao(aba) {
 
     document.getElementById('btnCancelarEdicaoUsuario').addEventListener('click', limparFormularioUsuario);
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
+    
+    // Vincula o evento de mudança do seletor de filtro da tabela
+    document.getElementById('selectFiltroStatusGrid').value = appState.filtroStatusUsuario;
+    document.getElementById('selectFiltroStatusGrid').addEventListener('change', function() {
+      appState.filtroStatusUsuario = this.value;
+      atualizarTabelaUsuariosLocal();
+    });
 
     atualizarTabelaUsuariosLocal();
   } else {
@@ -825,8 +843,8 @@ function buscarCepUsuarioAutomatico() {
 
 function formatarDataBr(dataUs) {
   if(!dataUs) return '-';
-  if(dataUs.includes('/')) return dataUs.split(' ')[0]; 
-  const partes = dataUs.split('-');
+  if(String(dataUs).includes('/')) return String(dataUs).split(' ')[0]; 
+  const partes = String(dataUs).split('-');
   if(partes.length !== 3) return dataUs;
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
@@ -841,33 +859,55 @@ function atualizarTabelaUsuariosLocal() {
     return;
   }
   
-  appState.usuarios.forEach((u, idx) => {
+  // Aplica o filtro SaaS em tempo de execução para sumir/exibir os registros conforme a escolha do usuário
+  const usuariosFiltrados = appState.usuarios.filter(u => {
+    const statusUser = (u.status || 'ATIVO').toUpperCase();
+    if (appState.filtroStatusUsuario === 'TODOS') return true;
+    return statusUser === appState.filtroStatusUsuario;
+  });
+
+  if (usuariosFiltrados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador com o status "${appState.filtroStatusUsuario}" localizado.</td></tr>`;
+    return;
+  }
+  
+  usuariosFiltrados.forEach((u, idx) => {
     const tr = document.createElement('tr');
-    const isAtivo = (u.status || 'ATIVO') === 'ATIVO';
+    const isAtivo = (u.status || 'ATIVO').toUpperCase() === 'ATIVO';
     const badgeBg = isAtivo ? '#dcfce7' : '#fee2e2';
     const badgeColor = isAtivo ? '#16a34a' : '#dc2626';
+    
+    // Tratamento defensivo extra: se o CPF contiver texto de status legado da planilha, limpa a exibição na tabela
+    const cpfLimpo = (u.cpf && !u.cpf.includes('ATIVO') && !u.cpf.includes('INATIVO')) ? u.cpf : '-';
+    // Se a data de admissão contiver texto legado, trata graciosamente
+    const dataAdmissaoTratada = (u.admissao && !u.admissao.includes('ATIVO')) ? formatarDataBr(u.admissao) : '-';
     
     tr.innerHTML = `
       <td><b>${u.nome || ''}</b></td>
       <td>${u.login || '-'}</td>
-      <td>${u.cpf || '-'}</td>
-      <td>${u.admissao ? formatarDataBr(u.admissao) : '-'}</td>
+      <td>${cpfLimpo}</td>
+      <td>${dataAdmissaoTratada}</td>
       <td>${u.perfil || 'Técnico'}</td>
       <td><span style="padding:4px 8px; background:${badgeBg}; color:${badgeColor}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td>
-      <td style="text-align:center;"><button class="btn-primary" style="padding: 5px 10px;" onclick="prepararEdicaoUsuario(${idx})">📝</button></td>`;
+      <td style="text-align:center;"><button class="btn-primary" style="padding: 5px 10px;" onclick="prepararEdicaoUsuarioPeloId('${u.id}')">📝 Ações</button></td>`;
     tbody.appendChild(tr);
   });
 }
 
-function prepararEdicaoUsuario(idx) {
-  const u = appState.usuarios[idx];
+// Correção estrutural: busca o usuário de forma resiliente por ID String exclusivo em vez do índice físico
+function prepararEdicaoUsuarioPeloId(id) {
+  const u = appState.usuarios.find(user => String(user.id) === String(id));
+  if (!u) return alert('Colaborador não localizado no banco.');
+  
   appState.idUsuarioEmEdicao = u.id;
   
   document.getElementById('formUserNome').value = u.nome || '';
   document.getElementById('formUserLogin').value = u.login || '';
   document.getElementById('formUserSenha').value = u.senha || '';
   document.getElementById('formUserPerfil').value = u.perfil || 'Técnico';
-  document.getElementById('formUserCpf').value = u.cpf || '';
+  
+  // Tratamento de segurança contra dados corrompidos legados da planilha
+  document.getElementById('formUserCpf').value = (u.cpf && !u.cpf.includes('ATIVO')) ? u.cpf : '';
   document.getElementById('formUserRg').value = u.rg || '';
   document.getElementById('formUserCnh').value = u.cnh || '';
   document.getElementById('formUserTelefone').value = u.telefone || '';
@@ -877,9 +917,9 @@ function prepararEdicaoUsuario(idx) {
   document.getElementById('formUserBairro').value = u.bairro || '';
   document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
   document.getElementById('formUserUf').value = u.uf || 'SP';
-  document.getElementById('formUserAdmissao').value = u.admissao || '';
+  document.getElementById('formUserAdmissao').value = (u.admissao && !u.admissao.includes('ATIVO')) ? u.admissao : '';
   
-  const statusAtual = u.status || 'ATIVO';
+  const statusAtual = (u.status || 'ATIVO').toUpperCase();
   document.getElementById('formUserStatus').value = statusAtual;
   
   const inputMotivo = document.getElementById('formUserMotivo');
@@ -893,6 +933,9 @@ function prepararEdicaoUsuario(idx) {
   document.getElementById('btnCancelarEdicaoUsuario').classList.remove('hidden');
   document.getElementById('tituloFormUsuario').innerText = 'Editar Colaborador';
   document.getElementById('tituloFormUsuario').style.color = 'var(--cor-sucesso)';
+  
+  // Sobe o scroll suavemente para o formulário de edição para dar conforto visual ao gestor
+  document.getElementById('tituloFormUsuario').scrollIntoView({ behavior: 'smooth' });
 }
 
 function limparFormularioUsuario() {
