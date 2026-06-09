@@ -113,6 +113,10 @@ const appState = {
   idClienteEmEdicao: null
 };
 
+// Inicialização imediata ao carregar a página para carregar a lista de usuários em segundo plano
+sincronizarDadosPlanilha();
+verificarSessaoAtiva();
+
 // Eventos do menu lateral
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
@@ -133,8 +137,14 @@ function fazerLogin() {
     liberarPainel({ nome: userIn === 'admin' ? 'Administrador' : 'Visitante', perfil: userIn.toUpperCase() });
     return;
   }
-  const conta = appState.usuarios.find(u => u.login === userIn && u.senha === passIn);
-  if (conta) { liberarPainel(conta); } else { alert('Usuário ou senha incorretos!'); }
+  
+  // Busca na lista atualizada em segundo plano vinda do Sheets
+  const conta = appState.usuarios.find(u => String(u.login).toLowerCase() === userIn && String(u.senha) === passIn);
+  if (conta) { 
+    liberarPainel(conta); 
+  } else { 
+    alert('Usuário ou senha incorretos!'); 
+  }
 }
 
 function liberarPainel(usuario) {
@@ -142,8 +152,7 @@ function liberarPainel(usuario) {
   sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('wrapperSistema').classList.remove('hidden');
-  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil})`;
-  sincronizarDadosPlanilha();
+  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil || 'Usuário'})`;
   voltarInicio();
 }
 
@@ -162,7 +171,6 @@ function verificarSessaoAtiva() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('wrapperSistema').classList.remove('hidden');
     document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
-    sincronizarDadosPlanilha();
     voltarInicio();
   }
 }
@@ -179,7 +187,7 @@ function sincronizarDadosPlanilha() {
         appState.patrimonio = res.patrimonio || [];
         appState.movimentacoes = res.movimentacoes || [];
         appState.usuarios = res.usuarios || [];
-        appState.veiculos = res.veiculos || []; // Mapeia a aba_VEICULO da resposta do servidor
+        appState.veiculos = res.veiculos || []; // Mapeia os veículos da aba_VEICULO
         localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
         
         // Alimenta o Datalist global para os campos autocompletar ficarem inteligentes
@@ -327,7 +335,7 @@ function prepararEdicaoCliente(i) {
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 function enviarClientePlanilha() {
   const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
-  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, cidade: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
+  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, city: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
   const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   fetch(`${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Salvo!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
 }
@@ -446,7 +454,7 @@ function atualizarDatalistTags() {
   datalist.innerHTML = '';
   
   const tipo = document.getElementById('movTipo').value;
-  const ativos Filtrados = appState.patrimonio.filter(p => {
+  const ativosFiltrados = appState.patrimonio.filter(p => {
     return tipo === 'ENVIO' ? p.status === 'DISPONÍVEL EM ESTOQUE' : p.status === 'LOCADO';
   });
 
@@ -534,7 +542,7 @@ function renderizarTelaRotas(container) {
 function abrirFormularioRota() {
   const numRotaSugerido = `ROT-${new Date().getFullYear()}-${String(appState.rotas.length + 1).padStart(4, '0')}`;
   
-  // SOLUÇÃO CIRÚRGICA 1: Monta a lista de técnicos com base nos usuários cadastrados na planilha
+  // Monta a lista de técnicos com base nos usuários cadastrados na planilha
   let optionsTecnicos = '<option value="">Selecionar técnico</option>';
   if (appState.usuarios && appState.usuarios.length > 0) {
     appState.usuarios.forEach(u => {
@@ -544,7 +552,7 @@ function abrirFormularioRota() {
     appState.tecnicos.forEach(t => optionsTecnicos += `<option value="${t}">${t}</option>`);
   }
   
-  // SOLUÇÃO CIRÚRGICA 2: Monta a lista de veículos de forma dinâmica a partir da aba_VEICULO
+  // Monta a lista de veículos de forma dinâmica a partir da aba_VEICULO
   let optionsVeiculos = '<option value="">Selecionar veículo</option>';
   if (appState.veiculos && appState.veiculos.length > 0) {
     appState.veiculos.forEach(v => {
@@ -655,4 +663,102 @@ function salvarRotaPlanilhaReal() {
 
   blocos.forEach(b => {
     const nome = b.querySelector('.select-cliente-nome').value;
-    const end = b
+    const end = b.querySelector('.endereco-texto').innerText;
+    let chamados = [];
+    b.querySelectorAll('.tabela-os-cliente tbody tr').forEach(r => {
+      const inputs = r.querySelectorAll('input');
+      if(inputs[0].value || inputs[1].value) chamados.push({ os: inputs[0].value, atividade: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
+    });
+    if(nome) clientesMontados.push({ cliente: nome, endereco: end, observacao: '', chamados: chamados });
+  });
+
+  const pacoteRota = { numeroRota: nr, data: dt, tecnico1: t1, tecnico2: t2 === 'Selecionar técnico' ? '' : t2, veiculo: ve, clientes: clientesMontados };
+  const btn = document.getElementById('btnGravarRotaFinal'); btn.disabled = true; btn.innerText = 'Gravando...';
+
+  fetch(`${WEB_APP_URL}?acao=salvarRota&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}`, { method: 'POST', mode: 'no-cors' })
+  .then(() => { alert('Rota salva com sucesso!'); abrirTela('rotas'); })
+  .catch(() => { alert('Erro ao salvar.'); btn.disabled = false; btn.innerText = '💾 Salvar Rota'; });
+}
+
+function abrirHistoricoRotas() {
+  let html = '<h2>📋 Histórico Operacional de Rotas</h2><div style="margin-top:15px;">';
+  html += '<p class="card-padrao">Consulte o histórico operacional direto no banco Sheets.</p></div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>';
+  document.getElementById('conteudoPrincipal').innerHTML = html;
+  document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
+}
+
+// =========================================================================
+// INTERFACE: NOVO MÓDULO GESTÃO (ISOLADO E BLINDADO CONTRA QUEBRAS)
+// =========================================================================
+function renderizarTelaGestao(container) {
+  container.innerHTML = `
+    <div>
+      <h2>⚙️ Painel Administrativo e Gestão</h2>
+      <p style="color:#64748b; font-size:13px; margin-top:4px; margin-bottom:20px;">Gerenciamento interno de parâmetros do sistema Linemed</p>
+      
+      <div class="tabs-gestao">
+        <div class="tab-item active" id="tabColaboradores" onclick="alternarSubAbaGestao('colaboradores')">👤 Colaboradores / Usuários</div>
+        <div class="tab-item" id="tabConfiguracoes" onclick="alternarSubAbaGestao('configuracoes')">🛠️ Parâmetros Gerais</div>
+      </div>
+      
+      <div id="subConteudoGestao"></div>
+    </div>`;
+    
+  alternarSubAbaGestao('colaboradores');
+}
+
+function alternarSubAbaGestao(aba) {
+  document.getElementById('tabColaboradores').classList.remove('active');
+  document.getElementById('tabConfiguracoes').classList.remove('active');
+  
+  const subContainer = document.getElementById('subConteudoGestao');
+  
+  if (aba === 'colaboradores') {
+    document.getElementById('tabColaboradores').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>👥 Funcionários Cadastrados</h3>
+          <button class="btn-primary" style="font-size:12px; padding:6px 12px;" onclick="alert('Formulário de cadastro será mapeado na próxima etapa do plano!')">➕ Novo Colaborador</button>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th></tr>
+            </thead>
+            <tbody id="listaUsuariosTbody">
+              </tbody>
+          </table>
+        </div>
+      </div>`;
+    atualizarTabelaUsuariosLocal();
+  } else {
+    document.getElementById('tabConfiguracoes').classList.add('add("active")');
+    document.getElementById('tabConfiguracoes').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <h3>🛠️ Parâmetros do Sistema</h3>
+        <p style="color:#64748b; font-size:13px; margin-top:8px;">Configurações avançadas de frota, veículos e controle de auditoria de dados.</p>
+      </div>`;
+  }
+}
+
+function atualizarTabelaUsuariosLocal() {
+  const tbody = document.getElementById('listaUsuariosTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  if (!appState.usuarios || appState.usuarios.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário secundário localizado. Logado via credenciais mestre.</td></tr>`;
+    return;
+  }
+  
+  appState.usuarios.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><b>${u.nome || ''}</b></td><td>${u.login || '-'}</td><td>${u.perfil || 'Técnico'}</td><td><span style="padding:4px 8px; background:#dcfce7; color:#16a34a; border-radius:6px; font-size:11px; font-weight:bold;">ATIVO</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>
