@@ -111,7 +111,7 @@ const appState = {
   usuarioLogado: null,
   idClienteEmEdicao: null,
   idUsuarioEmEdicao: null,
-  filtroStatusUsuario: 'ATIVO' // Estado inicial para ocultar inativos por padrão
+  filtroStatusUsuario: 'ATIVO'
 };
 
 sincronizarDadosPlanilha();
@@ -245,7 +245,7 @@ function renderizarTelaClientes(container) {
       <div class="card-padrao">
         <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro</h3>
         <div class="form-grid">
-          <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
+          <div class="form-grid"><div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div></div>
           <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
           <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao"></div>
           <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao"></div>
@@ -536,8 +536,7 @@ function abrirFormularioRota() {
   
   let optionsTecnicos = '<option value="">Selecionar técnico</option>';
   if (appState.usuarios && appState.usuarios.length > 0) {
-    // PROTEÇÃO: Filtra os colaboradores ocultando quem estiver INATIVO para sumir das novas rotas
-    appState.usuarios.filter(u => (u.status || 'ATIVO') === 'ATIVO').forEach(u => {
+    appState.usuarios.filter(u => (u.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(u => {
       optionsTecnicos += `<option value="${u.nome}">${u.nome}</option>`;
     });
   } else {
@@ -679,7 +678,7 @@ function abrirHistoricoRotas() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (COM FILTRAGEM INTELIGENTE DE COLABORADORES)
+// INTERFACE: MÓDULO GESTÃO
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -804,7 +803,6 @@ function alternarSubAbaGestao(aba) {
     document.getElementById('btnCancelarEdicaoUsuario').addEventListener('click', limparFormularioUsuario);
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
     
-    // Vincula o evento de mudança do seletor de filtro da tabela
     document.getElementById('selectFiltroStatusGrid').value = appState.filtroStatusUsuario;
     document.getElementById('selectFiltroStatusGrid').addEventListener('change', function() {
       appState.filtroStatusUsuario = this.value;
@@ -859,7 +857,6 @@ function atualizarTabelaUsuariosLocal() {
     return;
   }
   
-  // Aplica o filtro SaaS em tempo de execução para sumir/exibir os registros conforme a escolha do usuário
   const usuariosFiltrados = appState.usuarios.filter(u => {
     const statusUser = (u.status || 'ATIVO').toUpperCase();
     if (appState.filtroStatusUsuario === 'TODOS') return true;
@@ -877,10 +874,8 @@ function atualizarTabelaUsuariosLocal() {
     const badgeBg = isAtivo ? '#dcfce7' : '#fee2e2';
     const badgeColor = isAtivo ? '#16a34a' : '#dc2626';
     
-    // Tratamento defensivo extra: se o CPF contiver texto de status legado da planilha, limpa a exibição na tabela
-    const cpfLimpo = (u.cpf && !u.cpf.includes('ATIVO') && !u.cpf.includes('INATIVO')) ? u.cpf : '-';
-    // Se a data de admissão contiver texto legado, trata graciosamente
-    const dataAdmissaoTratada = (u.admissao && !u.admissao.includes('ATIVO')) ? formatarDataBr(u.admissao) : '-';
+    const cpfLimpo = (u.cpf && !u.cpf.includes('ATIVO') && !u.cpf.includes('INATIVO') && u.cpf.length > 5) ? u.cpf : '-';
+    const dataAdmissaoTratada = (u.admissao && !u.admissao.includes('ATIVO') && !u.admissao.includes('INATIVO')) ? formatarDataBr(u.admissao) : '-';
     
     tr.innerHTML = `
       <td><b>${u.nome || ''}</b></td>
@@ -894,7 +889,6 @@ function atualizarTabelaUsuariosLocal() {
   });
 }
 
-// Correção estrutural: busca o usuário de forma resiliente por ID String exclusivo em vez do índice físico
 function prepararEdicaoUsuarioPeloId(id) {
   const u = appState.usuarios.find(user => String(user.id) === String(id));
   if (!u) return alert('Colaborador não localizado no banco.');
@@ -906,18 +900,17 @@ function prepararEdicaoUsuarioPeloId(id) {
   document.getElementById('formUserSenha').value = u.senha || '';
   document.getElementById('formUserPerfil').value = u.perfil || 'Técnico';
   
-  // Tratamento de segurança contra dados corrompidos legados da planilha
-  document.getElementById('formUserCpf').value = (u.cpf && !u.cpf.includes('ATIVO')) ? u.cpf : '';
-  document.getElementById('formUserRg').value = u.rg || '';
-  document.getElementById('formUserCnh').value = u.cnh || '';
-  document.getElementById('formUserTelefone').value = u.telefone || '';
-  document.getElementById('formUserCep').value = u.cep || '';
+  document.getElementById('formUserCpf').value = (u.cpf && !u.cpf.includes('ATIVO') && !u.cpf.includes('INATIVO') && u.cpf.length > 5) ? u.cpf : '';
+  document.getElementById('formUserRg').value = (u.rg && u.rg.length > 2) ? u.rg : '';
+  document.getElementById('formUserCnh').value = (u.cnh && u.cnh.length > 2 && !u.cnh.includes('GMT')) ? u.cnh : '';
+  document.getElementById('formUserTelefone').value = (u.telefone && u.telefone.length > 4 && !u.telefone.includes('/')) ? u.telefone : '';
+  document.getElementById('formUserCep').value = (u.cep && u.cep.length > 4) ? u.cep : '';
   document.getElementById('formUserLogradouro').value = u.logradouro || '';
   document.getElementById('formUserNumero').value = u.numero || '';
   document.getElementById('formUserBairro').value = u.bairro || '';
   document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
   document.getElementById('formUserUf').value = u.uf || 'SP';
-  document.getElementById('formUserAdmissao').value = (u.admissao && !u.admissao.includes('ATIVO')) ? u.admissao : '';
+  document.getElementById('formUserAdmissao').value = (u.admissao && !u.admissao.includes('ATIVO') && !u.admissao.includes('INATIVO')) ? u.admissao : '';
   
   const statusAtual = (u.status || 'ATIVO').toUpperCase();
   document.getElementById('formUserStatus').value = statusAtual;
@@ -934,7 +927,6 @@ function prepararEdicaoUsuarioPeloId(id) {
   document.getElementById('tituloFormUsuario').innerText = 'Editar Colaborador';
   document.getElementById('tituloFormUsuario').style.color = 'var(--cor-sucesso)';
   
-  // Sobe o scroll suavemente para o formulário de edição para dar conforto visual ao gestor
   document.getElementById('tituloFormUsuario').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -964,6 +956,16 @@ function limparFormularioUsuario() {
   document.getElementById('tituloFormUsuario').innerText = 'Ficha do Colaborador';
   document.getElementById('tituloFormUsuario').style.color = 'var(--cor-primaria)';
 }
+
+// INJEÇÃO DA FUNÇÃO GLOBAL DE RETORNO (ELIMINA O DELAY DO CORS DEFINITIVAMENTE)
+window.processarRetornoGoogleSheets = function(respostaServer) {
+  const btn = document.getElementById('btnSalvarUsuarioPlanilha');
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Colaborador'; }
+  
+  alert('Alteração salva com sucesso no banco Orizon!');
+  limparFormularioUsuario();
+  sincronizarDadosPlanilha();
+};
 
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim();
@@ -998,16 +1000,16 @@ function enviarUsuarioPlanilha() {
   const btn = document.getElementById('btnSalvarUsuarioPlanilha');
   btn.disabled = true; btn.innerText = '⏳ Gravando...';
   
-  fetch(`${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' })
-  .then(() => { 
-    alert('Salvo com sucesso!'); 
-    limparFormularioUsuario(); 
-    setTimeout(sincronizarDadosPlanilha, 1000); 
-  })
-  .catch(err => {
-    console.error(err);
-    btn.disabled = false; btn.innerText = '💾 Salvar Colaborador';
-  });
+  // TÉCNICA SAAS AVANÇADA: Envia usando elemento script dinâmico com callback atrelado (Contorna o bloqueio de CORS da Resposta)
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
+  
+  const scriptAntigo = document.getElementById('jsonp_execution_script');
+  if(scriptAntigo) scriptAntigo.remove();
+  
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_execution_script';
+  scriptElement.src = urlFinal;
+  document.body.appendChild(scriptElement);
 }
 </script>
 </body>
