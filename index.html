@@ -176,9 +176,6 @@ function verificarSessaoAtiva() {
 }
 
 function sincronizarDadosPlanilha() {
-  const btnSync = document.getElementById('btnSyncClientesPlanilha');
-  if(btnSync) { btnSync.innerText = '⏳ Sincronizando...'; btnSync.disabled = true; }
-
   fetch(`${WEB_APP_URL}?acao=listarCadastros`)
     .then(res => res.json())
     .then(res => {
@@ -203,12 +200,8 @@ function sincronizarDadosPlanilha() {
         if (document.getElementById('movTagInput')) atualizarDatalistTags();
         if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
       }
-      if(btnSync) { btnSync.innerText = '🔄 Sincronizar Planilha'; btnSync.disabled = false; }
     })
-    .catch(err => {
-      console.error(err);
-      if(btnSync) { btnSync.innerText = '🔄 Sincronizar Planilha'; btnSync.disabled = false; }
-    });
+    .catch(err => console.error("Erro na sincronização automática:", err));
 }
 
 function abrirTela(menu) {
@@ -269,7 +262,7 @@ function renderizarTelaClientes(container) {
           <div class="form-grupo"><label>E-mail</label><input type="email" id="formEmail" class="input-padrao"></div>
           <div class="form-grupo"><label>Status</label><select id="formStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select></div>
         </div>
-        <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservacao" class="input-padrao"></div></div>
+        <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservation" class="input-padrao"></div></div>
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;"><button id="btnCancelarEdicao" class="btn-secondary hidden">Cancelar</button><button id="btnSalvarClientePlanilha" class="btn-success">💾 Salvar Cliente</button></div>
       </div>
       <div class="card-padrao"><h3>Clientes na Base</h3><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ/CPF</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div></div>
@@ -832,7 +825,7 @@ function buscarCepUsuarioAutomatico() {
 
 function formatarDataBr(dataUs) {
   if(!dataUs) return '-';
-  if(dataUs.includes('/')) return dataUs; // Proteção para dados legados já salvos em formato BR
+  if(dataUs.includes('/')) return dataUs.split(' ')[0]; 
   const partes = dataUs.split('-');
   if(partes.length !== 3) return dataUs;
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
@@ -866,7 +859,7 @@ function atualizarTabelaUsuariosLocal() {
   });
 }
 
-function prepararEdicaoUsuario(idx) {
+function幕prepararEdicaoUsuario(idx) {
   const u = appState.usuarios[idx];
   appState.idUsuarioEmEdicao = u.id;
   
@@ -943,6 +936,7 @@ function enviarUsuarioPlanilha() {
   const d = {
     id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(),
     nome: nome, login: login, senha: senha, perfil: perfil,
+    status: status,
     cpf: document.getElementById('formUserCpf').value,
     rg: document.getElementById('formUserRg').value,
     cnh: document.getElementById('formUserCnh').value,
@@ -954,7 +948,7 @@ function enviarUsuarioPlanilha() {
     cidade: document.getElementById('formUserCidade').value,
     uf: document.getElementById('formUserUf').value,
     admissao: document.getElementById('formUserAdmissao').value,
-    status: status, motivoDesligamento: motivo
+    motivoDesligamento: motivo
   };
   
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
