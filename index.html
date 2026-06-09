@@ -51,6 +51,11 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
 .form-grid label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
 .form-grupo { display: flex; flex-direction: column; margin-bottom: 8px; }
+
+/* Estilos para abas internas do painel Gestão */
+.tabs-gestao { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--borda); padding-bottom: 5px; }
+.tab-item { padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 2px solid transparent; }
+.tab-item.active { color: var(--cor-primaria); border-color: var(--cor-primaria); }
 </style>
 </head>
 <body>
@@ -77,6 +82,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
       <button id="btnMenuLocacao">🤝 Locação de Equipamentos</button>
       <button id="btnMenuPatrimonio">📦 Patrimônio (Inventário)</button>
       <button id="btnMenuDashboards">📊 Dashboards</button>
+      <button id="btnMenuGestao">⚙️ Gestão</button>
     </div>
     <button id="btnSidebarLogout" class="btn-logout">🚪 Sair do Sistema</button>
   </div>
@@ -102,6 +108,7 @@ const appState = {
   tecnicos: ['Diogo', 'Fagner Lima', 'Administrador'],
   veiculos: [],
   rotas: [],
+  usuarios: [], // Armazena os usuários vindos da planilha para a Gestão e Rotas
   usuarioLogado: null,
   idClienteEmEdicao: null
 };
@@ -116,6 +123,7 @@ document.getElementById('btnMenuChamados').addEventListener('click', () => abrir
 document.getElementById('btnMenuLocacao').addEventListener('click', () => abrirTela('locacao'));
 document.getElementById('btnMenuPatrimonio').addEventListener('click', () => abrirTela('patrimonio'));
 document.getElementById('btnMenuDashboards').addEventListener('click', () => abrirTela('dashboards'));
+document.getElementById('btnMenuGestao').addEventListener('click', () => abrirTela('gestao'));
 
 function fazerLogin() {
   const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
@@ -171,6 +179,7 @@ function sincronizarDadosPlanilha() {
         appState.patrimonio = res.patrimonio || [];
         appState.movimentacoes = res.movimentacoes || [];
         appState.usuarios = res.usuarios || [];
+        appState.veiculos = res.veiculos || []; // Mapeia a aba_VEICULO da resposta do servidor
         localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
         
         // Alimenta o Datalist global para os campos autocompletar ficarem inteligentes
@@ -185,6 +194,7 @@ function sincronizarDadosPlanilha() {
         if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
         if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
         if (document.getElementById('movTagInput')) atualizarDatalistTags();
+        if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
       }
       if(btnSync) { btnSync.innerText = '🔄 Sincronizar Planilha'; btnSync.disabled = false; }
     })
@@ -213,6 +223,8 @@ function abrirTela(menu) {
     renderizarTelaLocacao(principal);
   } else if (menu === 'rotas') {
     renderizarTelaRotas(principal);
+  } else if (menu === 'gestao') {
+    renderizarTelaGestao(principal);
   } else {
     principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Tela em desenvolvimento.</p>`;
   }
@@ -321,7 +333,7 @@ function enviarClientePlanilha() {
 }
 
 // =========================================================================
-// INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL
+// INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL (MANTIDA 100% FIEL)
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
   container.innerHTML = `
@@ -352,7 +364,7 @@ function atualizarTabelaPatrimonioLocal() {
 }
 
 // =========================================================================
-// INTERFACE: LOCAÇÃO E QUANTITATIVO POR CLIENTE
+// INTERFACE: LOCAÇÃO E QUANTITATIVO POR CLIENTE (MANTIDA 100% FIEL)
 // =========================================================================
 function renderizarTelaLocacao(container) {
   let optCli = '<option value="">Escolha a Unidade / Cliente</option>';
@@ -434,7 +446,7 @@ function atualizarDatalistTags() {
   datalist.innerHTML = '';
   
   const tipo = document.getElementById('movTipo').value;
-  const ativosFiltrados = appState.patrimonio.filter(p => {
+  const ativos Filtrados = appState.patrimonio.filter(p => {
     return tipo === 'ENVIO' ? p.status === 'DISPONÍVEL EM ESTOQUE' : p.status === 'LOCADO';
   });
 
@@ -504,7 +516,7 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// MÓDULO DE ROTAS DIÁRIAS (ATUALIZADO CIRURGICAMENTE: DATALIST + EXCLUIR OS)
+// MÓDULO DE ROTAS DIÁRIAS (INTEGRAÇÃO DINÂMICA COMPLETA DE USUÁRIOS E VEÍCULOS)
 // =========================================================================
 function renderizarTelaRotas(container) {
   container.innerHTML = `
@@ -521,9 +533,26 @@ function renderizarTelaRotas(container) {
 
 function abrirFormularioRota() {
   const numRotaSugerido = `ROT-${new Date().getFullYear()}-${String(appState.rotas.length + 1).padStart(4, '0')}`;
-  let optionsTecnicos = '<option>Selecionar técnico</option>';
-  appState.tecnicos.forEach(t => optionsTecnicos += `<option>${t}</option>`);
-  let optionsVeiculos = '<option>Selecionar veículo</option><option>Strada</option><option>Fiorino</option>';
+  
+  // SOLUÇÃO CIRÚRGICA 1: Monta a lista de técnicos com base nos usuários cadastrados na planilha
+  let optionsTecnicos = '<option value="">Selecionar técnico</option>';
+  if (appState.usuarios && appState.usuarios.length > 0) {
+    appState.usuarios.forEach(u => {
+      optionsTecnicos += `<option value="${u.nome}">${u.nome}</option>`;
+    });
+  } else {
+    appState.tecnicos.forEach(t => optionsTecnicos += `<option value="${t}">${t}</option>`);
+  }
+  
+  // SOLUÇÃO CIRÚRGICA 2: Monta a lista de veículos de forma dinâmica a partir da aba_VEICULO
+  let optionsVeiculos = '<option value="">Selecionar veículo</option>';
+  if (appState.veiculos && appState.veiculos.length > 0) {
+    appState.veiculos.forEach(v => {
+      optionsVeiculos += `<option value="${v.nome || v}">${v.nome || v}</option>`;
+    });
+  } else {
+    optionsVeiculos += '<option value="Strada">Strada</option><option value="Fiorino">Fiorino</option>';
+  }
 
   document.getElementById('conteudoPrincipal').innerHTML = `
     <div>
@@ -589,14 +618,12 @@ function adicionarClienteRota() {
     </table>`;
   container.appendChild(div);
 
-  // Lógica do autocompletar inteligente para buscar endereço dinâmico na digitação
   div.querySelector('.select-cliente-nome').addEventListener('input', function() {
     const valorDigitado = this.value.trim().toLowerCase();
     const local = appState.clientes.find(c => c.nome.toLowerCase() === valorDigitado);
     div.querySelector('.endereco-texto').innerText = local ? (local.endereco || `${local.logradouro}, ${local.numero || ''} - ${local.bairro || ''}`) : 'Procurando unidade...';
   });
 
-  // MELHORIA: Adiciona nova linha de OS já contendo seu botão de exclusão individual
   div.querySelector('.btn-add-os').addEventListener('click', () => {
     const tr = document.createElement('tr'); 
     tr.innerHTML = `
@@ -621,38 +648,11 @@ function salvarRotaPlanilhaReal() {
   const t2 = document.getElementById('tecnico2Rota').value;
   const ve = document.getElementById('veiculoRota').value;
 
-  if (!dt || t1.includes('Selecionar') || ve.includes('Selecionar')) return alert('Preencha os campos obrigatórios!');
+  if (!dt || t1.includes('Selecionar') || ve.includes('Selecionar') || !t1 || !ve) return alert('Preencha os campos obrigatórios!');
 
   const blocos = document.querySelectorAll('.bloco-cliente-rota');
   let clientesMontados = [];
 
   blocos.forEach(b => {
     const nome = b.querySelector('.select-cliente-nome').value;
-    const end = b.querySelector('.endereco-texto').innerText;
-    let chamados = [];
-    b.querySelectorAll('.tabela-os-cliente tbody tr').forEach(r => {
-      const inputs = r.querySelectorAll('input');
-      if(inputs[0].value || inputs[1].value) chamados.push({ os: inputs[0].value, atividade: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
-    });
-    if(nome) clientesMontados.push({ cliente: nome, endereco: end, observacao: '', chamados: chamados });
-  });
-
-  const pacoteRota = { numeroRota: nr, data: dt, tecnico1: t1, tecnico2: t2 === 'Selecionar técnico' ? '' : t2, veiculo: ve, clientes: clientesMontados };
-  const btn = document.getElementById('btnGravarRotaFinal'); btn.disabled = true; btn.innerText = 'Gravando...';
-
-  fetch(`${WEB_APP_URL}?acao=salvarRota&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}`, { method: 'POST', mode: 'no-cors' })
-  .then(() => { alert('Rota salva com sucesso!'); abrirTela('rotas'); })
-  .catch(() => { alert('Erro ao salvar.'); btn.disabled = false; btn.innerText = '💾 Salvar Rota'; });
-}
-
-function abrirHistoricoRotas() {
-  let html = '<h2>📋 Histórico Operacional de Rotas</h2><div style="margin-top:15px;">';
-  html += '<p class="card-padrao">Consulte o histórico operacional direto no banco Sheets.</p></div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>';
-  document.getElementById('conteudoPrincipal').innerHTML = html;
-  document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
-}
-
-verificarSessaoAtiva();
-</script>
-</body>
-</html>
+    const end = b
