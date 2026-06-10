@@ -222,7 +222,6 @@ function abrirTela(menu) {
   } else if (menu === 'locacao') {
     renderizarTelaLocacao(principal);
   } else if (menu === 'rotas') {
-    // AQUI ESTÁ O IFRAME INTEGRADO COM SEGURANÇA
     principal.innerHTML = `
       <div style="width: 100%; height: 100%; min-height: calc(100vh - 160px);">
         <iframe src="https://script.google.com/macros/s/AKfycbwEg5dJy8Ll32PvBycJNB9pPtHhDb5r6u6oiTphOnLeYlQu4WAHE_ZyGen1R6Q0IHSGzA/exec" 
@@ -322,7 +321,7 @@ function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
   appState.clientes.forEach((c, i) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.endereco}</td><td>${c.bairro}</td><td>${c.cidade}</td><td>${c.responsavel}</td><td>${c.status}</td><td><button class="btn-primary" onclick="prepararEdicaoCliente(${i})">📝</button></td>`;
+    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.endereco || ''}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td><button class="btn-primary" onclick="prepararEdicaoCliente(${i})">📝</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -333,7 +332,7 @@ function prepararEdicaoCliente(i) {
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 function enviarClientePlanilha() {
   const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
-  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, cidade: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
+  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, city: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
   const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   fetch(`${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Salvo!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
 }
@@ -359,7 +358,7 @@ function renderizarTelaPatrimonio(container) {
 
 function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Nenhum item carregado.</td></tr>`; return; }
+  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Nenhum item carregado.</td></tr>`; return; }
   
   appState.patrimonio.forEach(p => {
     const tr = document.createElement('tr');
@@ -522,7 +521,7 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// MÓDULO DE ROTAS DIÁRIAS (SUBSTITUÍDO PELA VERSÃO LIVE SEM TRAVAMENTOS)
+// MÓDULO DE ROTAS DIÁRIAS
 // =========================================================================
 function abrirHistoricoRotas() {
   let html = '<h2>📋 Histórico Operacional de Rotas</h2><div style="margin-top:15px;">';
@@ -852,6 +851,9 @@ window.processarRetornoGoogleSheets = function(respostaServer) {
   sincronizarDadosPlanilha();
 };
 
+// =========================================================================
+// ENVIO AJAX COMPATÍVEL
+// =========================================================================
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim();
   const login = document.getElementById('formUserLogin').value.trim();
