@@ -98,6 +98,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <datalist id="datalistClientesGlobal"></datalist>
 
 <script>
+// NOTA: Se você gerou uma nova versão do Apps Script após adicionar as 2 telas HTML, certifique-se de atualizar esta URL caso tenha mudado.
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
 const appState = {
@@ -114,9 +115,11 @@ const appState = {
   filtroStatusUsuario: 'ATIVO'
 };
 
+// Executa carga inicial com segurança
 sincronizarDadosPlanilha();
 verificarSessaoAtiva();
 
+// Listeners dos botões principais
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
@@ -179,12 +182,14 @@ function sincronizarDadosPlanilha() {
   fetch(`${WEB_APP_URL}?acao=listarCadastros`)
     .then(res => res.json())
     .then(res => {
-      if (res.sucesso) {
+      // Força a leitura mesmo se a estrutura da planilha vier alterada pelas novas abas HTML
+      if (res) {
         appState.clientes = res.clientes || [];
         appState.patrimonio = res.patrimonio || [];
         appState.movimentacoes = res.movimentacoes || [];
         appState.usuarios = res.usuarios || [];
         appState.veiculos = res.veiculos || []; 
+        
         localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
         
         const dl = document.getElementById('datalistClientesGlobal');
@@ -195,13 +200,16 @@ function sincronizarDadosPlanilha() {
           });
         }
 
+        // Força a renderização em tempo real se o usuário estiver na tela respectiva
         if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
         if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
         if (document.getElementById('movTagInput')) atualizarDatalistTags();
         if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
       }
     })
-    .catch(err => console.error("Erro na sincronização:", err));
+    .catch(err => {
+      console.error("Erro crítico na sincronização. Verifique o retorno do Apps Script:", err);
+    });
 }
 
 function abrirTela(menu) {
@@ -222,6 +230,7 @@ function abrirTela(menu) {
   } else if (menu === 'locacao') {
     renderizarTelaLocacao(principal);
   } else if (menu === 'rotas') {
+    // Aponta dinamicamente para o seu deploy principal de rotas
     principal.innerHTML = `
       <div style="width: 100%; height: 100%; min-height: calc(100vh - 160px);">
         <iframe src="https://script.google.com/macros/s/AKfycbwEg5dJy8Ll32PvBycJNB9pPtHhDb5r6u6oiTphOnLeYlQu4WAHE_ZyGen1R6Q0IHSGzA/exec" 
@@ -231,7 +240,7 @@ function abrirTela(menu) {
   } else if (menu === 'gestao') {
     renderizarTelaGestao(principal);
   } else {
-    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Tela em desenvolvimento.</p>`;
+    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Tela em desenvolvimento ou integrada na planilha.</p>`;
   }
 }
 
@@ -319,9 +328,13 @@ function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (
 
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
+  if (!appState.clientes || appState.clientes.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente sincronizado ou carregando base...</td></tr>`;
+    return;
+  }
   appState.clientes.forEach((c, i) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.endereco || ''}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td><button class="btn-primary" onclick="prepararEdicaoCliente(${i})">📝</button></td>`;
+    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.endereco || ''}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${i})">📝</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -358,7 +371,7 @@ function renderizarTelaPatrimonio(container) {
 
 function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Nenhum item carregado.</td></tr>`; return; }
+  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Nenhum item carregado do inventário no momento.</td></tr>`; return; }
   
   appState.patrimonio.forEach(p => {
     const tr = document.createElement('tr');
@@ -373,7 +386,9 @@ function atualizarTabelaPatrimonioLocal() {
 // =========================================================================
 function renderizarTelaLocacao(container) {
   let optCli = '<option value="">Escolha a Unidade / Cliente</option>';
-  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome}">${c.nome}</option>`);
+  if(appState.clientes && appState.clientes.length > 0) {
+    appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome}">${c.nome}</option>`);
+  }
 
   container.innerHTML = `
     <div>
@@ -447,7 +462,7 @@ function renderizarTelaLocacao(container) {
 
 function atualizarDatalistTags() {
   const datalist = document.getElementById('listaTagsAutocomplete');
-  if(!datalist) return;
+  if(!datalist || !appState.patrimonio) return;
   datalist.innerHTML = '';
   
   const tipo = document.getElementById('movTipo').value;
@@ -518,16 +533,6 @@ function processarMovimentacaoLocacao() {
     setTimeout(() => { abrirTela('locacao'); }, 1200);
   })
   .catch(err => { console.error(err); btn.disabled = false; btn.innerText = '💾 Confirmar Movimentação'; });
-}
-
-// =========================================================================
-// MÓDULO DE ROTAS DIÁRIAS
-// =========================================================================
-function abrirHistoricoRotas() {
-  let html = '<h2>📋 Histórico Operacional de Rotas</h2><div style="margin-top:15px;">';
-  html += '<p class="card-padrao">Consulte e gerencie o histórico operacional completo direto no seu banco Google Sheets.</p></div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>';
-  document.getElementById('conteudoPrincipal').innerHTML = html;
-  document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
 }
 
 // =========================================================================
@@ -706,7 +711,7 @@ function atualizarTabelaUsuariosLocal() {
   tbody.innerHTML = '';
   
   if (!appState.usuarios || appState.usuarios.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário localizado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário localizado ou base sincronizando...</td></tr>`;
     return;
   }
   
@@ -717,11 +722,11 @@ function atualizarTabelaUsuariosLocal() {
   });
 
   if (usuariosFiltrados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador com o status "${appState.filtroStatusUsuario}" localizado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador localizado para o filtro selecionado.</td></tr>`;
     return;
   }
   
-  usuariosFiltrados.forEach((u, idx) => {
+  usuariosFiltrados.forEach((u) => {
     const tr = document.createElement('tr');
     const isAtivo = (u.status || 'ATIVO').toUpperCase() === 'ATIVO';
     const badgeBg = isAtivo ? '#dcfce7' : '#fee2e2';
@@ -767,8 +772,7 @@ function prepararEdicaoUsuarioPeloId(id) {
   let dataFinalISO = '';
   if (u.admissao) {
     let strData = String(u.admissao).trim();
-    
-    if (strData.length > 15 && isNaN(strData) && (strData.includes('GMT') || strData.includes('Mon') || strData.includes('Tue') || strData.includes('Wed') || strData.includes('Thu') || strData.includes('Fri') || strData.includes('Sat') || strData.includes('Sun'))) {
+    if (strData.length > 15 && isNaN(strData) && strData.includes('GMT')) {
       try {
         const dObj = new Date(strData);
         if (!isNaN(dObj.getTime())) {
@@ -777,21 +781,12 @@ function prepararEdicaoUsuarioPeloId(id) {
           let dia = String(dObj.getDate()).padStart(2, '0');
           dataFinalISO = `${ano}-${mes}-${dia}`;
         }
-      } catch(e) { console.error("Falha ao ler objeto de data longo:", e); }
+      } catch(e) { console.error(e); }
     }
-    
-    if (!dataFinalISO && strData.includes('-')) {
-      const partes = strData.split('T')[0].split('-');
-      if (partes.length === 3) {
-        dataFinalISO = `${partes[0]}-${partes[1].padStart(2, '0')}-${partes[2].padStart(2, '0')}`;
-      }
-    }
-    
+    if (!dataFinalISO && strData.includes('-')) dataFinalISO = strData.split('T')[0];
     if (!dataFinalISO && strData.includes('/')) {
       const partes = strData.split(' ')[0].split('/');
-      if (partes.length === 3) {
-        dataFinalISO = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-      }
+      if (partes.length === 3) dataFinalISO = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
     }
   }
   
@@ -811,7 +806,6 @@ function prepararEdicaoUsuarioPeloId(id) {
   document.getElementById('btnCancelarEdicaoUsuario').classList.remove('hidden');
   document.getElementById('tituloFormUsuario').innerText = 'Editar Colaborador';
   document.getElementById('tituloFormUsuario').style.color = 'var(--cor-sucesso)';
-  
   document.getElementById('tituloFormUsuario').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -845,15 +839,11 @@ function limparFormularioUsuario() {
 window.processarRetornoGoogleSheets = function(respostaServer) {
   const btn = document.getElementById('btnSalvarUsuarioPlanilha');
   if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Colaborador'; }
-  
   alert('Alteração salva com sucesso no banco Orizon!');
   limparFormularioUsuario();
   sincronizarDadosPlanilha();
 };
 
-// =========================================================================
-// ENVIO AJAX COMPATÍVEL
-// =========================================================================
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim();
   const login = document.getElementById('formUserLogin').value.trim();
