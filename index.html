@@ -6,17 +6,17 @@
 <title>ORIZON - Gestão Inteligente</title>
 <style>
 :root {
-  --cor-primaria: #2563eb;
-  --cor-secundaria: #334155;
-  --cor-sucesso: #16a34a;
-  --cor-perigo: #dc2626;
-  --borda: #cbd5e1;
+  --cor-primaria: #2563eb;
+  --cor-secundaria: #334155;
+  --cor-sucesso: #16a34a;
+  --cor-perigo: #dc2626;
+  --borda: #cbd5e1;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
 body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 
 .input-padrao, .select-padrao, .textarea-padrao {
-  width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; background: white; font-size: 13px;
+  width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; background: white; font-size: 13px;
 }
 .btn-primary { background: var(--cor-primaria); color: white; }
 .btn-danger { background: var(--cor-perigo); color: white; }
@@ -60,39 +60,39 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <body>
 
 <div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:99999;">
-  <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
-    <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">⚡ ORIZON</div>
-    <p style="color:#64748b; margin-bottom:28px;">Smart Operations Platform</p>
-    <input id="loginUser" type="text" placeholder="Usuário" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
-    <input id="loginPass" type="password" placeholder="Senha" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
-    <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px;">Entrar no sistema</button>
-    <p style="margin-top:18px; font-size:12px; color:#94a3b8;">by DMA Solutions • Operational Management</p>
-  </div>
+  <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
+    <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">⚡ ORIZON</div>
+    <p style="color:#64748b; margin-bottom:28px;">Smart Operations Platform</p>
+    <input id="loginUser" type="text" placeholder="Usuário" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
+    <input id="loginPass" type="password" placeholder="Senha" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
+    <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px;">Entrar no sistema</button>
+    <p style="margin-top:18px; font-size:12px; color:#94a3b8;">by DMA Solutions • Operational Management</p>
+  </div>
 </div>
 
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
-  <div class="sidebar">
-    <div class="logo" id="logoInicio">⚡ ORIZON</div>
-    <small>Painel de Operações</small>
-    <div class="menu-items">
-      <button id="btnMenuRotas">📍 Rotas Diárias</button>
-      <button id="btnMenuClientes">🏥 Clientes / Unidades</button>
-      <button id="btnMenuChamados">🛠 Chamados de Maint</button>
-      <button id="btnMenuLocacao">🤝 Locação de Equipamentos</button>
-      <button id="btnMenuPatrimonio">📦 Patrimônio (Inventário)</button>
-      <button id="btnMenuDashboards">📊 Dashboards</button>
-      <button id="btnMenuGestao">⚙️ Gestão</button>
-    </div>
-    <button id="btnSidebarLogout" class="btn-logout">🚪 Sair do Sistema</button>
-  </div>
+  <div class="sidebar">
+    <div class="logo" id="logoInicio">⚡ ORIZON</div>
+    <small>Painel de Operações</small>
+    <div class="menu-items">
+      <button id="btnMenuRotas">📍 Rotas Diárias</button>
+      <button id="btnMenuClientes">🏥 Clientes / Unidades</button>
+      <button id="btnMenuChamados">🛠 Chamados de Maint</button>
+      <button id="btnMenuLocacao">🤝 Locação de Equipamentos</button>
+      <button id="btnMenuPatrimonio">📦 Patrimônio (Inventário)</button>
+      <button id="btnMenuDashboards">📊 Dashboards</button>
+      <button id="btnMenuGestao">⚙️ Gestão</button>
+    </div>
+    <button id="btnSidebarLogout" class="btn-logout">🚪 Sair do Sistema</button>
+  </div>
 
-  <div class="main">
-    <div class="topbar">
-      <h1>ORIZON</h1>
-      <p id="subtituloTopbar">Gestão inteligente de rotas e operations</p>
-    </div>
-    <div class="content" id="conteudoPrincipal"></div>
-  </div>
+  <div class="main">
+    <div class="topbar">
+      <h1>ORIZON</h1>
+      <p id="subtituloTopbar">Gestão inteligente de rotas e operations</p>
+    </div>
+    <div class="content" id="conteudoPrincipal"></div>
+  </div>
 </div>
 
 <datalist id="datalistClientesGlobal"></datalist>
@@ -101,17 +101,17 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
 const appState = {
-  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
-  patrimonio: [],
-  movimentacoes: [],
-  tecnicos: ['Diogo', 'Administrador'],
-  veiculos: [],
-  rotas: [],
-  usuarios: [], 
-  usuarioLogado: null,
-  idClienteEmEdicao: null,
-  idUsuarioEmEdicao: null,
-  filtroStatusUsuario: 'ATIVO'
+  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
+  patrimonio: [],
+  movimentacoes: [],
+  tecnicos: ['Diogo', 'Administrador'],
+  veiculos: [],
+  rotas: [],
+  usuarios: [], 
+  usuarioLogado: null,
+  idClienteEmEdicao: null,
+  idUsuarioEmEdicao: null,
+  filtroStatusUsuario: 'ATIVO'
 };
 
 sincronizarDadosPlanilha();
@@ -129,105 +129,111 @@ document.getElementById('btnMenuDashboards').addEventListener('click', () => abr
 document.getElementById('btnMenuGestao').addEventListener('click', () => abrirTela('gestao'));
 
 function fazerLogin() {
-  const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
-  const passIn = document.getElementById('loginPass').value;
+  const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
+  const passIn = document.getElementById('loginPass').value;
 
-  if ((userIn === 'admin' && passIn === '@181989Di') || (userIn === 'visitante' && passIn === '123')) {
-    liberarPainel({ nome: userIn === 'admin' ? 'Administrador' : 'Visitante', perfil: userIn.toUpperCase() });
-    return;
-  }
-  
-  if (appState.usuarios && appState.usuarios.length > 0) {
-    const conta = appState.usuarios.find(u => String(u.login).toLowerCase() === userIn && String(u.senha) === passIn);
-    if (conta) { 
-      liberarPainel(conta); 
-      return;
-    }
-  }
-  alert('Usuário ou senha incorretos ou base ainda carregando!');
+  if ((userIn === 'admin' && passIn === '@181989Di') || (userIn === 'visitante' && passIn === '123')) {
+    liberarPainel({ nome: userIn === 'admin' ? 'Administrador' : 'Visitante', perfil: userIn.toUpperCase() });
+    return;
+  }
+  
+  if (appState.usuarios && appState.usuarios.length > 0) {
+    const conta = appState.usuarios.find(u => String(u.login).toLowerCase() === userIn && String(u.senha) === passIn);
+    if (conta) { 
+      liberarPainel(conta); 
+      return;
+    }
+  }
+  alert('Usuário ou senha incorretos ou base ainda carregando!');
 }
 
 function liberarPainel(usuario) {
-  appState.usuarioLogado = usuario;
-  sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('wrapperSistema').classList.remove('hidden');
-  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil || 'USUÁRIO'})`;
-  voltarInicio();
+  appState.usuarioLogado = usuario;
+  sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('wrapperSistema').classList.remove('hidden');
+  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil || 'USUÁRIO'})`;
+  voltarInicio();
 }
 
 function efetuarLogout() {
-  if (!confirm('Deseja realmente sair?')) return;
-  appState.usuarioLogado = null;
-  sessionStorage.removeItem('orizonUsuarioAtivo');
-  document.getElementById('wrapperSistema').classList.add('hidden');
-  document.getElementById('loginScreen').style.display = 'flex';
+  if (!confirm('Deseja realmente sair?')) return;
+  appState.usuarioLogado = null;
+  sessionStorage.removeItem('orizonUsuarioAtivo');
+  document.getElementById('wrapperSistema').classList.add('hidden');
+  document.getElementById('loginScreen').style.display = 'flex';
 }
 
 function verificarSessaoAtiva() {
-  const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
-  if (sessaoSalva) {
-    appState.usuarioLogado = JSON.parse(sessaoSalva);
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('wrapperSistema').classList.remove('hidden');
-    document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
-    voltarInicio();
-  }
+  const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
+  if (sessaoSalva) {
+    appState.usuarioLogado = JSON.parse(sessaoSalva);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('wrapperSistema').classList.remove('hidden');
+    document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
+    voltarInicio();
+  }
 }
 
 function sincronizarDadosPlanilha() {
-  fetch(`${WEB_APP_URL}?acao=listarCadastros`)
-    .then(res => res.json())
-    .then(res => {
-      if (res.sucesso) {
-        appState.clientes = res.clientes || [];
-        appState.patrimonio = res.patrimonio || [];
-        appState.movimentacoes = res.movimentacoes || [];
-        appState.usuarios = res.usuarios || [];
-        appState.veiculos = res.veiculos || []; 
-        localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
-        
-        const dl = document.getElementById('datalistClientesGlobal');
-        if(dl) {
-          dl.innerHTML = '';
-          appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
-            let opt = document.createElement('option'); opt.value = c.nome; dl.appendChild(opt);
-          });
-        }
+  fetch(`${WEB_APP_URL}?acao=listarCadastros`)
+    .then(res => res.json())
+    .then(res => {
+      if (res.sucesso) {
+        appState.clientes = res.clientes || [];
+        appState.patrimonio = res.patrimonio || [];
+        appState.movimentacoes = res.movimentacoes || [];
+        appState.usuarios = res.usuarios || [];
+        appState.veiculos = res.veiculos || []; 
+        localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
+        
+        const dl = document.getElementById('datalistClientesGlobal');
+        if(dl) {
+          dl.innerHTML = '';
+          appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+            let opt = document.createElement('option'); opt.value = c.nome; dl.appendChild(opt);
+          });
+        }
 
-        if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
-        if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
-        if (document.getElementById('movTagInput')) atualizarDatalistTags();
-        if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
-      }
-    })
-    .catch(err => console.error("Erro na sincronização:", err));
+        if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
+        if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
+        if (document.getElementById('movTagInput')) atualizarDatalistTags();
+        if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
+      }
+    })
+    .catch(err => console.error("Erro na sincronização:", err));
 }
 
 function abrirTela(menu) {
-  const principal = document.getElementById('conteudoPrincipal');
-  if (menu === 'inicio') {
-    principal.innerHTML = `
-      <h2>Bem-vindo ao ORIZON</h2>
-      <div class="dashboard-grid">
-        <div class="card-padrao"><h3>📍 Controle de Rotas</h3><p>Planejamento e acompanhamento diário.</p></div>
-        <div class="card-padrao"><h3>🏥 Clientes</h3><p>Cadastro integrado de unidades.</p></div>
-        <div class="card-padrao"><h3>🤝 Locação</h3><p>Rastreamento quantitativo de ativos em clientes.</p></div>
-        <div class="card-padrao"><h3>📦 Patrimônio</h3><p>Inventário centralizado de equipamentos.</p></div>
-      </div>`;
-  } else if (menu === 'clientes') {
-    renderizarTelaClientes(principal);
-  } else if (menu === 'patrimonio') {
-    renderizarTelaPatrimonio(principal);
-  } else if (menu === 'locacao') {
-    renderizarTelaLocacao(principal);
-  } else if (menu === 'rotas') {
-    renderizarTelaRotas(principal);
-  } else if (menu === 'gestao') {
-    renderizarTelaGestao(principal);
-  } else {
-    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Tela em desenvolvimento.</p>`;
-  }
+  const principal = document.getElementById('conteudoPrincipal');
+  if (menu === 'inicio') {
+    principal.innerHTML = `
+      <h2>Bem-vindo ao ORIZON</h2>
+      <div class="dashboard-grid">
+        <div class="card-padrao"><h3>📍 Controle de Rotas</h3><p>Planejamento e acompanhamento diário.</p></div>
+        <div class="card-padrao"><h3>🏥 Clientes</h3><p>Cadastro integrado de unidades.</p></div>
+        <div class="card-padrao"><h3>🤝 Locação</h3><p>Rastreamento quantitativo de ativos em clientes.</p></div>
+        <div class="card-padrao"><h3>📦 Patrimônio</h3><p>Inventário centralizado de equipamentos.</p></div>
+      </div>`;
+  } else if (menu === 'clientes') {
+    renderizarTelaClientes(principal);
+  } else if (menu === 'patrimonio') {
+    renderizarTelaPatrimonio(principal);
+  } else if (menu === 'locacao') {
+    renderizarTelaLocacao(principal);
+  } else if (menu === 'rotas') {
+    // ENCAIXE CIRÚRGICO DA JANELA VIVA DO NOVO MOTOR OPERACIONAL
+    principal.innerHTML = `
+      <div style="width: 100%; height: 100%; min-height: calc(100vh - 160px);">
+        <iframe src="https://script.google.com/macros/s/AKfycbwEg5dJy8Ll32PvBycJNB9pPtHhDb5r6u6oiTphOnLeYlQu4WAHE_ZyGen1R6Q0IHSGzA/exec" 
+                style="width: 100%; height: calc(100vh - 160px); border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        </iframe>
+      </div>`;
+  } else if (menu === 'gestao') {
+    renderizarTelaGestao(principal);
+  } else {
+    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Tela em desenvolvimento.</p>`;
+  }
 }
 
 function voltarInicio() { abrirTela('inicio'); }
@@ -236,838 +242,658 @@ function voltarInicio() { abrirTela('inicio'); }
 // INTERFACE: CADASTRO DE CLIENTES
 // =========================================================================
 function renderizarTelaClientes(container) {
-  container.innerHTML = `
-    <div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2>🏥 Cadastro e Listagem de Clientes</h2>
-        <button id="btnSyncClientesPlanilha" class="btn-secondary" style="font-size:12px;">🔄 Sincronizar Planilha</button>
-      </div>
-      <div class="card-padrao">
-        <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro</h3>
-        <div class="form-grid">
-          <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
-          <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
-          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao"></div>
-          <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao"></div>
-          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao"></div>
-          <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Número</label><input type="text" id="formNumero" class="input-padrao"></div>
-          <div class="form-grupo"><label>Complemento</label><input type="text" id="formComplemento" class="input-padrao"></div>
-          <div class="form-grupo"><label>Bairro</label><input type="text" id="formBairro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Cidade</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
-          <div class="form-grupo"><label>UF</label><input type="text" id="formUf" class="input-padrao" value="SP"></div>
-          <div class="form-grupo"><label>Região</label><input type="text" id="formRegiao" class="input-padrao"></div>
-          <div class="form-grupo"><label>Responsável</label><input type="text" id="formResponsavel" class="input-padrao"></div>
-          <div class="form-grupo"><label>Telefone</label><input type="text" id="formTelefone" class="input-padrao"></div>
-          <div class="form-grupo"><label>E-mail</label><input type="email" id="formEmail" class="input-padrao"></div>
-          <div class="form-grupo"><label>Status</label><select id="formStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select></div>
-        </div>
-        <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservacao" class="input-padrao"></div></div>
-        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;"><button id="btnCancelarEdicao" class="btn-secondary hidden">Cancelar</button><button id="btnSalvarClientePlanilha" class="btn-success">💾 Salvar Cliente</button></div>
-      </div>
-      <div class="card-padrao"><h3>Clientes na Base</h3><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ/CPF</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div></div>
-    </div>`;
+  container.innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2>🏥 Cadastro e Listagem de Clientes</h2>
+        <button id="btnSyncClientesPlanilha" class="btn-secondary" style="font-size:12px;">🔄 Sincronizar Planilha</button>
+      </div>
+      <div class="card-padrao">
+        <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro</h3>
+        <div class="form-grid">
+          <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
+          <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
+          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao"></div>
+          <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao"></div>
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao"></div>
+          <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>Número</label><input type="text" id="formNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>Complemento</label><input type="text" id="formComplemento" class="input-padrao"></div>
+          <div class="form-grupo"><label>Bairro</label><input type="text" id="formBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>Cidade</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUf" class="input-padrao" value="SP"></div>
+          <div class="form-grupo"><label>Região</label><input type="text" id="formRegiao" class="input-padrao"></div>
+          <div class="form-grupo"><label>Responsável</label><input type="text" id="formResponsavel" class="input-padrao"></div>
+          <div class="form-grupo"><label>Telefone</label><input type="text" id="formTelefone" class="input-padrao"></div>
+          <div class="form-grupo"><label>E-mail</label><input type="email" id="formEmail" class="input-padrao"></div>
+          <div class="form-grupo"><label>Status</label><select id="formStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select></div>
+        </div>
+        <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservacao" class="input-padrao"></div></div>
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;"><button id="btnCancelarEdicao" class="btn-secondary hidden">Cancelar</button><button id="btnSalvarClientePlanilha" class="btn-success">💾 Salvar Cliente</button></div>
+      </div>
+      <div class="card-padrao"><h3>Clientes na Base</h3><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ/CPF</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div></div>
+    </div>`;
 
-  document.getElementById('btnSyncClientesPlanilha').addEventListener('click', sincronizarDadosPlanilha);
-  document.getElementById('btnSalvarClientePlanilha').addEventListener('click', enviarClientePlanilha);
-  document.getElementById('btnCancelarEdicao').addEventListener('click', limparFormularioCliente);
-  document.getElementById('formCep').addEventListener('blur', buscarCepAutomatico);
-  document.getElementById('formCnpj').addEventListener('blur', verificarDocumentoEReceita);
-  document.getElementById('formCnpj').addEventListener('input', aplicarMascaraDocumento);
-  document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
-  document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
-  atualizarTabelaClientesLocal();
+  document.getElementById('btnSyncClientesPlanilha').addEventListener('click', sincronizarDadosPlanilha);
+  document.getElementById('btnSalvarClientePlanilha').addEventListener('click', enviarClientePlanilha);
+  document.getElementById('btnCancelarEdicao').addEventListener('click', limparFormularioCliente);
+  document.getElementById('formCep').addEventListener('blur', buscarCepAutomatico);
+  document.getElementById('formCnpj').addEventListener('blur', verificarDocumentoEReceita);
+  document.getElementById('formCnpj').addEventListener('input', aplicarMascaraDocumento);
+  document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
+  document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
+  atualizarTabelaClientesLocal();
 }
 
 function verificarDocumentoEReceita() {
-  const doc = this.value.trim(); if (!doc) return;
-  const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
-  if (dup) { alert(`Documento já cadastrado para o cliente: ${dup.nome}`); this.value = ''; return; }
-  const clean = doc.replace(/\D/g, '');
-  if (document.getElementById('formTipoPessoa').value === 'JURIDICA' && clean.length === 14) {
-    fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
-      .then(res => res.json())
-      .then(dados => {
-        document.getElementById('formCliente').value = dados.razao_social || '';
-        document.getElementById('formCep').value = dados.cep || '';
-        document.getElementById('formLogradouro').value = dados.logradouro || '';
-        document.getElementById('formNumero').value = dados.numero || '';
-        document.getElementById('formBairro').value = dados.bairro || '';
-        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
-        document.getElementById('formUf').value = dados.uf || 'SP';
-      }).catch(() => {});
-  }
+  const doc = this.value.trim(); if (!doc) return;
+  const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
+  if (dup) { alert(`Documento já cadastrado para o cliente: ${dup.nome}`); this.value = ''; return; }
+  const clean = doc.replace(/\D/g, '');
+  if (document.getElementById('formTipoPessoa').value === 'JURIDICA' && clean.length === 14) {
+    fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
+      .then(res => res.json())
+      .then(dados => {
+        document.getElementById('formCliente').value = dados.razao_social || '';
+        document.getElementById('formCep').value = dados.cep || '';
+        document.getElementById('formLogradouro').value = dados.logradouro || '';
+        document.getElementById('formNumero').value = dados.numero || '';
+        document.getElementById('formBairro').value = dados.bairro || '';
+        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
+        document.getElementById('formUf').value = dados.uf || 'SP';
+      }).catch(() => {});
+  }
 }
 
 function aplicarMascaraDocumento() {
-  let v = this.value.replace(/\D/g, '');
-  if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
-    v = v.substring(0, 14); v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
-  } else {
-    v = v.substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
-  }
-  this.value = v;
+  let v = this.value.replace(/\D/g, '');
+  if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
+    v = v.substring(0, 14); v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+  } else {
+    v = v.substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+  }
+  this.value = v;
 }
 function aplicarMascaraCep() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
 function aplicarMascaraTelefone() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
 function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro; document.getElementById('formBairro').value = d.bairro; } }); }
 
 function atualizarTabelaClientesLocal() {
-  const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
-  appState.clientes.forEach((c, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.endereco}</td><td>${c.bairro}</td><td>${c.cidade}</td><td>${c.responsavel}</td><td>${c.status}</td><td><button class="btn-primary" onclick="prepararEdicaoCliente(${i})">📝</button></td>`;
-    tbody.appendChild(tr);
-  });
+  const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
+  appState.clientes.forEach((c, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.endereco}</td><td>${c.bairro}</td><td>${c.cidade}</td><td>${c.responsavel}</td><td>${c.status}</td><td><button class="btn-primary" onclick="prepararEdicaoCliente(${i})">📝</button></td>`;
+    tbody.appendChild(tr);
+  });
 }
 function prepararEdicaoCliente(i) {
-  const c = appState.clientes[i]; appState.idClienteEmEdicao = c.id;
-  document.getElementById('formCliente').value = c.nome; document.getElementById('formCnpj').value = c.cnpj; document.getElementById('formContrato').value = c.contrato; document.getElementById('formCep').value = c.cep; document.getElementById('formLogradouro').value = c.logradouro; document.getElementById('formNumero').value = c.numero; document.getElementById('formComplemento').value = c.complemento; document.getElementById('formBairro').value = c.bairro; document.getElementById('formCidade').value = c.cidade; document.getElementById('formUf').value = c.uf; document.getElementById('formRegiao').value = c.regiao; document.getElementById('formResponsavel').value = c.responsavel; document.getElementById('formTelefone').value = c.telefone; document.getElementById('formEmail').value = c.email; document.getElementById('formStatus').value = c.status; document.getElementById('formObservacao').value = c.observacao; document.getElementById('btnCancelarEdicao').classList.remove('hidden');
+  const c = appState.clientes[i]; appState.idClienteEmEdicao = c.id;
+  document.getElementById('formCliente').value = c.nome; document.getElementById('formCnpj').value = c.cnpj; document.getElementById('formContrato').value = c.contrato; document.getElementById('formCep').value = c.cep; document.getElementById('formLogradouro').value = c.logradouro; document.getElementById('formNumero').value = c.numero; document.getElementById('formComplemento').value = c.complemento; document.getElementById('formBairro').value = c.bairro; document.getElementById('formCidade').value = c.cidade; document.getElementById('formUf').value = c.uf; document.getElementById('formRegiao').value = c.regiao; document.getElementById('formResponsavel').value = c.responsavel; document.getElementById('formTelefone').value = c.telefone; document.getElementById('formEmail').value = c.email; document.getElementById('formStatus').value = c.status; document.getElementById('formObservacao').value = c.observacao; document.getElementById('btnCancelarEdicao').classList.remove('hidden');
 }
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 function enviarClientePlanilha() {
-  const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
-  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, cidade: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
-  const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
-  fetch(`${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Salvo!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
+  const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
+  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, cidade: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
+  const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  fetch(`${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Salvo!'); limparFormularioCliente(); setTimeout(sincronizarDadosPlanilha, 1000); });
 }
 
 // =========================================================================
 // INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
-  container.innerHTML = `
-    <div>
-      <h2>📦 Estoque e Inventário Central</h2>
-      <div class="card-padrao" style="margin-top:15px;">
-        <div class="tabela-container">
-          <table class="tabela-sistema">
-            <thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th><th>STATUS OPERACIONAL</th><th>LOCALIZAÇÃO</th></tr></thead>
-            <tbody id="listaPatrimonioTbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>`;
-  atualizarTabelaPatrimonioLocal();
+  container.innerHTML = `
+    <div>
+      <h2>📦 Estoque e Inventário Central</h2>
+      <div class="card-padrao" style="margin-top:15px;">
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th><th>STATUS OPERACIONAL</th><th>LOCALIZAÇÃO</th></tr></thead>
+            <tbody id="listaPatrimonioTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  atualizarTabelaPatrimonioLocal();
 }
 
 function atualizarTabelaPatrimonioLocal() {
-  const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Nenhum item carregado.</td></tr>`; return; }
-  
-  appState.patrimonio.forEach(p => {
-    const tr = document.createElement('tr');
-    const bColor = p.status === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
-    tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bColor}">${p.status}</span></td><td><b>${p.localizacao || 'Sede Central'}</b></td>`;
-    tbody.appendChild(tr);
-  });
+  const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
+  if(appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Nenhum item carregado.</td></tr>`; return; }
+  
+  appState.patrimonio.forEach(p => {
+    const tr = document.createElement('tr');
+    const bColor = p.status === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
+    tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bColor}">${p.status}</span></td><td><b>${p.localizacao || 'Sede Central'}</b></td>`;
+    tbody.appendChild(tr);
+  });
 }
 
 // =========================================================================
 // INTERFACE: LOCAÇÃO E QUANTITATIVO POR CLIENTE
 // =========================================================================
 function renderizarTelaLocacao(container) {
-  let optCli = '<option value="">Escolha a Unidade / Cliente</option>';
-  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome}">${c.nome}</option>`);
+  let optCli = '<option value="">Escolha a Unidade / Cliente</option>';
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome}">${c.nome}</option>`);
 
-  container.innerHTML = `
-    <div>
-      <h2>🤝 Controle de Locações e Movimentações</h2>
-      
-      <div class="card-padrao">
-        <h3 style="margin-bottom:15px; color:var(--cor-sucesso);">Registrar Nova Movimentação</h3>
-        <div class="form-grid">
-          <div class="form-grupo">
-            <label>Tipo de Operação</label>
-            <select id="movTipo" class="select-padrao">
-              <option value="ENVIO">ENVIO PARA O CLIENTE</option>
-              <option value="RETORNO">RETORNO PARA A SEDE</option>
-            </select>
-          </div>
-          
-          <div class="form-grupo">
-            <label>Equipamento (Digite TAG, Nome ou Série)</label>
-            <input type="text" id="movTagInput" list="listaTagsAutocomplete" class="input-padrao" placeholder="Comece a digitar...">
-            <datalist id="listaTagsAutocomplete"></datalist>
-          </div>
+  container.innerHTML = `
+    <div>
+      <h2>🤝 Controle de Locações e Movimentações</h2>
+      
+      <div class="card-padrao">
+        <h3 style="margin-bottom:15px; color:var(--cor-sucesso);">Registrar Nova Movimentação</h3>
+        <div class="form-grid">
+          <div class="form-grupo">
+            <label>Tipo de Operação</label>
+            <select id="movTipo" class="select-padrao">
+              <option value="ENVIO">ENVIO PARA O CLIENTE</option>
+              <option value="RETORNO">RETORNO PARA A SEDE</option>
+            </select>
+          </div>
+          
+          <div class="form-grupo">
+            <label>Equipamento (Digite TAG, Nome ou Série)</label>
+            <input type="text" id="movTagInput" list="listaTagsAutocomplete" class="input-padrao" placeholder="Comece a digitar...">
+            <datalist id="listaTagsAutocomplete"></datalist>
+          </div>
 
-          <div class="form-grupo">
-            <label>Cliente / Destino Operacional</label>
-            <select id="movCliente" class="select-padrao">${optCli}</select>
-          </div>
+          <div class="form-grupo">
+            <label>Cliente / Destino Operacional</label>
+            <select id="movCliente" class="select-padrao">${optCli}</select>
+          </div>
 
-          <div class="form-grupo">
-            <label>Observações do Lançamento</label>
-            <input type="text" id="movObs" class="input-padrao" placeholder="Ex: Vinculado à O.S de Instalação">
-          </div>
-        </div>
-        <div style="display:flex; justify-content: flex-end; margin-top:15px;">
-          <button id="btnGravarMovimentacao" class="btn-success">💾 Confirmar Movimentação</button>
-        </div>
-      </div>
+          <div class="form-grupo">
+            <label>Observações do Lançamento</label>
+            <input type="text" id="movObs" class="input-padrao" placeholder="Ex: Vinculado à O.S de Instalação">
+          </div>
+        </div>
+        <div style="display:flex; justify-content: flex-end; margin-top:15px;">
+          <button id="btnGravarMovimentacao" class="btn-success">💾 Confirmar Movimentação</button>
+        </div>
+      </div>
 
-      <div class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <h3>📋 Equipamentos Instalados na Unidade</h3>
-          <div style="width:320px;">
-            <select id="selectFiltroClienteLocacao" class="select-padrao">${optCli}</select>
-          </div>
-        </div>
-        <div class="tabela-container">
-          <table class="tabela-sistema" style="min-width:1000px;">
-            <thead>
-              <tr>
-                <th>TAG</th>
-                <th>EQUIPAMENTO</th>
-                <th>Nº SÉRIE</th>
-                <th>PATRIMÔNIO</th>
-                <th>MODELO</th>
-                <th>FABRICANTE</th>
-              </tr>
-            </thead>
-            <tbody id="tbodyItensLocadosCliente">
-              <tr><td colspan="6" style="text-align:center; color:#64748b; padding:15px;">Selecione uma unidade no campo acima para ver o saldo físico.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>`;
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>📋 Equipamentos Instalados na Unidade</h3>
+          <div style="width:320px;">
+            <select id="selectFiltroClienteLocacao" class="select-padrao">${optCli}</select>
+          </div>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema" style="min-width:1000px;">
+            <thead>
+              <tr>
+                <th>TAG</th>
+                <th>EQUIPAMENTO</th>
+                <th>Nº SÉRIE</th>
+                <th>PATRIMÔNIO</th>
+                <th>MODELO</th>
+                <th>FABRICANTE</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyItensLocadosCliente">
+              <tr><td colspan="6" style="text-align:center; color:#64748b; padding:15px;">Selecione uma unidade no campo acima para ver o saldo físico.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
 
-  document.getElementById('selectFiltroClienteLocacao').addEventListener('change', filtrarEquipamentosDoCliente);
-  document.getElementById('btnGravarMovimentacao').addEventListener('click', processarMovimentacaoLocacao);
-  document.getElementById('movTipo').addEventListener('change', atualizarDatalistTags);
-  
-  atualizarDatalistTags();
+  document.getElementById('selectFiltroClienteLocacao').addEventListener('change', filtrarEquipamentosDoCliente);
+  document.getElementById('btnGravarMovimentacao').addEventListener('click', processarMovimentacaoLocacao);
+  document.getElementById('movTipo').addEventListener('change', atualizarDatalistTags);
+  
+  atualizarDatalistTags();
 }
 
 function atualizarDatalistTags() {
-  const datalist = document.getElementById('listaTagsAutocomplete');
-  if(!datalist) return;
-  datalist.innerHTML = '';
-  
-  const tipo = document.getElementById('movTipo').value;
-  const ativosFiltrados = appState.patrimonio.filter(p => {
-    return tipo === 'ENVIO' ? p.status === 'DISPONÍVEL EM ESTOQUE' : p.status === 'LOCADO';
-  });
+  const datalist = document.getElementById('listaTagsAutocomplete');
+  if(!datalist) return;
+  datalist.innerHTML = '';
+  
+  const tipo = document.getElementById('movTipo').value;
+  const ativosFiltrados = appState.patrimonio.filter(p => {
+    return tipo === 'ENVIO' ? p.status === 'DISPONÍVEL EM ESTOQUE' : p.status === 'LOCADO';
+  });
 
-  ativosFiltrados.forEach(p => {
-    const option = document.createElement('option');
-    option.value = p.tag;
-    option.text = `${p.equipamento} | Série: ${p.serie} ${p.localizacao ? '('+p.localizacao+')' : ''}`;
-    datalist.appendChild(option);
-  });
+  ativosFiltrados.forEach(p => {
+    const option = document.createElement('option');
+    option.value = p.tag;
+    option.text = `${p.equipamento} | Série: ${p.serie} ${p.localizacao ? '('+p.localizacao+')' : ''}`;
+    datalist.appendChild(option);
+  });
 }
 
 function filtrarEquipamentosDoCliente() {
-  const cliente = this.value;
-  const tbody = document.getElementById('tbodyItensLocadosCliente');
-  if(!cliente) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px;">Selecione uma unidade no campo acima para ver o saldo físico.</td></tr>`; return; }
+  const cliente = this.value;
+  const tbody = document.getElementById('tbodyItensLocadosCliente');
+  if(!cliente) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px;">Selecione uma unidade no campo acima para ver o saldo físico.</td></tr>`; return; }
 
-  const locados = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === cliente);
-  tbody.innerHTML = '';
+  const locados = appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === cliente);
+  tbody.innerHTML = '';
 
-  if(locados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#dc2626; font-weight:bold; padding:15px;">⚠️ Nenhum equipamento alocado nesta unidade no momento.</td></tr>`;
-    return;
-  }
+  if(locados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#dc2626; font-weight:bold; padding:15px;">⚠️ Nenhum equipamento alocado nesta unidade no momento.</td></tr>`;
+    return;
+  }
 
-  locados.forEach(p => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td>`;
-    tbody.appendChild(tr);
-  });
+  locados.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td>`;
+    tbody.appendChild(tr);
+  });
 }
 
 function processarMovimentacaoLocacao() {
-  const tipo = document.getElementById('movTipo').value;
-  const tag = document.getElementById('movTagInput').value.toUpperCase().trim();
-  const cliente = document.getElementById('movCliente').value;
-  const obs = document.getElementById('movObs').value;
+  const tipo = document.getElementById('movTipo').value;
+  const tag = document.getElementById('movTagInput').value.toUpperCase().trim();
+  const cliente = document.getElementById('movCliente').value;
+  const obs = document.getElementById('movObs').value;
 
-  if(!tag || !cliente) return alert('Por favor, informe a TAG e selecione a Unidade do Cliente!');
+  if(!tag || !cliente) return alert('Por favor, informe a TAG e selecione a Unidade do Cliente!');
 
-  const itemPat = appState.patrimonio.find(p => p.tag.toUpperCase() === tag);
-  if(!itemPat) return alert('A TAG digitada não foi encontrada no Inventário Central! Verifique o código.');
+  const itemPat = appState.patrimonio.find(p => p.tag.toUpperCase() === tag);
+  if(!itemPat) return alert('A TAG digitada não foi encontrada no Inventário Central! Verifique o código.');
 
-  if(tipo === 'ENVIO' && itemPat.status !== 'DISPONÍVEL EM ESTOQUE') {
-    return alert(`Atenção: Este equipamento consta atualmente como ${itemPat.status} em: ${itemPat.localizacao}. Não é possível enviá-lo.`);
-  }
+  if(tipo === 'ENVIO' && itemPat.status !== 'DISPONÍVEL EM ESTOQUE') {
+    return alert(`Atenção: Este equipamento consta atualmente como ${itemPat.status} em: ${itemPat.localizacao}. Não é possível enviá-lo.`);
+  }
 
-  const pacoteMov = {
-    tag: tag,
-    equipamento: itemPat.equipamento,
-    origem: tipo === 'ENVIO' ? 'Sede Central' : cliente,
-    destino: tipo === 'ENVIO' ? cliente : 'Sede Central',
-    tipo: tipo,
-    responsavel: appState.usuarioLogado ? appState.usuarioLogado.nome : 'Sistema Orizon',
-    observacao: obs
-  };
+  const pacoteMov = {
+    tag: tag,
+    equipamento: itemPat.equipamento,
+    origem: tipo === 'ENVIO' ? 'Sede Central' : cliente,
+    destino: tipo === 'ENVIO' ? cliente : 'Sede Central',
+    tipo: tipo,
+    responsavel: appState.usuarioLogado ? appState.usuarioLogado.nome : 'Sistema Orizon',
+    observacao: obs
+  };
 
-  const btn = document.getElementById('btnGravarMovimentacao');
-  btn.disabled = true; btn.innerText = '⏳ Processando...';
+  const btn = document.getElementById('btnGravarMovimentacao');
+  btn.disabled = true; btn.innerText = '⏳ Processando...';
 
-  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacoteMov))}`, { method: 'POST', mode: 'no-cors' })
-  .then(() => {
-    alert(`Sucesso! Equipamento ${tag} movimentado.`);
-    sincronizarDadosPlanilha();
-    setTimeout(() => { abrirTela('locacao'); }, 1200);
-  })
-  .catch(err => { console.error(err); btn.disabled = false; btn.innerText = '💾 Confirmar Movimentação'; });
+  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacoteMov))}`, { method: 'POST', mode: 'no-cors' })
+  .then(() => {
+    alert(`Sucesso! Equipamento ${tag} movimentado.`);
+    sincronizarDadosPlanilha();
+    setTimeout(() => { abrirTela('locacao'); }, 1200);
+  })
+  .catch(err => { console.error(err); btn.disabled = false; btn.innerText = '💾 Confirmar Movimentação'; });
 }
 
 // =========================================================================
-// MÓDULO DE ROTAS DIÁRIAS (FINALIZADO E BLINDADO CONTRA DELAY)
+// MÓDULO DE ROTAS DIÁRIAS (SUBSTITUÍDO PELA VERSÃO LIVE SEM TRAVAMENTOS)
 // =========================================================================
-function renderizarTelaRotas(container) {
-  container.innerHTML = `
-    <div>
-      <h2>📍 Módulo de Rotas Diárias</h2>
-      <div class="dashboard-grid">
-        <div class="card-padrao"><h3>Nova Rota</h3><p>Criar rota diária vinculando clientes e ordens de serviço.</p><button id="btnCriarFormRota" class="btn-primary" style="margin-top:12px;">Abrir formulário</button></div>
-        <div class="card-padrao"><h3>📋 Histórico</h3><p>Consultar rotas anteriores salvas na base.</p><button id="btnAbrirHistRotas" class="btn-secondary" style="margin-top:12px;">Abrir histórico</button></div>
-      </div>
-    </div>`;
-  document.getElementById('btnCriarFormRota').addEventListener('click', abrirFormularioRota);
-  document.getElementById('btnAbrirHistRotas').addEventListener('click', abrirHistoricoRotas);
-}
-
-function abrirFormularioRota() {
-  const numRotaSugerido = `ROT-${new Date().getFullYear()}-${String(appState.rotas.length + 1).padStart(4, '0')}`;
-  
-  let optionsTecnicos = '<option value="">Selecionar técnico</option>';
-  if (appState.usuarios && appState.usuarios.length > 0) {
-    // BLINDAGEM SaaS: Filtra rigidamente os usuários ocultando quem estiver INATIVO para não compor rotas
-    appState.usuarios.filter(u => (u.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(u => {
-      optionsTecnicos += `<option value="${u.nome}">${u.nome}</option>`;
-    });
-  } else {
-    appState.tecnicos.forEach(t => optionsTecnicos += `<option value="${t}">${t}</option>`);
-  }
-  
-  let optionsVeiculos = '<option value="">Selecionar veículo</option>';
-  if (appState.veiculos && appState.veiculos.length > 0) {
-    appState.veiculos.forEach(v => {
-      optionsVeiculos += `<option value="${v.nome || v.modelo || v}">${v.nome || v.modelo || v}</option>`;
-    });
-  } else {
-    optionsVeiculos += '<option value="Strada">Strada</option><option value="Fiorino">Fiorino</option>';
-  }
-
-  document.getElementById('conteudoPrincipal').innerHTML = `
-    <div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>📍 Criar Nova Rota</h2>
-        <div><button id="btnGravarRotaFinal" class="btn-success">💾 Salvar Rota</button><button id="btnCancelarFormRota" class="btn-secondary">Cancelar</button></div>
-      </div>
-      <div class="card-padrao" style="margin-bottom:20px;">
-        <div class="form-grid">
-          <div><label>Nº Rota</label><input id="numeroRota" value="${numRotaSugerido}" readonly class="input-padrao" style="background:#f1f5f9;"></div>
-          <div><label>Data *</label><input type="date" id="dataRota" class="input-padrao"></div>
-          <div><label>Técnico 1 *</label><select id="tecnico1Rota" class="select-padrao">${optionsTecnicos}</select></div>
-          <div><label>Técnico 2</label><select id="tecnico2Rota" class="select-padrao">${optionsTecnicos}</select></div>
-          <div><label>Veículo *</label><select id="veiculoRota" class="select-padrao">${optionsVeiculos}</select></div>
-        </div>
-      </div>
-      <div id="clientesRotaContainer"></div>
-      <div style="margin-top:20px; text-align:center;"><button id="btnAdicionarCliCard" class="btn-secondary">➕ Adicionar Cliente à Rota</button></div>
-    </div>`;
-
-  document.getElementById('btnGravarRotaFinal').addEventListener('click', salvarRotaPlanilhaReal);
-  document.getElementById('btnCancelarFormRota').addEventListener('click', () => abrirTela('rotas'));
-  document.getElementById('btnAdicionarCliCard').addEventListener('click', adicionarClienteRota);
-  adicionarClienteRota();
-}
-
-function adicionarClienteRota() {
-  const container = document.getElementById('clientesRotaContainer');
-  const clienteId = 'cli_' + Date.now();
-
-  const div = document.createElement('div');
-  div.className = 'card-padrao bloco-cliente-rota';
-  div.style.marginTop = '15px';
-  div.id = clienteId;
-  div.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <div style="flex:1; margin-right:10px;">
-        <input type="text" list="datalistClientesGlobal" class="input-padrao select-cliente-nome" placeholder="Digite ou selecione a unidade/cliente...">
-      </div>
-      <div>
-        <button class="btn-primary btn-add-os">+ OS</button>
-        <button class="btn-danger btn-rem-cli">Remover</button>
-      </div>
-    </div>
-    <div style="margin-bottom:10px; font-size:13px; color:#475569;">📍 Endereço: <span class="endereco-texto" style="font-weight:bold;">Selecione o cliente</span></div>
-    <table style="width:100%; border-collapse:collapse;" class="tabela-os-cliente">
-      <thead>
-        <tr style="background:#f8fafc;">
-          <th style="padding:6px; text-align:left;">Nº O.S</th>
-          <th style="padding:6px; text-align:left;">Atividade</th>
-          <th style="padding:6px; text-align:center; width:60px;">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><input placeholder="Nº OS" class="input-padrao" style="padding:6px;"></td>
-          <td><input placeholder="Serviço" class="input-padrao" style="padding:6px;"></td>
-          <td style="text-align:center;">
-            <button class="btn-danger btn-deletar-linha" style="padding:4px 8px; font-size:11px; background:#fee2e2; color:#dc2626; border-radius:6px;">❌</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>`;
-  container.appendChild(div);
-
-  div.querySelector('.select-cliente-nome').addEventListener('input', function() {
-    const valorDigitado = this.value.trim().toLowerCase();
-    const local = appState.clientes.find(c => c.nome.toLowerCase() === valorDigitado);
-    div.querySelector('.endereco-texto').innerText = local ? (local.endereco || `${local.logradouro}, ${local.numero || ''} - ${local.bairro || ''}`) : 'Procurando unidade...';
-  });
-
-  div.querySelector('.btn-add-os').addEventListener('click', () => {
-    const tr = document.createElement('tr'); 
-    tr.innerHTML = `
-      <td><input placeholder="Nº OS" class="input-padrao" style="padding:6px;"></td>
-      <td><input placeholder="Serviço" class="input-padrao" style="padding:6px;"></td>
-      <td style="text-align:center;">
-        <button class="btn-danger btn-deletar-linha" style="padding:4px 8px; font-size:11px; background:#fee2e2; color:#dc2626; border-radius:6px;">❌</button>
-      </td>`;
-    
-    tr.querySelector('.btn-deletar-linha').addEventListener('click', () => tr.remove());
-    div.querySelector('.tabela-os-cliente tbody').appendChild(tr);
-  });
-
-  div.querySelector('.btn-deletar-linha').addEventListener('click', function() { this.closest('tr').remove(); });
-  div.querySelector('.btn-rem-cli').addEventListener('click', () => div.remove());
-}
-
-// CALLBACK DE SUCESSO DO MOTOR DE ROTAS
-window.processarRetornoRotaSheets = function(respostaServer) {
-  const btn = document.getElementById('btnGravarRotaFinal');
-  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Rota'; }
-  
-  alert('Rota e Ordens de Serviço publicadas com sucesso na planilha!');
-  abrirTela('rotas');
-  sincronizarDadosPlanilha();
-};
-
-function salvarRotaPlanilhaReal() {
-  const nr = document.getElementById('numeroRota').value;
-  const dt = document.getElementById('dataRota').value;
-  const t1 = document.getElementById('tecnico1Rota').value;
-  const t2 = document.getElementById('tecnico2Rota').value;
-  const ve = document.getElementById('veiculoRota').value;
-
-  if (!dt || !t1 || !ve || t1.includes('Selecionar') || ve.includes('Selecionar')) {
-    return alert('Por favor, preencha a Data, o Técnico 1 e o Veículo!');
-  }
-
-  const blocos = document.querySelectorAll('.bloco-cliente-rota');
-  let clientesMontados = [];
-
-  blocos.forEach(b => {
-    const nome = b.querySelector('.select-cliente-nome').value.trim();
-    const end = b.querySelector('.endereco-texto').innerText;
-    let chamados = [];
-    b.querySelectorAll('.tabela-os-cliente tbody tr').forEach(r => {
-      const inputs = r.querySelectorAll('input');
-      if(inputs[0].value || inputs[1].value) {
-        chamados.push({ os: inputs[0].value, activity: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
-      }
-    });
-    if(nome) clientesMontados.push({ cliente: nome, endereco: end, observacao: '', chamados: chamados });
-  });
-
-  if (clientesMontados.length === 0) {
-    return alert('Adicione pelo menos um Cliente válido à rota antes de salvar!');
-  }
-
-  const pacoteRota = { numeroRota: nr, data: dt, tecnico1: t1, tecnico2: (t2 === 'Selecionar técnico' || !t2) ? '' : t2, veiculo: ve, clientes: clientesMontados };
-  
-  const btn = document.getElementById('btnGravarRotaFinal'); 
-  btn.disabled = true; btn.innerText = '⏳ Gravando Rota...';
-
-  // MOTOR HÍBRIDO SaaS: Evita travamentos de CORS enviando a Rota via Script Dinâmico com Callback
-  const urlFinal = `${WEB_APP_URL}?acao=salvarRota&tipo=ROTA&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}&prefix=processarRetornoRotaSheets`;
-  
-  const scriptAntigo = document.getElementById('jsonp_route_script');
-  if(scriptAntigo) scriptAntigo.remove();
-  
-  const scriptElement = document.createElement('script');
-  scriptElement.id = 'jsonp_route_script';
-  scriptElement.src = urlFinal;
-  document.body.appendChild(scriptElement);
-}
-
 function abrirHistoricoRotas() {
-  let html = '<h2>📋 Histórico Operacional de Rotas</h2><div style="margin-top:15px;">';
-  html += '<p class="card-padrao">Consulte e gerencie o histórico operacional completo direto no seu banco Google Sheets.</p></div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>';
-  document.getElementById('conteudoPrincipal').innerHTML = html;
-  document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
+  let html = '<h2>📋 Histórico Operacional de Rotas</h2><div style="margin-top:15px;">';
+  html += '<p class="card-padrao">Consulte e gerencie o histórico operacional completo direto no seu banco Google Sheets.</p></div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>';
+  document.getElementById('conteudoPrincipal').innerHTML = html;
+  document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
 }
 
 // =========================================================================
 // INTERFACE: MÓDULO GESTÃO
 // =========================================================================
 function renderizarTelaGestao(container) {
-  container.innerHTML = `
-    <div>
-      <h2>⚙️ Painel Administrativo e Gestão</h2>
-      <p style="color:#64748b; font-size:13px; margin-top:4px; margin-bottom:20px;">Gerenciamento interno de parâmetros do sistema Orizon</p>
-      
-      <div class="tabs-gestao">
-        <div class="tab-item active" id="tabColaboradores">👤 Colaboradores / Usuários</div>
-        <div class="tab-item" id="tabConfiguracoes">🛠️ Parâmetros Gerais</div>
-      </div>
-      
-      <div id="subConteudoGestao"></div>
-    </div>`;
-    
-  document.getElementById('tabColaboradores').addEventListener('click', () => alternarSubAbaGestao('colaboradores'));
-  document.getElementById('tabConfiguracoes').addEventListener('click', () => alternarSubAbaGestao('configuracoes'));
-  
-  alternarSubAbaGestao('colaboradores');
+  container.innerHTML = `
+    <div>
+      <h2>⚙️ Painel Administrativo e Gestão</h2>
+      <p style="color:#64748b; font-size:13px; margin-top:4px; margin-bottom:20px;">Gerenciamento interno de parâmetros do sistema Orizon</p>
+      
+      <div class="tabs-gestao">
+        <div class="tab-item active" id="tabColaboradores">👤 Colaboradores / Usuários</div>
+        <div class="tab-item" id="tabConfiguracoes">🛠️ Parâmetros Gerais</div>
+      </div>
+      
+      <div id="subConteudoGestao"></div>
+    </div>`;
+    
+  document.getElementById('tabColaboradores').addEventListener('click', () => alternarSubAbaGestao('colaboradores'));
+  document.getElementById('tabConfiguracoes').addEventListener('click', () => alternarSubAbaGestao('configuracoes'));
+  
+  alternarSubAbaGestao('colaboradores');
 }
 
 function alternarSubAbaGestao(aba) {
-  document.getElementById('tabColaboradores').classList.remove('active');
-  document.getElementById('tabConfiguracoes').classList.remove('active');
-  
-  const subContainer = document.getElementById('subConteudoGestao');
-  
-  if (aba === 'colaboradores') {
-    document.getElementById('tabColaboradores').classList.add('active');
-    subContainer.innerHTML = `
-      <div class="card-padrao">
-        <h3 id="tituloFormUsuario" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha do Colaborador</h3>
-        
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🔑 Credenciais e Acesso</h4>
-        <div class="form-grid" style="margin-bottom:15px;">
-          <div class="form-grupo"><label>Nome Completo *</label><input type="text" id="formUserNome" class="input-padrao"></div>
-          <div class="form-grupo"><label>Usuário / Login *</label><input type="text" id="formUserLogin" class="input-padrao" placeholder="ex: diogo.orizon"></div>
-          <div class="form-grupo"><label>Senha de Acesso *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
-          <div class="form-grupo">
-            <label>Perfil do Usuário</label>
-            <select id="formUserPerfil" class="select-padrao">
-              <option value="Técnico">Técnico</option>
-              <option value="Gestor">Gestor</option>
-              <option value="Visualizador">Visualizador</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
-        </div>
+  document.getElementById('tabColaboradores').classList.remove('active');
+  document.getElementById('tabConfiguracoes').classList.remove('active');
+  
+  const subContainer = document.getElementById('subConteudoGestao');
+  
+  if (aba === 'colaboradores') {
+    document.getElementById('tabColaboradores').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <h3 id="tituloFormUsuario" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha do Colaborador</h3>
+        
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🔑 Credenciais e Acesso</h4>
+        <div class="form-grid" style="margin-bottom:15px;">
+          <div class="form-grupo"><label>Nome Completo *</label><input type="text" id="formUserNome" class="input-padrao"></div>
+          <div class="form-grupo"><label>Usuário / Login *</label><input type="text" id="formUserLogin" class="input-padrao" placeholder="ex: diogo.orizon"></div>
+          <div class="form-grupo"><label>Senha de Acesso *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
+          <div class="form-grupo">
+            <label>Perfil do Usuário</label>
+            <select id="formUserPerfil" class="select-padrao">
+              <option value="Técnico">Técnico</option>
+              <option value="Gestor">Gestor</option>
+              <option value="Visualizador">Visualizador</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+        </div>
 
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🪪 Documentação</h4>
-        <div class="form-grid" style="margin-bottom:15px;">
-          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
-          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
-          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="Nº de Registro"></div>
-          <div class="form-grupo"><label>Telefone / Celular</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
-        </div>
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🪪 Documentação</h4>
+        <div class="form-grid" style="margin-bottom:15px;">
+          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
+          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
+          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="Nº de Registro"></div>
+          <div class="form-grupo"><label>Telefone / Celular</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
+        </div>
 
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">📍 Endereço Residencial</h4>
-        <div class="form-grid" style="margin-bottom:15px;">
-          <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
-          <div class="form-grupo"><label>Logradouro / Rua</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
-          <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
-          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
-        </div>
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">📍 Endereço Residencial</h4>
+        <div class="form-grid" style="margin-bottom:15px;">
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>Logradouro / Rua</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
+        </div>
 
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 Contrato e Status</h4>
-        <div class="form-grid">
-          <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
-          <div class="form-grupo">
-            <label>Status Operacional</label>
-            <select id="formUserStatus" class="select-padrao">
-              <option value="ATIVO">ATIVO</option>
-              <option value="INATIVO">INATIVO</option>
-            </select>
-          </div>
-          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Preenchimento obrigatório caso inativado" disabled style="background:#f1f5f9;"></div>
-        </div>
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 Contrato e Status</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
+          <div class="form-grupo">
+            <label>Status Operacional</label>
+            <select id="formUserStatus" class="select-padrao">
+              <option value="ATIVO">ATIVO</option>
+              <option value="INATIVO">INATIVO</option>
+            </select>
+          </div>
+          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Preenchimento obrigatório caso inativado" disabled style="background:#f1f5f9;"></div>
+        </div>
 
-        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
-          <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden">Cancelar</button>
-          <button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 Salvar Colaborador</button>
-        </div>
-      </div>
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
+          <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden">Cancelar</button>
+          <button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 Salvar Colaborador</button>
+        </div>
+      </div>
 
-      <div class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <h3>👥 Funcionários Cadastrados</h3>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
-            <select id="selectFiltroStatusGrid" class="select-padrao" style="width:160px; padding:6px;">
-              <option value="ATIVO">Apenas Ativos</option>
-              <option value="INATIVO">Apenas Inativos</option>
-              <option value="TODOS">Todos os Registros</option>
-            </select>
-          </div>
-        </div>
-        <div class="tabela-container">
-          <table class="tabela-sistema">
-            <thead>
-              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>CPF</th><th>ADMISSÃO</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
-            </thead>
-            <tbody id="listaUsuariosTbody"></tbody>
-          </table>
-        </div>
-      </div>`;
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>👥 Funcionários Cadastrados</h3>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
+            <select id="selectFiltroStatusGrid" class="select-padrao" style="width:160px; padding:6px;">
+              <option value="ATIVO">Apenas Ativos</option>
+              <option value="INATIVO">Apenas Inativos</option>
+              <option value="TODOS">Todos os Registros</option>
+            </select>
+          </div>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>CPF</th><th>ADMISSÃO</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
+            </thead>
+            <tbody id="listaUsuariosTbody"></tbody>
+          </table>
+        </div>
+      </div>`;
 
-    document.getElementById('formUserCep').addEventListener('input', aplicarMascaraCepUsuario);
-    document.getElementById('formUserCep').addEventListener('blur', buscarCepUsuarioAutomatico);
-    document.getElementById('formUserTelefone').addEventListener('input', aplicarMascaraTelefoneUsuario);
-    document.getElementById('formUserCpf').addEventListener('input', aplicarMascaraCpfUsuario);
-    document.getElementById('formUserStatus').addEventListener('change', function() {
-      const inputMotivo = document.getElementById('formUserMotivo');
-      if (this.value === 'INATIVO') {
-        inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus();
-      } else {
-        inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
-      }
-    });
+    document.getElementById('formUserCep').addEventListener('input', aplicarMascaraCepUsuario);
+    document.getElementById('formUserCep').addEventListener('blur', buscarCepUsuarioAutomatico);
+    document.getElementById('formUserTelefone').addEventListener('input', aplicarMascaraTelefoneUsuario);
+    document.getElementById('formUserCpf').addEventListener('input', aplicarMascaraCpfUsuario);
+    document.getElementById('formUserStatus').addEventListener('change', function() {
+      const inputMotivo = document.getElementById('formUserMotivo');
+      if (this.value === 'INATIVO') {
+        inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus();
+      } else {
+        inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
+      }
+    });
 
-    document.getElementById('btnCancelarEdicaoUsuario').addEventListener('click', limparFormularioUsuario);
-    document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
-    
-    document.getElementById('selectFiltroStatusGrid').value = appState.filtroStatusUsuario;
-    document.getElementById('selectFiltroStatusGrid').addEventListener('change', function() {
-      appState.filtroStatusUsuario = this.value;
-      atualizarTabelaUsuariosLocal();
-    });
+    document.getElementById('btnCancelarEdicaoUsuario').addEventListener('click', limparFormularioUsuario);
+    document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
+    
+    document.getElementById('selectFiltroStatusGrid').value = appState.filtroStatusUsuario;
+    document.getElementById('selectFiltroStatusGrid').addEventListener('change', function() {
+      appState.filtroStatusUsuario = this.value;
+      atualizarTabelaUsuariosLocal();
+    });
 
-    atualizarTabelaUsuariosLocal();
-  } else {
-    document.getElementById('tabConfiguracoes').classList.add('active');
-    subContainer.innerHTML = `
-      <div class="card-padrao">
-        <h3>🛠️ Parâmetros do Sistema</h3>
-        <p style="color:#64748b; font-size:13px; margin-top:8px;">Configurações avançadas de frota, veículos e controle de auditoria de dados.</p>
-      </div>`;
-  }
+    atualizarTabelaUsuariosLocal();
+  } else {
+    document.getElementById('tabConfiguracoes').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <h3>🛠️ Parâmetros do Sistema</h3>
+        <p style="color:#64748b; font-size:13px; margin-top:8px;">Configurações avançadas de frota, veículos e controle de auditoria de dados.</p>
+      </div>`;
+  }
 }
 
-function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1.$2 vanished"); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
+function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
 function aplicarMascaraTelefoneUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
 function aplicarMascaraCpfUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2"); this.value = v; }
 
-function buscarCepUsuarioAutomatico() { 
-  const cep = this.value.replace(/\D/g, ''); 
-  if (cep.length !== 8) return; 
-  fetch(`https://viacep.com.br/ws/${cep}/json/`)
-    .then(res => res.json())
-    .then(d => { 
-      if (!d.erro) { 
-        document.getElementById('formUserLogradouro').value = d.logradouro || ''; 
-        document.getElementById('formUserBairro').value = d.bairro || ''; 
-        document.getElementById('formUserCidade').value = d.localidade || 'SÃO PAULO'; 
-        document.getElementById('formUserUf').value = d.uf || 'SP'; 
-      } 
-    }); 
+function buscarCepUsuarioAutomatico() { 
+  const cep = this.value.replace(/\D/g, ''); 
+  if (cep.length !== 8) return; 
+  fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(res => res.json())
+    .then(d => { 
+      if (!d.erro) { 
+        document.getElementById('formUserLogradouro').value = d.logradouro || ''; 
+        document.getElementById('formUserBairro').value = d.bairro || ''; 
+        document.getElementById('formUserCidade').value = d.localidade || 'SÃO PAULO'; 
+        document.getElementById('formUserUf').value = d.uf || 'SP'; 
+      } 
+    }); 
 }
 
 function formatarDataBr(dataUs) {
-  if(!dataUs) return '-';
-  if(String(dataUs).includes('/')) return String(dataUs).split(' ')[0]; 
-  const partes = String(dataUs).split('-');
-  if(partes.length !== 3) return dataUs;
-  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  if(!dataUs) return '-';
+  if(String(dataUs).includes('/')) return String(dataUs).split(' ')[0]; 
+  const partes = String(dataUs).split('-');
+  if(partes.length !== 3) return dataUs;
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 function atualizarTabelaUsuariosLocal() {
-  const tbody = document.getElementById('listaUsuariosTbody');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  
-  if (!appState.usuarios || appState.usuarios.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário localizado.</td></tr>`;
-    return;
-  }
-  
-  const usuariosFiltrados = appState.usuarios.filter(u => {
-    const statusUser = (u.status || 'ATIVO').toUpperCase();
-    if (appState.filtroStatusUsuario === 'TODOS') return true;
-    return statusUser === appState.filtroStatusUsuario;
-  });
+  const tbody = document.getElementById('listaUsuariosTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  if (!appState.usuarios || appState.usuarios.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário localizado.</td></tr>`;
+    return;
+  }
+  
+  const usuariosFiltrados = appState.usuarios.filter(u => {
+    const statusUser = (u.status || 'ATIVO').toUpperCase();
+    if (appState.filtroStatusUsuario === 'TODOS') return true;
+    return statusUser === appState.filtroStatusUsuario;
+  });
 
-  if (usuariosFiltrados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador com o status "${appState.filtroStatusUsuario}" localizado.</td></tr>`;
-    return;
-  }
-  
-  usuariosFiltrados.forEach((u, idx) => {
-    const tr = document.createElement('tr');
-    const isAtivo = (u.status || 'ATIVO').toUpperCase() === 'ATIVO';
-    const badgeBg = isAtivo ? '#dcfce7' : '#fee2e2';
-    const badgeColor = isAtivo ? '#16a34a' : '#dc2626';
-    
-    const cpfLimpo = (u.cpf && !u.cpf.includes('ATIVO') && !u.cpf.includes('INATIVO') && u.cpf.length > 5) ? u.cpf : '-';
-    const dataAdmissaoTratada = (u.admissao && !u.admissao.includes('ATIVO') && !u.admissao.includes('INATIVO')) ? formatarDataBr(u.admissao) : '-';
-    
-    tr.innerHTML = `
-      <td><b>${u.nome || ''}</b></td>
-      <td>${u.login || '-'}</td>
-      <td>${cpfLimpo}</td>
-      <td>${dataAdmissaoTratada}</td>
-      <td>${u.perfil || 'Técnico'}</td>
-      <td><span style="padding:4px 8px; background:${badgeBg}; color:${badgeColor}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td>
-      <td style="text-align:center;"><button class="btn-primary" style="padding: 5px 10px;" onclick="prepararEdicaoUsuarioPeloId('${u.id}')">📝 Ações</button></td>`;
-    tbody.appendChild(tr);
-  });
+  if (usuariosFiltrados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador com o status "${appState.filtroStatusUsuario}" localizado.</td></tr>`;
+    return;
+  }
+  
+  usuariosFiltrados.forEach((u, idx) => {
+    const tr = document.createElement('tr');
+    const isAtivo = (u.status || 'ATIVO').toUpperCase() === 'ATIVO';
+    const badgeBg = isAtivo ? '#dcfce7' : '#fee2e2';
+    const badgeColor = isAtivo ? '#16a34a' : '#dc2626';
+    
+    const cpfLimpo = (u.cpf && !u.cpf.includes('ATIVO') && !u.cpf.includes('INATIVO') && u.cpf.length > 5) ? u.cpf : '-';
+    const dataAdmissaoTratada = (u.admissao && !u.admissao.includes('ATIVO') && !u.admissao.includes('INATIVO')) ? formatarDataBr(u.admissao) : '-';
+    
+    tr.innerHTML = `
+      <td><b>${u.nome || ''}</b></td>
+      <td>${u.login || '-'}</td>
+      <td>${cpfLimpo}</td>
+      <td>${dataAdmissaoTratada}</td>
+      <td>${u.perfil || 'Técnico'}</td>
+      <td><span style="padding:4px 8px; background:${badgeBg}; color:${badgeColor}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td>
+      <td style="text-align:center;"><button class="btn-primary" style="padding: 5px 10px;" onclick="prepararEdicaoUsuarioPeloId('${u.id}')">📝 Ações</button></td>`;
+    tbody.appendChild(tr);
+  });
 }
 
 function prepararEdicaoUsuarioPeloId(id) {
-  const u = appState.usuarios.find(user => String(user.id) === String(id));
-  if (!u) return alert('Colaborador não localizado no banco.');
-  
-  appState.idUsuarioEmEdicao = u.id;
-  
-  document.getElementById('formUserNome').value = u.nome || '';
-  document.getElementById('formUserLogin').value = u.login || '';
-  document.getElementById('formUserSenha').value = u.senha || '';
-  document.getElementById('formUserPerfil').value = u.perfil || 'Técnico';
-  
-  document.getElementById('formUserCpf').value = (u.cpf && !u.cpf.includes('ATIVO') && !u.cpf.includes('INATIVO') && u.cpf.length > 5) ? u.cpf : '';
-  document.getElementById('formUserRg').value = (u.rg && u.rg.length > 2) ? u.rg : '';
-  document.getElementById('formUserCnh').value = (u.cnh && u.cnh.length > 2 && !u.cnh.includes('GMT')) ? u.cnh : '';
-  document.getElementById('formUserTelefone').value = (u.telefone && u.telefone.length > 4 && !u.telefone.includes('/')) ? u.telefone : '';
-  document.getElementById('formUserCep').value = (u.cep && u.cep.length > 4) ? u.cep : '';
-  document.getElementById('formUserLogradouro').value = u.logradouro || '';
-  document.getElementById('formUserNumero').value = u.numero || '';
-  document.getElementById('formUserBairro').value = u.bairro || '';
-  document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
-  document.getElementById('formUserUf').value = u.uf || 'SP';
-  
-  let dataFinalISO = '';
-  if (u.admissao) {
-    let strData = String(u.admissao).trim();
-    
-    if (strData.length > 15 && isNaN(strData) && (strData.includes('GMT') || strData.includes('Mon') || strData.includes('Tue') || strData.includes('Wed') || strData.includes('Thu') || strData.includes('Fri') || strData.includes('Sat') || strData.includes('Sun'))) {
-      try {
-        const dObj = new Date(strData);
-        if (!isNaN(dObj.getTime())) {
-          let ano = dObj.getFullYear();
-          let mes = String(dObj.getMonth() + 1).padStart(2, '0');
-          let dia = String(dObj.getDate()).padStart(2, '0');
-          dataFinalISO = `${ano}-${mes}-${dia}`;
-        }
-      } catch(e) { console.error("Falha ao ler objeto de data longo:", e); }
-    }
-    
-    if (!dataFinalISO && strData.includes('-')) {
-      const partes = strData.split('T')[0].split('-');
-      if (partes.length === 3) {
-        dataFinalISO = `${partes[0]}-${partes[1].padStart(2, '0')}-${partes[2].padStart(2, '0')}`;
-      }
-    }
-    
-    if (!dataFinalISO && strData.includes('/')) {
-      const partes = strData.split(' ')[0].split('/');
-      if (partes.length === 3) {
-        dataFinalISO = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-      }
-    }
-  }
-  
-  document.getElementById('formUserAdmissao').value = dataFinalISO;
-  
-  const statusAtual = (u.status || 'ATIVO').toUpperCase();
-  document.getElementById('formUserStatus').value = statusAtual;
-  
-  const inputMotivo = document.getElementById('formUserMotivo');
-  if (statusAtual === 'INATIVO') {
-    inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus();
-  } else {
-    inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
-  }
-  document.getElementById('formUserMotivo').value = u.motivoDesligamento || '';
-  
-  document.getElementById('btnCancelarEdicaoUsuario').classList.remove('hidden');
-  document.getElementById('tituloFormUsuario').innerText = 'Editar Colaborador';
-  document.getElementById('tituloFormUsuario').style.color = 'var(--cor-sucesso)';
-  
-  document.getElementById('tituloFormUsuario').scrollIntoView({ behavior: 'smooth' });
+  const u = appState.usuarios.find(user => String(user.id) === String(id));
+  if (!u) return alert('Colaborador não localizado no banco.');
+  
+  appState.idUsuarioEmEdicao = u.id;
+  
+  document.getElementById('formUserNome').value = u.nome || '';
+  document.getElementById('formUserLogin').value = u.login || '';
+  document.getElementById('formUserSenha').value = u.senha || '';
+  document.getElementById('formUserPerfil').value = u.perfil || 'Técnico';
+  
+  document.getElementById('formUserCpf').value = (u.cpf && !u.cpf.includes('ATIVO') && !u.cpf.includes('INATIVO') && u.cpf.length > 5) ? u.cpf : '';
+  document.getElementById('formUserRg').value = (u.rg && u.rg.length > 2) ? u.rg : '';
+  document.getElementById('formUserCnh').value = (u.cnh && u.cnh.length > 2 && !u.cnh.includes('GMT')) ? u.cnh : '';
+  document.getElementById('formUserTelefone').value = (u.telefone && u.telefone.length > 4 && !u.telefone.includes('/')) ? u.telefone : '';
+  document.getElementById('formUserCep').value = (u.cep && u.cep.length > 4) ? u.cep : '';
+  document.getElementById('formUserLogradouro').value = u.logradouro || '';
+  document.getElementById('formUserNumero').value = u.numero || '';
+  document.getElementById('formUserBairro').value = u.bairro || '';
+  document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
+  document.getElementById('formUserUf').value = u.uf || 'SP';
+  
+  let dataFinalISO = '';
+  if (u.admissao) {
+    let strData = String(u.admissao).trim();
+    
+    if (strData.length > 15 && isNaN(strData) && (strData.includes('GMT') || strData.includes('Mon') || strData.includes('Tue') || strData.includes('Wed') || strData.includes('Thu') || strData.includes('Fri') || strData.includes('Sat') || strData.includes('Sun'))) {
+      try {
+        const dObj = new Date(strData);
+        if (!isNaN(dObj.getTime())) {
+          let ano = dObj.getFullYear();
+          let mes = String(dObj.getMonth() + 1).padStart(2, '0');
+          let dia = String(dObj.getDate()).padStart(2, '0');
+          dataFinalISO = `${ano}-${mes}-${dia}`;
+        }
+      } catch(e) { console.error("Falha ao ler objeto de data longo:", e); }
+    }
+    
+    if (!dataFinalISO && strData.includes('-')) {
+      const partes = strData.split('T')[0].split('-');
+      if (partes.length === 3) {
+        dataFinalISO = `${partes[0]}-${partes[1].padStart(2, '0')}-${partes[2].padStart(2, '0')}`;
+      }
+    }
+    
+    if (!dataFinalISO && strData.includes('/')) {
+      const partes = strData.split(' ')[0].split('/');
+      if (partes.length === 3) {
+        dataFinalISO = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+      }
+    }
+  }
+  
+  document.getElementById('formUserAdmissao').value = dataFinalISO;
+  
+  const statusAtual = (u.status || 'ATIVO').toUpperCase();
+  document.getElementById('formUserStatus').value = statusAtual;
+  
+  const inputMotivo = document.getElementById('formUserMotivo');
+  if (statusAtual === 'INATIVO') {
+    inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus();
+  } else {
+    inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
+  }
+  document.getElementById('formUserMotivo').value = u.motivoDesligamento || '';
+  
+  document.getElementById('btnCancelarEdicaoUsuario').classList.remove('hidden');
+  document.getElementById('tituloFormUsuario').innerText = 'Editar Colaborador';
+  document.getElementById('tituloFormUsuario').style.color = 'var(--cor-sucesso)';
+  
+  document.getElementById('tituloFormUsuario').scrollIntoView({ behavior: 'smooth' });
 }
 
 function limparFormularioUsuario() {
-  appState.idUsuarioEmEdicao = null;
-  document.getElementById('formUserNome').value = '';
-  document.getElementById('formUserLogin').value = '';
-  document.getElementById('formUserSenha').value = '';
-  document.getElementById('formUserPerfil').value = 'Técnico';
-  document.getElementById('formUserCpf').value = '';
-  document.getElementById('formUserRg').value = '';
-  document.getElementById('formUserCnh').value = '';
-  document.getElementById('formUserTelefone').value = '';
-  document.getElementById('formUserCep').value = '';
-  document.getElementById('formUserLogradouro').value = '';
-  document.getElementById('formUserNumero').value = '';
-  document.getElementById('formUserBairro').value = '';
-  document.getElementById('formUserCidade').value = 'SÃO PAULO';
-  document.getElementById('formUserUf').value = 'SP';
-  document.getElementById('formUserAdmissao').value = '';
-  document.getElementById('formUserStatus').value = 'ATIVO';
-  
-  const inputMotivo = document.getElementById('formUserMotivo');
-  inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
-  
-  document.getElementById('btnCancelarEdicaoUsuario').classList.add('hidden');
-  document.getElementById('tituloFormUsuario').innerText = 'Ficha do Colaborador';
-  document.getElementById('tituloFormUsuario').style.color = 'var(--cor-primaria)';
+  appState.idUsuarioEmEdicao = null;
+  document.getElementById('formUserNome').value = '';
+  document.getElementById('formUserLogin').value = '';
+  document.getElementById('formUserSenha').value = '';
+  document.getElementById('formUserPerfil').value = 'Técnico';
+  document.getElementById('formUserCpf').value = '';
+  document.getElementById('formUserRg').value = '';
+  document.getElementById('formUserCnh').value = '';
+  document.getElementById('formUserTelefone').value = '';
+  document.getElementById('formUserCep').value = '';
+  document.getElementById('formUserLogradouro').value = '';
+  document.getElementById('formUserNumero').value = '';
+  document.getElementById('formUserBairro').value = '';
+  document.getElementById('formUserCidade').value = 'SÃO PAULO';
+  document.getElementById('formUserUf').value = 'SP';
+  document.getElementById('formUserAdmissao').value = '';
+  document.getElementById('formUserStatus').value = 'ATIVO';
+  
+  const inputMotivo = document.getElementById('formUserMotivo');
+  inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
+  
+  document.getElementById('btnCancelarEdicaoUsuario').classList.add('hidden');
+  document.getElementById('tituloFormUsuario').innerText = 'Ficha do Colaborador';
+  document.getElementById('tituloFormUsuario').style.color = 'var(--cor-primaria)';
 }
 
 window.processarRetornoGoogleSheets = function(respostaServer) {
-  const btn = document.getElementById('btnSalvarUsuarioPlanilha');
-  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Colaborador'; }
-  
-  alert('Alteração salva com sucesso no banco Orizon!');
-  limparFormularioUsuario();
-  sincronizarDadosPlanilha();
+  const btn = document.getElementById('btnSalvarUsuarioPlanilha');
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Colaborador'; }
+  
+  alert('Alteração salva com sucesso no banco Orizon!');
+  limparFormularioUsuario();
+  sincronizarDadosPlanilha();
 };
 
 function enviarUsuarioPlanilha() {
-  const nome = document.getElementById('formUserNome').value.trim();
-  const login = document.getElementById('formUserLogin').value.trim();
-  const senha = document.getElementById('formUserSenha').value;
-  const perfil = document.getElementById('formUserPerfil').value;
-  const status = document.getElementById('formUserStatus').value;
-  const motivo = document.getElementById('formUserMotivo').value.trim();
-  
-  if (!nome || !login || !senha) return alert('Por favor, preencha os campos obrigatórios (*)!');
-  if (status === 'INATIVO' && !motivo) return alert('Informe o motivo do desligamento!');
-  
-  const d = {
-    id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(),
-    nome: nome, login: login, senha: senha, perfil: perfil,
-    status: status,
-    cpf: document.getElementById('formUserCpf').value,
-    rg: document.getElementById('formUserRg').value,
-    cnh: document.getElementById('formUserCnh').value,
-    telefone: document.getElementById('formUserTelefone').value,
-    cep: document.getElementById('formUserCep').value,
-    logradouro: document.getElementById('formUserLogradouro').value,
-    numero: document.getElementById('formUserNumero').value,
-    bairro: document.getElementById('formUserBairro').value,
-    cidade: document.getElementById('formUserCidade').value,
-    uf: document.getElementById('formUserUf').value,
-    admissao: document.getElementById('formUserAdmissao').value,
-    motivoDesligamento: motivo
-  };
-  
-  const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
-  const btn = document.getElementById('btnSalvarUsuarioPlanilha');
-  btn.disabled = true; btn.innerText = '⏳ Gravando...';
-  
-  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
-  
-  const scriptAntigo = document.getElementById('jsonp_execution_script');
-  if(scriptAntigo) scriptAntigo.remove();
-  
-  const scriptElement = document.createElement('script');
-  scriptElement.id = 'jsonp_execution_script';
-  scriptElement.src = urlFinal;
-  document.body.appendChild(scriptElement);
+  const nome = document.getElementById('formUserNome').value.trim();
+  const login = document.getElementById('formUserLogin').value.trim();
+  const senha = document.getElementById('formUserSenha').value;
+  const perfil = document.getElementById('formUserPerfil').value;
+  const status = document.getElementById('formUserStatus').value;
+  const motivo = document.getElementById('formUserMotivo').value.trim();
+  
+  if (!nome || !login || !senha) return alert('Por favor, preencha os campos obrigatórios (*)!');
+  if (status === 'INATIVO' && !motivo) return alert('Informe o motivo do desligamento!');
+  
+  const d = {
+    id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(),
+    nome: nome, login: login, senha: senha, perfil: perfil,
+    status: status,
+    cpf: document.getElementById('formUserCpf').value,
+    rg: document.getElementById('formUserRg').value,
+    cnh: document.getElementById('formUserCnh').value,
+    telefone: document.getElementById('formUserTelefone').value,
+    cep: document.getElementById('formUserCep').value,
+    logradouro: document.getElementById('formUserLogradouro').value,
+    numero: document.getElementById('formUserNumero').value,
+    bairro: document.getElementById('formUserBairro').value,
+    cidade: document.getElementById('formUserCidade').value,
+    uf: document.getElementById('formUserUf').value,
+    admissao: document.getElementById('formUserAdmissao').value,
+    motivoDesligamento: motivo
+  };
+  
+  const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  const btn = document.getElementById('btnSalvarUsuarioPlanilha');
+  btn.disabled = true; btn.innerText = '⏳ Gravando...';
+  
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
+  
+  const scriptAntigo = document.getElementById('jsonp_execution_script');
+  if(scriptAntigo) scriptAntigo.remove();
+  
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_execution_script';
+  scriptElement.src = urlFinal;
+  document.body.appendChild(scriptElement);
 }
 </script>
 </body>
