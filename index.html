@@ -104,7 +104,7 @@ const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   patrimonio: [],
   movimentacoes: [],
-  tecnicos: ['Diogo', 'Fagner Lima', 'Administrador'],
+  tecnicos: ['Diogo', 'Administrador'],
   veiculos: [],
   rotas: [],
   usuarios: [], 
@@ -516,12 +516,12 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// MÓDULO DE ROTAS DIÁRIAS (COM BLOQUEIO DE INATIVOS)
+// MÓDULO DE ROTAS DIÁRIAS (FINALIZADO E BLINDADO CONTRA DELAY)
 // =========================================================================
 function renderizarTelaRotas(container) {
   container.innerHTML = `
     <div>
-      <h2>📍 Módulo de Rotas</h2>
+      <h2>📍 Módulo de Rotas Diárias</h2>
       <div class="dashboard-grid">
         <div class="card-padrao"><h3>Nova Rota</h3><p>Criar rota diária vinculando clientes e ordens de serviço.</p><button id="btnCriarFormRota" class="btn-primary" style="margin-top:12px;">Abrir formulário</button></div>
         <div class="card-padrao"><h3>📋 Histórico</h3><p>Consultar rotas anteriores salvas na base.</p><button id="btnAbrirHistRotas" class="btn-secondary" style="margin-top:12px;">Abrir histórico</button></div>
@@ -536,6 +536,7 @@ function abrirFormularioRota() {
   
   let optionsTecnicos = '<option value="">Selecionar técnico</option>';
   if (appState.usuarios && appState.usuarios.length > 0) {
+    // BLINDAGEM SaaS: Filtra rigidamente os usuários ocultando quem estiver INATIVO para não compor rotas
     appState.usuarios.filter(u => (u.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(u => {
       optionsTecnicos += `<option value="${u.nome}">${u.nome}</option>`;
     });
@@ -561,10 +562,10 @@ function abrirFormularioRota() {
       <div class="card-padrao" style="margin-bottom:20px;">
         <div class="form-grid">
           <div><label>Nº Rota</label><input id="numeroRota" value="${numRotaSugerido}" readonly class="input-padrao" style="background:#f1f5f9;"></div>
-          <div><label>Data</label><input type="date" id="dataRota" class="input-padrao"></div>
-          <div><label>Técnico 1</label><select id="tecnico1Rota" class="select-padrao">${optionsTecnicos}</select></div>
+          <div><label>Data *</label><input type="date" id="dataRota" class="input-padrao"></div>
+          <div><label>Técnico 1 *</label><select id="tecnico1Rota" class="select-padrao">${optionsTecnicos}</select></div>
           <div><label>Técnico 2</label><select id="tecnico2Rota" class="select-padrao">${optionsTecnicos}</select></div>
-          <div><label>Veículo</label><select id="veiculoRota" class="select-padrao">${optionsVeiculos}</select></div>
+          <div><label>Veículo *</label><select id="veiculoRota" class="select-padrao">${optionsVeiculos}</select></div>
         </div>
       </div>
       <div id="clientesRotaContainer"></div>
@@ -639,6 +640,16 @@ function adicionarClienteRota() {
   div.querySelector('.btn-rem-cli').addEventListener('click', () => div.remove());
 }
 
+// CALLBACK DE SUCESSO DO MOTOR DE ROTAS
+window.processarRetornoRotaSheets = function(respostaServer) {
+  const btn = document.getElementById('btnGravarRotaFinal');
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Rota'; }
+  
+  alert('Rota e Ordens de Serviço publicadas com sucesso na planilha!');
+  abrirTela('rotas');
+  sincronizarDadosPlanilha();
+};
+
 function salvarRotaPlanilhaReal() {
   const nr = document.getElementById('numeroRota').value;
   const dt = document.getElementById('dataRota').value;
@@ -646,33 +657,50 @@ function salvarRotaPlanilhaReal() {
   const t2 = document.getElementById('tecnico2Rota').value;
   const ve = document.getElementById('veiculoRota').value;
 
-  if (!dt || t1.includes('Selecionar') || ve.includes('Selecionar') || !t1 || !ve) return alert('Preencha os campos obrigatórios!');
+  if (!dt || !t1 || !ve || t1.includes('Selecionar') || ve.includes('Selecionar')) {
+    return alert('Por favor, preencha a Data, o Técnico 1 e o Veículo!');
+  }
 
   const blocos = document.querySelectorAll('.bloco-cliente-rota');
   let clientesMontados = [];
 
   blocos.forEach(b => {
-    const nome = b.querySelector('.select-cliente-nome').value;
+    const nome = b.querySelector('.select-cliente-nome').value.trim();
     const end = b.querySelector('.endereco-texto').innerText;
     let chamados = [];
     b.querySelectorAll('.tabela-os-cliente tbody tr').forEach(r => {
       const inputs = r.querySelectorAll('input');
-      if(inputs[0].value || inputs[1].value) chamados.push({ os: inputs[0].value, activity: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
+      if(inputs[0].value || inputs[1].value) {
+        chamados.push({ os: inputs[0].value, activity: inputs[1].value, tipo: 'Preventiva', prioridade: '🟡 Média' });
+      }
     });
     if(nome) clientesMontados.push({ cliente: nome, endereco: end, observacao: '', chamados: chamados });
   });
 
-  const pacoteRota = { numeroRota: nr, data: dt, tecnico1: t1, tecnico2: t2 === 'Selecionar técnico' ? '' : t2, veiculo: ve, clientes: clientesMontados };
-  const btn = document.getElementById('btnGravarRotaFinal'); btn.disabled = true; btn.innerText = 'Gravando...';
+  if (clientesMontados.length === 0) {
+    return alert('Adicione pelo menos um Cliente válido à rota antes de salvar!');
+  }
 
-  fetch(`${WEB_APP_URL}?acao=salvarRota&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}`, { method: 'POST', mode: 'no-cors' })
-  .then(() => { alert('Rota salva com sucesso!'); abrirTela('rotas'); })
-  .catch(() => { alert('Erro ao salvar.'); btn.disabled = false; btn.innerText = '💾 Salvar Rota'; });
+  const pacoteRota = { numeroRota: nr, data: dt, tecnico1: t1, tecnico2: (t2 === 'Selecionar técnico' || !t2) ? '' : t2, veiculo: ve, clientes: clientesMontados };
+  
+  const btn = document.getElementById('btnGravarRotaFinal'); 
+  btn.disabled = true; btn.innerText = '⏳ Gravando Rota...';
+
+  // MOTOR HÍBRIDO SaaS: Evita travamentos de CORS enviando a Rota via Script Dinâmico com Callback
+  const urlFinal = `${WEB_APP_URL}?acao=salvarRota&tipo=ROTA&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}&prefix=processarRetornoRotaSheets`;
+  
+  const scriptAntigo = document.getElementById('jsonp_route_script');
+  if(scriptAntigo) scriptAntigo.remove();
+  
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_route_script';
+  scriptElement.src = urlFinal;
+  document.body.appendChild(scriptElement);
 }
 
 function abrirHistoricoRotas() {
   let html = '<h2>📋 Histórico Operacional de Rotas</h2><div style="margin-top:15px;">';
-  html += '<p class="card-padrao">Consulte o histórico operacional direto no banco Sheets.</p></div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>';
+  html += '<p class="card-padrao">Consulte e gerencie o histórico operacional completo direto no seu banco Google Sheets.</p></div><button id="btnVoltarHistMenu" class="btn-secondary" style="margin-top:15px;">Voltar</button>';
   document.getElementById('conteudoPrincipal').innerHTML = html;
   document.getElementById('btnVoltarHistMenu').addEventListener('click', () => abrirTela('rotas'));
 }
@@ -820,7 +848,7 @@ function alternarSubAbaGestao(aba) {
   }
 }
 
-function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
+function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1.$2 vanished"); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
 function aplicarMascaraTelefoneUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
 function aplicarMascaraCpfUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2"); this.value = v; }
 
@@ -911,14 +939,10 @@ function prepararEdicaoUsuarioPeloId(id) {
   document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
   document.getElementById('formUserUf').value = u.uf || 'SP';
   
-  // =========================================================================
-  // NOVO CONVERSOR UNIVERSAL DE DATA (BLINDAGEM TOTAL)
-  // =========================================================================
   let dataFinalISO = '';
   if (u.admissao) {
     let strData = String(u.admissao).trim();
     
-    // Se o Sheets enviou um Objeto de Data Longo do JS (Ex: "Wed May 25 2026...")
     if (strData.length > 15 && isNaN(strData) && (strData.includes('GMT') || strData.includes('Mon') || strData.includes('Tue') || strData.includes('Wed') || strData.includes('Thu') || strData.includes('Fri') || strData.includes('Sat') || strData.includes('Sun'))) {
       try {
         const dObj = new Date(strData);
@@ -931,7 +955,6 @@ function prepararEdicaoUsuarioPeloId(id) {
       } catch(e) { console.error("Falha ao ler objeto de data longo:", e); }
     }
     
-    // Caso a data venha no formato ISO puro do banco ("2026-05-25")
     if (!dataFinalISO && strData.includes('-')) {
       const partes = strData.split('T')[0].split('-');
       if (partes.length === 3) {
@@ -939,7 +962,6 @@ function prepararEdicaoUsuarioPeloId(id) {
       }
     }
     
-    // Caso a data venha no formato brasileiro padrão ("25/05/2026")
     if (!dataFinalISO && strData.includes('/')) {
       const partes = strData.split(' ')[0].split('/');
       if (partes.length === 3) {
