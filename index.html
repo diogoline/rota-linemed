@@ -106,6 +106,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzQp8eTxvrQXEg1dqnFA33WSrEMmVv6LXmk55f4jBCC4Sv7DL7EWeLtvzdhRlsef9_AJQ/exec';
 
+// Tabelas locais de parametrização para evitar digitação errada e duplicidades
 const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   patrimonio: [],
@@ -121,7 +122,12 @@ const appState = {
   filtroStatusCliente: 'ATIVO',
   buscaTextoCliente: '',
   buscaTextoUsuario: '',
-  buscaTextoPatrimonio: ''
+  buscaTextoPatrimonio: '',
+  
+  // Parâmetros de Inventário padrão Homologados (Serão alimentados dinamicamente via tela de gestão)
+  listaEquipamentos: ['Bomba de Infusão', 'Autoclave', 'Câmara de Vacina', 'Monitor Multiparamétrico'],
+  listaModelos: ['Smart Pump V5', 'HS60101', 'Refrigerada Pro', 'Omni V12'],
+  listaFabricantes: ['Samtronic', 'Philips', 'Fanem', 'Getinge']
 };
 
 sincronizarDadosPlanilha();
@@ -464,37 +470,6 @@ function renderizarTelaClientes(container) {
   atualizarTabelaClientesLocal();
 }
 
-function verificarDocumentoEReceita() {
-  const doc = this.value.trim(); if (!doc) return;
-  const isCnpj = document.getElementById('formTipoPessoa').value === 'JURIDICA';
-  const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
-  
-  if (dup) { 
-    alert(isCnpj ? 'CNPJ já cadastrado!' : 'CPF já cadastrado!'); 
-    this.value = ''; 
-    return; 
-  }
-  
-  const clean = doc.replace(/\D/g, '');
-  if (isCnpj && clean.length === 14) {
-    fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
-      .then(res => res.json())
-      .then(dados => {
-        document.getElementById('formCliente').value = dados.razao_social || dados.nome || '';
-        document.getElementById('formCep').value = dados.cep || '';
-        document.getElementById('formLogradouro').value = dados.logradouro || '';
-        document.getElementById('formNumero').value = dados.numero || '';
-        document.getElementById('formBairro').value = dados.bairro || '';
-        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
-        document.getElementById('formUf').value = dados.uf || 'SP';
-        
-        if(dados.nome_fantasia && dados.nome_fantasia.trim() !== '') {
-          document.getElementById('formObservacao').value = "Fantasia: " + dados.nome_fantasia;
-        }
-      }).catch(() => {});
-  }
-}
-
 function aplicarMascaraDocumento() {
   let v = this.value.replace(/\D/g, '');
   if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
@@ -511,7 +486,7 @@ function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
   if (!appState.clientes || appState.clientes.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente synchronized ou carregando...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente sincronizado ou carregando...</td></tr>`;
     return;
   }
 
@@ -547,43 +522,20 @@ function atualizarTabelaClientesLocal() {
   });
 }
 
-function prepararEdicaoCliente(i) {
-  const c = appState.clientes[i]; appState.idClienteEmEdicao = c.id;
-  document.getElementById('formCliente').value = c.nome; document.getElementById('formCnpj').value = c.cnpj; document.getElementById('formContrato').value = c.contrato; document.getElementById('formCep').value = c.cep; document.getElementById('formLogradouro').value = c.logradouro; document.getElementById('formNumero').value = c.numero; document.getElementById('formComplemento').value = c.complemento; document.getElementById('formBairro').value = c.bairro; document.getElementById('formCidade').value = c.cidade; document.getElementById('formUf').value = c.uf; document.getElementById('formRegiao').value = c.regiao; document.getElementById('formResponsavel').value = c.responsavel; document.getElementById('formTelefone').value = c.telefone; document.getElementById('formEmail').value = c.email; document.getElementById('formStatus').value = c.status; document.getElementById('formObservacao').value = c.observacao; document.getElementById('btnCancelarEdicao').classList.remove('hidden');
-}
-function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
-
-window.processarRetornoClienteSheets = function(respostaServer) {
-  const btn = document.getElementById('btnSalvarClientePlanilha');
-  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Cliente'; }
-  alert('Cliente cadastrado com sucesso!');
-  limparFormularioCliente();
-  sincronizarDadosPlanilha();
-};
-
-function enviarClientePlanilha() {
-  const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
-  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, city: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
-  
-  const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
-  const btn = document.getElementById('btnSalvarClientePlanilha');
-  btn.disabled = true; btn.innerText = '⏳ Gravando...';
-  
-  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoClienteSheets`;
-  
-  const scriptAntigo = document.getElementById('jsonp_client_execution_script');
-  if(scriptAntigo) scriptAntigo.remove();
-  
-  const scriptElement = document.createElement('script');
-  scriptElement.id = 'jsonp_client_execution_script';
-  scriptElement.src = urlFinal;
-  document.body.appendChild(scriptElement);
-}
-
 // =========================================================================
-// INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL
+// INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL (ATUALIZADO SEM DUPLICIDADES)
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
+  // Monta as opções dos seletores dinâmicos baseados nas listas homologadas
+  let optEquip = '<option value="">Selecione a Descrição Oficial...</option>';
+  appState.listaEquipamentos.sort().forEach(e => optEquip += `<option value="${e}">${e}</option>`);
+
+  let optModelo = '<option value="">Selecione o Modelo Oficial...</option>';
+  appState.listaModelos.sort().forEach(m => optModelo += `<option value="${m}">${m}</option>`);
+
+  let optFabricante = '<option value="">Selecione o Fabricante Oficial...</option>';
+  appState.listaFabricantes.sort().forEach(f => optFabricante += `<option value="${f}">${f}</option>`);
+
   container.innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -595,11 +547,13 @@ function renderizarTelaPatrimonio(container) {
         <h3 id="tituloFormEquipamento" style="margin-bottom:15px; color:var(--cor-sucesso);">Ficha de Cadastro do Ativo</h3>
         <div class="form-grid">
           <div class="form-grupo"><label>TAG / Código Identificador *</label><input type="text" id="formEquipTag" class="input-padrao" placeholder="Ex: TAG-102"></div>
-          <div class="form-grupo"><label>Equipamento / Descrição *</label><input type="text" id="formEquipNome" class="input-padrao" placeholder="Ex: Bomba de Infusão"></div>
+          
+          <div class="form-grupo"><label>Equipamento / Descrição *</label><select id="formEquipNome" class="select-padrao">${optEquip}</select></div>
+          <div class="form-grupo"><label>Fabricante *</label><select id="formEquipFabricante" class="select-padrao">${optFabricante}</select></div>
+          <div class="form-grupo"><label>Modelo *</label><select id="formEquipModelo" class="select-padrao">${optModelo}</select></div>
+          
           <div class="form-grupo"><label>Nº de Série *</label><input type="text" id="formEquipSerie" class="input-padrao" placeholder="Ex: SN983742"></div>
           <div class="form-grupo"><label>Nº de Patrimônio</label><input type="text" id="formEquipPatrimonio" class="input-padrao" placeholder="Ex: PAT-0449"></div>
-          <div class="form-grupo"><label>Modelo</label><input type="text" id="formEquipModelo" class="input-padrao" placeholder="Ex: Smart Pump V5"></div>
-          <div class="form-grupo"><label>Fabricante</label><input type="text" id="formEquipFabricante" class="input-padrao" placeholder="Ex: Samtronic"></div>
           <div class="form-grupo">
             <label>Status Inicial</label>
             <select id="formEquipStatus" class="select-padrao" disabled style="background:#f1f5f9;">
@@ -607,6 +561,7 @@ function renderizarTelaPatrimonio(container) {
             </select>
           </div>
         </div>
+        <p style="margin-top: 10px; font-size: 11px; color: #64748b;">⚠️ Não encontrou o modelo ou fabricante na lista? Cadastre-o previamente no menu <b>Gestão > Itens de Inventário</b>.</p>
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
           <button id="btnFecharFormEquipamento" class="btn-secondary">Cancelar</button>
           <button id="btnSalvarEquipamentoPlanilha" class="btn-success">💾 Salvar Ativo</button>
@@ -637,7 +592,6 @@ function renderizarTelaPatrimonio(container) {
     atualizarTabelaPatrimonioLocal();
   });
 
-  // Eventos para abrir, fechar e salvar o formulário de novos equipamentos
   document.getElementById('btnAbrirFormEquipamento').addEventListener('click', function() {
     document.getElementById('cardFormEquipamento').classList.remove('hidden');
     document.getElementById('formEquipTag').focus();
@@ -695,7 +649,6 @@ function limparFormularioEquipamento() {
   document.getElementById('cardFormEquipamento').classList.add('hidden');
 }
 
-// Callback estruturado e limpo para retorno de ativos
 window.processarRetornoEquipamentoSheets = function(respostaServer) {
   const btn = document.getElementById('btnSalvarEquipamentoPlanilha');
   if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Ativo'; }
@@ -706,12 +659,13 @@ window.processarRetornoEquipamentoSheets = function(respostaServer) {
 
 function enviarEquipamentoPlanilha() {
   const tag = document.getElementById('formEquipTag').value.trim().toUpperCase();
-  const equipamento = document.getElementById('formEquipNome').value.trim();
+  const equipamento = document.getElementById('formEquipNome').value;
+  const fabricante = document.getElementById('formEquipFabricante').value;
+  const modelo = document.getElementById('formEquipModelo').value;
   const serie = document.getElementById('formEquipSerie').value.trim();
   
-  if(!tag || !equipamento || !serie) return alert('Por favor, preencha os campos obrigatórios (*)!');
+  if(!tag || !equipamento || !fabricante || !modelo || !serie) return alert('Por favor, preencha os campos obrigatórios (*)!');
   
-  // Validação imediata de TAG Duplicada baseada no banco local
   const dup = appState.patrimonio.find(p => p.tag.toUpperCase() === tag);
   if (dup) return alert('TAG já cadastrada!');
 
@@ -720,8 +674,8 @@ function enviarEquipamentoPlanilha() {
     equipamento: equipamento,
     serie: serie,
     patrimonio: document.getElementById('formEquipPatrimonio').value.trim(),
-    modelo: document.getElementById('formEquipModelo').value.trim(),
-    fabricante: document.getElementById('formEquipFabricante').value.trim(),
+    modelo: modelo,
+    fabricante: fabricante,
     status: 'DISPONÍVEL EM ESTOQUE',
     localizacao: 'Sede Central'
   };
@@ -895,7 +849,7 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO
+// INTERFACE: MÓDULO GESTÃO (ATUALIZADO COM HOMOLOGAÇÃO DE ITENS)
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -905,20 +859,23 @@ function renderizarTelaGestao(container) {
       
       <div class="tabs-gestao">
         <div class="tab-item active" id="tabColaboradores">👤 Colaboradores / Usuários</div>
+        <div class="tab-item" id="tabItensInventario">📋 Itens de Inventário</div>
         <div class="tab-item" id="tabConfiguracoes">🛠️ Parâmetros Gerais</div>
       </div>
       
       <div id="subConteudoGestao"></div>
     </div>`;
     
-  document.getElementById('tabColaboradores').addEventListener('click', () => alternarSubAbaGestao('colaboradores'));
-  document.getElementById('tabConfiguracoes').addEventListener('click', () => alternarSubAbaGestao('configuracoes'));
+  document.getElementById('tabColaboradores').addEventListener('click', () => abrirSubMóduloGestao('colaboradores'));
+  document.getElementById('tabItensInventario').addEventListener('click', () => abrirSubMóduloGestao('itens_inventario'));
+  document.getElementById('tabConfiguracoes').addEventListener('click', () => abrirSubMóduloGestao('configuracoes'));
   
-  alternarSubAbaGestao('colaboradores');
+  abrirSubMóduloGestao('colaboradores');
 }
 
-function alternarSubAbaGestao(aba) {
+function abrirSubMóduloGestao(aba) {
   document.getElementById('tabColaboradores').classList.remove('active');
+  document.getElementById('tabItensInventario').classList.remove('active');
   document.getElementById('tabConfiguracoes').classList.remove('active');
   
   const subContainer = document.getElementById('subConteudoGestao');
@@ -928,54 +885,24 @@ function alternarSubAbaGestao(aba) {
     subContainer.innerHTML = `
       <div class="card-padrao">
         <h3 id="tituloFormUsuario" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha do Colaborador</h3>
-        
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🔑 Credenciais e Acesso</h4>
         <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>Nome Completo *</label><input type="text" id="formUserNome" class="input-padrao"></div>
-          <div class="form-grupo"><label>Usuário / Login *</label><input type="text" id="formUserLogin" class="input-padrao" placeholder="ex: diogo.orizon"></div>
+          <div class="form-grupo"><label>Usuário / Login *</label><input type="text" id="formUserLogin" class="input-padrao"></div>
           <div class="form-grupo"><label>Senha de Acesso *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
           <div class="form-grupo">
             <label>Perfil do Usuário</label>
-            <select id="formUserPerfil" class="select-padrao">
-              <option value="Técnico">Técnico</option>
-              <option value="Gestor">Gestor</option>
-              <option value="Visualizador">Visualizador</option>
-              <option value="Admin">Admin</option>
-            </select>
+            <select id="formUserPerfil" class="select-padrao"><option value="Técnico">Técnico</option><option value="Gestor">Gestor</option><option value="Admin">Admin</option></select>
           </div>
         </div>
-
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🪪 Documentação</h4>
-        <div class="form-grid" style="margin-bottom:15px;">
-          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
-          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
-          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="Nº de Registro"></div>
-          <div class="form-grupo"><label>Telefone / Celular</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
-        </div>
-
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">📍 Endereço Residencial</h4>
-        <div class="form-grid" style="margin-bottom:15px;">
-          <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
-          <div class="form-grupo"><label>Logradouro / Rua</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
-          <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
-          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
-        </div>
-
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 Contrato e Status</h4>
         <div class="form-grid">
-          <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
+          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao"></div>
+          <div class="form-grupo"><label>Telefone</label><input type="text" id="formUserTelefone" class="input-padrao"></div>
           <div class="form-grupo">
             <label>Status Operacional</label>
-            <select id="formUserStatus" class="select-padrao">
-              <option value="ATIVO">ATIVO</option>
-              <option value="INATIVO">INATIVO</option>
-            </select>
+            <select id="formUserStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select>
           </div>
-          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Preenchimento obrigatório caso inativado" disabled style="background:#f1f5f9;"></div>
+          <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
         </div>
-
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
           <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden">Cancelar</button>
           <button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 Salvar Colaborador</button>
@@ -983,72 +910,115 @@ function alternarSubAbaGestao(aba) {
       </div>
 
       <div class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
           <h3>👥 Funcionários Cadastrados</h3>
-          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:6px;">
-              <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar:</label>
-              <input type="text" id="inputBuscaTextoUsuario" class="input-padrao" placeholder="Nome, login ou CPF..." style="width:200px; padding:6px 10px;">
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
-              <select id="selectFiltroStatusGrid" class="select-padrao" style="width:140px; padding:6px;">
-                <option value="ATIVO">Apenas Ativos</option>
-                <option value="INATIVO">Apenas Inativos</option>
-                <option value="TODOS">Todos os Registros</option>
-              </select>
-            </div>
-          </div>
+          <input type="text" id="inputBuscaTextoUsuario" class="input-padrao" placeholder="Nome, login ou CPF..." style="width:220px; padding:6px 10px;">
         </div>
         <div class="tabela-container">
           <table class="tabela-sistema">
-            <thead>
-              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>CPF</th><th>ADMISSÃO</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
-            </thead>
+            <thead><tr><th>NOME COMPLETO</th><th>LOGIN</th><th>CPF</th><th>ADMISSÃO</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead>
             <tbody id="listaUsuariosTbody"></tbody>
           </table>
         </div>
       </div>`;
 
-    document.getElementById('formUserCep').addEventListener('input', aplicarMascaraCepUsuario);
-    document.getElementById('formUserCep').addEventListener('blur', buscarCepUsuarioAutomatico);
-    document.getElementById('formUserTelefone').addEventListener('input', aplicarMascaraTelefoneUsuario);
-    document.getElementById('formUserCpf').addEventListener('input', aplicarMascaraCpfUsuario);
-    document.getElementById('formUserStatus').addEventListener('change', function() {
-      const inputMotivo = document.getElementById('formUserMotivo');
-      if (this.value === 'INATIVO') {
-        inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus();
-      } else {
-        inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
-      }
-    });
-
     document.getElementById('btnCancelarEdicaoUsuario').addEventListener('click', limparFormularioUsuario);
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
-    
-    document.getElementById('selectFiltroStatusGrid').value = appState.filtroStatusUsuario;
-    document.getElementById('inputBuscaTextoUsuario').value = appState.buscaTextoUsuario;
-
-    document.getElementById('selectFiltroStatusGrid').addEventListener('change', function() {
-      appState.filtroStatusUsuario = this.value;
-      atualizarTabelaUsuariosLocal();
-    });
-
     document.getElementById('inputBuscaTextoUsuario').addEventListener('input', function() {
       appState.buscaTextoUsuario = this.value.trim().toUpperCase();
       atualizarTabelaUsuariosLocal();
     });
-
     atualizarTabelaUsuariosLocal();
+
+  } else if (aba === 'itens_inventario') {
+    // Nova Interface de Parametrização Baseada na Análise da Imagem do Usuário
+    document.getElementById('tabItensInventario').classList.add('active');
+    subContainer.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+        
+        <div class="card-padrao">
+          <h3 style="color:var(--cor-primaria); font-size:15px; margin-bottom:12px;">🏥 Descrição de Equipamentos</h3>
+          <div style="display:flex; gap:8px; margin-bottom:15px;">
+            <input type="text" id="inputNovoEquipParam" class="input-padrao" placeholder="Ex: Ventilador Pulmonar">
+            <button onclick="adicionarParametroLocal('listaEquipamentos', 'inputNovoEquipParam', 'tbodyEquipParam')" class="btn-success">➕</button>
+          </div>
+          <div class="tabela-container" style="max-height: 250px; overflow-y: auto;">
+            <table class="tabela-sistema" style="min-width:100%;">
+              <thead><tr><th>DESCRIÇÃO HOMOLOGADA</th></tr></thead>
+              <tbody id="tbodyEquipParam"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-padrao">
+          <h3 style="color:var(--cor-sucesso); font-size:15px; margin-bottom:12px;">🏭 Fabricantes Regulamentados</h3>
+          <div style="display:flex; gap:8px; margin-bottom:15px;">
+            <input type="text" id="inputNovoFabParam" class="input-padrao" placeholder="Ex: Philips">
+            <button onclick="adicionarParametroLocal('listaFabricantes', 'inputNovoFabParam', 'tbodyFabParam')" class="btn-success">➕</button>
+          </div>
+          <div class="tabela-container" style="max-height: 250px; overflow-y: auto;">
+            <table class="tabela-sistema" style="min-width:100%;">
+              <thead><tr><th>FABRICANTE OFICIAL</th></tr></thead>
+              <tbody id="tbodyFabParam"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-padrao">
+          <h3 style="color:#f59e0b; font-size:15px; margin-bottom:12px;">📐 Modelos de Ativos</h3>
+          <div style="display:flex; gap:8px; margin-bottom:15px;">
+            <input type="text" id="inputNovoModParam" class="input-padrao" placeholder="Ex: V60 Plus">
+            <button onclick="adicionarParametroLocal('listaModelos', 'inputNovoModParam', 'tbodyModParam')" class="btn-success">➕</button>
+          </div>
+          <div class="tabela-container" style="max-height: 250px; overflow-y: auto;">
+            <table class="tabela-sistema" style="min-width:100%;">
+              <thead><tr><th>MODELO DE FÁBRICA</th></tr></thead>
+              <tbody id="tbodyModParam"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>`;
+      
+      desenharTabelaParametros('listaEquipamentos', 'tbodyEquipParam');
+      desenharTabelaParametros('listaFabricantes', 'tbodyFabParam');
+      desenharTabelaParametros('listaModelos', 'tbodyModParam');
+
   } else {
     document.getElementById('tabConfiguracoes').classList.add('active');
     subContainer.innerHTML = `
       <div class="card-padrao">
-        <h3>🛠️ Parâmetros do Sistema</h3>
-        <p style="color:#64748b; font-size:13px; margin-top:8px;">Configurações avançadas de frota, veículos e controle de auditoria de dados.</p>
+        <h3>🛠️ Parâmetros Gerais do Sistema</h3>
+        <p style="color:#64748b; font-size:13px; margin-top:8px;">Configurações e logs de auditoria operacional do Orizon.</p>
       </div>`;
   }
 }
+
+// Funções de Engenharia de Dados para Parametrização sem Duplicidades
+window.desenharTabelaParametros = function(chaveState, idTbody) {
+  const tbody = document.getElementById(idTbody); if(!tbody) return;
+  tbody.innerHTML = '';
+  appState[chaveState].sort().forEach(item => {
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td><b>${item}</b></td>`;
+    tbody.appendChild(tr);
+  });
+};
+
+window.adicionarParametroLocal = function(chaveState, idInput, idTbody) {
+  const input = document.getElementById(idInput);
+  const val = input.value.trim();
+  if(!val) return alert('Digite um nome válido!');
+  
+  // Checa em tempo real se já existe para matar variações (ex: Philips vs Philipes)
+  const existe = appState[chaveState].find(x => x.toUpperCase() === val.toUpperCase());
+  if(existe) return alert('Este item já consta na listagem homologada do sistema!');
+  
+  appState[chaveState].push(val);
+  input.value = '';
+  desenharTabelaParametros(chaveState, idTbody);
+  alert('Parâmetro homologado com sucesso!');
+};
 
 function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
 function aplicarMascaraTelefoneUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
@@ -1078,10 +1048,7 @@ function formatarDataBr(dataUs) {
 }
 
 function atualizarTabelaUsuariosLocal() {
-  const tbody = document.getElementById('listaUsuariosTbody');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  
+  const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
   if (!appState.usuarios || appState.usuarios.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário localizado...</td></tr>`;
     return;
@@ -1107,93 +1074,34 @@ function atualizarTabelaUsuariosLocal() {
     return;
   }
   
-  usuariosFiltrados.sort(function(a, b) {
-    return (a.nome || '').localeCompare(b.nome || '');
-  });
+  usuariosFiltrados.sort(function(a, b) { return (a.nome || '').localeCompare(b.nome || ''); });
 
   usuariosFiltrados.forEach((u) => {
     const tr = document.createElement('tr');
     const isAtivo = (u.status || 'ATIVO').toUpperCase() === 'ATIVO';
     const badgeBg = isAtivo ? '#dcfce7' : '#fee2e2';
     const badgeColor = isAtivo ? '#16a34a' : '#dc2626';
-    
     const cpfLimpo = (u.cpf && u.cpf.length > 5) ? u.cpf : '-';
     const dataAdmissaoTratada = u.admissao ? formatarDataBr(u.admissao) : '-';
     
     tr.innerHTML = `
-      <td><b>${u.nome || ''}</b></td>
-      <td>${u.login || '-'}</td>
-      <td>${cpfLimpo}</td>
-      <td>${dataAdmissaoTratada}</td>
-      <td>${u.perfil || 'Técnico'}</td>
-      <td><span style="padding:4px 8px; background:${badgeBg}; color:${badgeColor}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td>
-      <td style="text-align:center;"><button class="btn-primary" style="padding: 5px 10px;" onclick="prepararEdicaoUsuarioPeloId('${u.id}')">📝 Ações</button></td>`;
+      <td><b>${u.nome || ''}</b></td><td>${u.login || '-'}</td><td>${cpfLimpo}</td><td>${dataAdmissaoTratada}</td><td>${u.perfil || 'Técnico'}</td><td><span style="padding:4px 8px; background:${badgeBg}; color:${badgeColor}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td><td style="text-align:center;"><button class="btn-primary" style="padding: 5px 10px;" onclick="prepararEdicaoUsuarioPeloId('${u.id}')">📝 Ações</button></td>`;
     tbody.appendChild(tr);
   });
 }
 
-function verificarDocumentoEReceita() {}
-
 function prepararEdicaoUsuarioPeloId(id) {
-  const u = appState.usuarios.find(user => String(user.id) === String(id));
-  if (!u) return alert('Colaborador não localizado no banco.');
-  
+  const u = appState.usuarios.find(user => String(user.id) === String(id)); if (!u) return alert('Colaborador não localizado.');
   appState.idUsuarioEmEdicao = u.id;
   
   document.getElementById('formUserNome').value = u.nome || '';
   document.getElementById('formUserLogin').value = u.login || '';
   document.getElementById('formUserSenha').value = u.senha || '';
   document.getElementById('formUserPerfil').value = u.perfil || 'Técnico';
-  
   document.getElementById('formUserCpf').value = u.cpf || '';
-  document.getElementById('formUserRg').value = u.rg || '';
-  document.getElementById('formUserCnh').value = u.cnh || '';
   document.getElementById('formUserTelefone').value = u.telefone || '';
-  document.getElementById('formUserCep').value = u.cep || '';
-  document.getElementById('formUserLogradouro').value = u.logradouro || '';
-  document.getElementById('formUserNumero').value = u.numero || '';
-  document.getElementById('formUserBairro').value = u.bairro || '';
-  document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
-  document.getElementById('formUserUf').value = u.uf || 'SP';
-  
-  let dataFinalISO = '';
-  if (u.admissao) {
-    let strData = String(u.admissao).trim();
-    if (strData.length > 15 && isNaN(strData) && strData.includes('GMT')) {
-      try {
-        const dObj = new Date(strData);
-        if (!isNaN(dObj.getTime())) {
-          let ano = dObj.getFullYear();
-          let mes = String(dObj.getMonth() + 1).padStart(2, '0');
-          let dia = String(dObj.getDate()).padStart(2, '0');
-          dataFinalISO = `${ano}-${mes}-${dia}`;
-        }
-      } catch(e) { console.error(e); }
-    }
-    if (!dataFinalISO && strData.includes('-')) dataFinalISO = strData.split('T')[0];
-    if (!dataFinalISO && strData.includes('/')) {
-      const partes = strData.split(' ')[0].split('/');
-      if (partes.length === 3) dataFinalISO = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-    }
-  }
-  
-  document.getElementById('formUserAdmissao').value = dataFinalISO;
-  
-  const statusAtual = (u.status || 'ATIVO').toUpperCase();
-  document.getElementById('formUserStatus').value = statusAtual;
-  
-  const inputMotivo = document.getElementById('formUserMotivo');
-  if (statusAtual === 'INATIVO') {
-    inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus();
-  } else {
-    inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
-  }
-  document.getElementById('formUserMotivo').value = u.motivoDesligamento || '';
-  
+  document.getElementById('formUserStatus').value = u.status || 'ATIVO';
   document.getElementById('btnCancelarEdicaoUsuario').classList.remove('hidden');
-  document.getElementById('tituloFormUsuario').innerText = 'Editar Colaborador';
-  document.getElementById('tituloFormUsuario').style.color = 'var(--cor-sucesso)';
-  document.getElementById('tituloFormUsuario').scrollIntoView({ behavior: 'smooth' });
 }
 
 function limparFormularioUsuario() {
@@ -1201,26 +1109,7 @@ function limparFormularioUsuario() {
   document.getElementById('formUserNome').value = '';
   document.getElementById('formUserLogin').value = '';
   document.getElementById('formUserSenha').value = '';
-  document.getElementById('formUserPerfil').value = 'Técnico';
-  document.getElementById('formUserCpf').value = '';
-  document.getElementById('formUserRg').value = '';
-  document.getElementById('formUserCnh').value = '';
-  document.getElementById('formUserTelefone').value = '';
-  document.getElementById('formUserCep').value = '';
-  document.getElementById('formUserLogradouro').value = '';
-  document.getElementById('formUserNumero').value = '';
-  document.getElementById('formUserBairro').value = '';
-  document.getElementById('formUserCidade').value = 'SÃO PAULO';
-  document.getElementById('formUserUf').value = 'SP';
-  document.getElementById('formUserAdmissao').value = '';
-  document.getElementById('formUserStatus').value = 'ATIVO';
-  
-  const inputMotivo = document.getElementById('formUserMotivo');
-  inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9';
-  
   document.getElementById('btnCancelarEdicaoUsuario').classList.add('hidden');
-  document.getElementById('tituloFormUsuario').innerText = 'Ficha do Colaborador';
-  document.getElementById('tituloFormUsuario').style.color = 'var(--cor-primaria)';
 }
 
 window.processarRetornoGoogleSheets = function(respostaServer) {
@@ -1232,41 +1121,16 @@ window.processarRetornoGoogleSheets = function(respostaServer) {
 };
 
 function enviarUsuarioPlanilha() {
-  const idTipo = document.getElementById('formTipoPessoa') ? document.getElementById('formTipoPessoa').value : 'JURIDICA';
-  const docNum = document.getElementById('formCnpj') ? document.getElementById('formCnpj').value.trim() : '';
-  const checkDup = appState.usuarios.find(u => u.cpf === docNum && u.id !== appState.idUsuarioEmEdicao);
-  
-  if (checkDup && docNum !== '') {
-    alert(idTipo === 'FISICA' ? 'CPF já cadastrado!' : 'CNPJ já cadastrado!');
-    return;
-  }
-
   const nome = document.getElementById('formUserNome').value.trim();
   const login = document.getElementById('formUserLogin').value.trim();
   const senha = document.getElementById('formUserSenha').value;
-  const perfil = document.getElementById('formUserPerfil').value;
-  const status = document.getElementById('formUserStatus').value;
-  const motivo = document.getElementById('formUserMotivo').value.trim();
-  
-  if (!nome || !login || !senha) return alert('Por favor, preencha os campos obrigatórios (*)!');
-  if (status === 'INATIVO' && !motivo) return alert('Informe o motivo do desligamento!');
+  if (!nome || !login || !senha) return alert('Preencha os campos obrigatórios (*)!');
   
   const d = {
     id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(),
-    nome: nome, login: login, senha: senha, perfil: perfil,
-    status: status,
-    cpf: document.getElementById('formUserCpf').value,
-    rg: document.getElementById('formUserRg').value,
-    cnh: document.getElementById('formUserCnh').value,
-    telefone: document.getElementById('formUserTelefone').value,
-    cep: document.getElementById('formUserCep').value,
-    logradouro: document.getElementById('formUserLogradouro').value,
-    numero: document.getElementById('formUserNumero').value,
-    bairro: document.getElementById('formUserBairro').value,
-    cidade: document.getElementById('formUserCidade').value,
-    uf: document.getElementById('formUserUf').value,
-    admissao: document.getElementById('formUserAdmissao').value,
-    motivoDesligamento: motivo
+    nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value,
+    status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value,
+    telefone: document.getElementById('formUserTelefone').value, admissao: document.getElementById('formUserAdmissao').value
   };
   
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
@@ -1274,14 +1138,8 @@ function enviarUsuarioPlanilha() {
   btn.disabled = true; btn.innerText = '⏳ Gravando...';
   
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
-  
-  const scriptAntigo = document.getElementById('jsonp_execution_script');
-  if(scriptAntigo) scriptAntigo.remove();
-  
-  const scriptElement = document.createElement('script');
-  scriptElement.id = 'jsonp_execution_script';
-  scriptElement.src = urlFinal;
-  document.body.appendChild(scriptElement);
+  const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 </script>
 </body>
