@@ -112,7 +112,7 @@ const appState = {
   idClienteEmEdicao: null,
   idUsuarioEmEdicao: null,
   filtroStatusUsuario: 'ATIVO',
-  filtroStatusCliente: 'ATIVO' // Nova chave para gerenciar o estado do filtro de clientes
+  filtroStatusCliente: 'ATIVO'
 };
 
 sincronizarDadosPlanilha();
@@ -314,7 +314,6 @@ function renderizarTelaClientes(container) {
   document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
   document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
   
-  // Amarração do evento de mudança do filtro de clientes
   document.getElementById('selectFiltroStatusClienteGrid').value = appState.filtroStatusCliente;
   document.getElementById('selectFiltroStatusClienteGrid').addEventListener('change', function() {
     appState.filtroStatusCliente = this.value;
@@ -326,10 +325,18 @@ function renderizarTelaClientes(container) {
 
 function verificarDocumentoEReceita() {
   const doc = this.value.trim(); if (!doc) return;
+  const isCnpj = document.getElementById('formTipoPessoa').value === 'JURIDICA';
   const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
-  if (dup) { alert(`Documento já cadastrado para o cliente: ${dup.nome}`); this.value = ''; return; }
+  
+  if (dup) { 
+    // Mensagem Simplificada e Padronizada
+    alert(isCnpj ? 'CNPJ já cadastrado!' : 'CPF já cadastrado!'); 
+    this.value = ''; 
+    return; 
+  }
+  
   const clean = doc.replace(/\D/g, '');
-  if (document.getElementById('formTipoPessoa').value === 'JURIDICA' && clean.length === 14) {
+  if (isCnpj && clean.length === 14) {
     fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
       .then(res => res.json())
       .then(dados => {
@@ -364,7 +371,6 @@ function atualizarTabelaClientesLocal() {
     return;
   }
 
-  // Lógica Avançada de Filtragem de Clientes por Status Operacional
   const clientesFiltrados = appState.clientes.filter(c => {
     const statusCli = (c.status || 'ATIVO').toUpperCase();
     if (appState.filtroStatusCliente === 'TODOS') return true;
@@ -377,7 +383,6 @@ function atualizarTabelaClientesLocal() {
   }
 
   clientesFiltrados.forEach((c, i) => {
-    // Acha o índice real global no array original para que a edição não quebre ao filtrar
     const indexGlobal = appState.clientes.findIndex(orig => orig.id === c.id);
     const tr = document.createElement('tr');
     tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || '-'}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''} / ${c.uf || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${indexGlobal})">📝</button></td>`;
@@ -389,6 +394,17 @@ function prepararEdicaoCliente(i) {
   document.getElementById('formCliente').value = c.nome; document.getElementById('formCnpj').value = c.cnpj; document.getElementById('formContrato').value = c.contrato; document.getElementById('formCep').value = c.cep; document.getElementById('formLogradouro').value = c.logradouro; document.getElementById('formNumero').value = c.numero; document.getElementById('formComplemento').value = c.complemento; document.getElementById('formBairro').value = c.bairro; document.getElementById('formCidade').value = c.cidade; document.getElementById('formUf').value = c.uf; document.getElementById('formRegiao').value = c.regiao; document.getElementById('formResponsavel').value = c.responsavel; document.getElementById('formTelefone').value = c.telefone; document.getElementById('formEmail').value = c.email; document.getElementById('formStatus').value = c.status; document.getElementById('formObservacao').value = c.observacao; document.getElementById('btnCancelarEdicao').classList.remove('hidden');
 }
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
+
+// Retorno controlado da gravação de Clientes
+window.processarRetornoClienteSheets = function(respostaServer) {
+  const btn = document.getElementById('btnSalvarClientePlanilha');
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Cliente'; }
+  // Mensagem Simplificada e Padronizada
+  alert('Cliente cadastrado com sucesso!');
+  limparFormularioCliente();
+  sincronizarDadosPlanilha();
+};
+
 function enviarClientePlanilha() {
   const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
   const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, city: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
@@ -397,12 +413,16 @@ function enviarClientePlanilha() {
   const btn = document.getElementById('btnSalvarClientePlanilha');
   btn.disabled = true; btn.innerText = '⏳ Gravando...';
   
-  fetch(`${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, { method: 'POST', mode: 'no-cors' }).then(() => { 
-    alert('Cliente processado com sucesso!'); 
-    btn.disabled = false; btn.innerText = '💾 Salvar Cliente';
-    limparFormularioCliente(); 
-    setTimeout(sincronizarDadosPlanilha, 1000); 
-  });
+  // Mudança definitiva para usar injeção JSONP com callback de sucesso e não travar o banco
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoClienteSheets`;
+  
+  const scriptAntigo = document.getElementById('jsonp_client_execution_script');
+  if(scriptAntigo) scriptAntigo.remove();
+  
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_client_execution_script';
+  scriptElement.src = urlFinal;
+  document.body.appendChild(scriptElement);
 }
 
 // =========================================================================
@@ -583,7 +603,8 @@ function processarMovimentacaoLocacao() {
 
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacoteMov))}`, { method: 'POST', mode: 'no-cors' })
   .then(() => {
-    alert(`Sucesso! Equipamento ${tag} movimentado.`);
+    // Mensagem Simplificada e Padronizada
+    alert('Equipamento movimentado com sucesso!');
     sincronizarDadosPlanilha();
     setTimeout(() => { abrirTela('locacao'); }, 1200);
   })
@@ -894,12 +915,23 @@ function limparFormularioUsuario() {
 window.processarRetornoGoogleSheets = function(respostaServer) {
   const btn = document.getElementById('btnSalvarUsuarioPlanilha');
   if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Colaborador'; }
-  alert('Alteração salva com sucesso no banco Orizon!');
+  // Mensagem Simplificada e Padronizada
+  alert('Colaborador cadastrado com sucesso!');
   limparFormularioUsuario();
   sincronizarDadosPlanilha();
 };
 
 function enviarUsuarioPlanilha() {
+  const idTipo = document.getElementById('formTipoPessoa') ? document.getElementById('formTipoPessoa').value : 'JURIDICA';
+  const docNum = document.getElementById('formCnpj') ? document.getElementById('formCnpj').value.trim() : '';
+  const checkDup = appState.usuarios.find(u => u.cpf === docNum && u.id !== appState.idUsuarioEmEdicao);
+  
+  if (checkDup && docNum !== '') {
+    // Validação extra simplificada baseada no pedido do usuário
+    alert(idTipo === 'FISICA' ? 'CPF já cadastrado!' : 'CNPJ já cadastrado!');
+    return;
+  }
+
   const nome = document.getElementById('formUserNome').value.trim();
   const login = document.getElementById('formUserLogin').value.trim();
   const senha = document.getElementById('formUserSenha').value;
