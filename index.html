@@ -56,7 +56,6 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .tab-item { padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 2px solid transparent; }
 .tab-item.active { color: var(--cor-primaria); border-color: var(--cor-primaria); }
 
-/* Estilos Exclusivos dos Motores Visuais do Dashboard */
 .dash-card-num { border-left: 5px solid var(--cor-primaria); display: flex; flex-direction: column; justify-content: center; }
 .dash-card-num h4 { font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: bold; }
 .dash-card-num .num { font-size: 32px; font-weight: 900; color: #0f172a; margin-top: 5px; }
@@ -262,23 +261,19 @@ function abrirTela(menu) {
 function voltarInicio() { abrirTela('inicio'); }
 
 // =========================================================================
-// INTERFACE: PAINEL DE DASHBOARDS (PRODUÇÃO E INDICADORES)
+// INTERFACE: PAINEL DE DASHBOARDS
 // =========================================================================
 function renderizarTelaDashboards(container) {
-  // 1. Processamento e Cálculo de Métricas de Clientes
   const totalClientes = appState.clientes.length;
   const clientesAtivos = appState.clientes.filter(c => (c.status || 'ATIVO').toUpperCase() === 'ATIVO').length;
   const clientesInativos = totalClientes - clientesAtivos;
   const pctAtivos = totalClientes > 0 ? Math.round((clientesAtivos / totalClientes) * 100) : 0;
 
-  // 2. Processamento e Cálculo de Métricas de Equipamentos (Patrimônio)
   const totalPatrimonio = appState.patrimonio.length;
   const patLocados = appState.patrimonio.filter(p => (p.status || '').toUpperCase() === 'LOCADO').length;
   const patEstoque = appState.patrimonio.filter(p => (p.status || '').toUpperCase() === 'DISPONÍVEL EM ESTOQUE').length;
-  const patOutros = totalPatrimonio - (patLocados + patEstoque);
   const pctLocados = totalPatrimonio > 0 ? Math.round((patLocados / totalPatrimonio) * 100) : 0;
 
-  // 3. Agrupamento dos Equipamentos Instalados por Unidade (Top Clientes)
   const contagemPorCliente = {};
   appState.patrimonio.forEach(p => {
     if ((p.status || '').toUpperCase() === 'LOCADO' && p.localizacao) {
@@ -290,7 +285,6 @@ function renderizarTelaDashboards(container) {
     return { nome: key, total: contagemPorCliente[key] };
   }).sort((a, b) => b.total - a.total).slice(0, 5);
 
-  // 4. Injeção da Estrutura Visual Baseada no appState Local
   container.innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -302,7 +296,7 @@ function renderizarTelaDashboards(container) {
       </div>
 
       <div class="dashboard-grid" style="margin-bottom:25px; margin-top: 0;">
-        <div class="card-padrao dash-card-num" style="border-color-left: var(--cor-primaria);">
+        <div class="card-padrao dash-card-num">
           <h4>🏥 Total de Clientes</h4>
           <div class="num">${totalClientes}</div>
           <small style="color:#64748b; margin-top:5px;"><b>${clientesAtivos}</b> Ativos • <b>${clientesInativos}</b> Inativos</small>
@@ -328,7 +322,6 @@ function renderizarTelaDashboards(container) {
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
-        
         <div class="card-padrao">
           <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">📈 Distribuição de Ativos e Clientes</h3>
           
@@ -340,7 +333,6 @@ function renderizarTelaDashboards(container) {
             <div class="bar-progresso-container">
               <div class="bar-progresso-fill" style="width: ${pctLocados}%; background: var(--cor-sucesso);"></div>
             </div>
-            <small style="color:#64748b; font-size:11px; display:block; margin-top:4px;">Percentual do patrimônio total alocado em contratos ativos.</small>
           </div>
 
           <div>
@@ -351,29 +343,23 @@ function renderizarTelaDashboards(container) {
             <div class="bar-progresso-container">
               <div class="bar-progresso-fill" style="width: ${pctAtivos}%; background: var(--cor-primaria);"></div>
             </div>
-            <small style="color:#64748b; font-size:11px; display:block; margin-top:4px;">Proporção de unidades de saúde aptas para recebimento de faturamento/rotas.</small>
           </div>
         </div>
 
         <div class="card-padrao">
           <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">🏆 Maiores Clientes por Volume de Ativos</h3>
-          <div id="dashContainerTopClientes" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
-            </div>
+          <div id="dashContainerTopClientes" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
         </div>
-
       </div>
     </div>`;
 
-  // Preenchimento Dinâmico do Top 5 Clientes com maior número de Ativos Instalados
   const containerTop = document.getElementById('dashContainerTopClientes');
   if (topClientesOrdenados.length === 0) {
-    containerTop.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">Nenhum equipamento consta como "LOCADO" nas unidades cadastrais.</div>`;
+    containerTop.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">Nenhum equipamento consta como "LOCADO".</div>`;
     return;
   }
 
-  // Define a base máxima para criar o efeito proporcional das barrinhas de ranking
   const maxAtivosVal = topClientesOrdenados[0].total;
-
   topClientesOrdenados.forEach((item, index) => {
     const itemPctWidth = Math.max(15, Math.round((item.total / maxAtivosVal) * 100));
     const row = document.createElement('div');
@@ -525,7 +511,7 @@ function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
   if (!appState.clientes || appState.clientes.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente sincronizado ou carregando base...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente synchronized ou carregando...</td></tr>`;
     return;
   }
 
@@ -600,8 +586,34 @@ function enviarClientePlanilha() {
 function renderizarTelaPatrimonio(container) {
   container.innerHTML = `
     <div>
-      <h2>📦 Estoque e Inventário Central</h2>
-      <div class="card-padrao" style="margin-top:15px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2>📦 Estoque e Inventário Central</h2>
+        <button id="btnAbrirFormEquipamento" class="btn-success">➕ Novo Equipamento</button>
+      </div>
+
+      <div id="cardFormEquipamento" class="card-padrao hidden">
+        <h3 id="tituloFormEquipamento" style="margin-bottom:15px; color:var(--cor-sucesso);">Ficha de Cadastro do Ativo</h3>
+        <div class="form-grid">
+          <div class="form-grupo"><label>TAG / Código Identificador *</label><input type="text" id="formEquipTag" class="input-padrao" placeholder="Ex: TAG-102"></div>
+          <div class="form-grupo"><label>Equipamento / Descrição *</label><input type="text" id="formEquipNome" class="input-padrao" placeholder="Ex: Bomba de Infusão"></div>
+          <div class="form-grupo"><label>Nº de Série *</label><input type="text" id="formEquipSerie" class="input-padrao" placeholder="Ex: SN983742"></div>
+          <div class="form-grupo"><label>Nº de Patrimônio</label><input type="text" id="formEquipPatrimonio" class="input-padrao" placeholder="Ex: PAT-0449"></div>
+          <div class="form-grupo"><label>Modelo</label><input type="text" id="formEquipModelo" class="input-padrao" placeholder="Ex: Smart Pump V5"></div>
+          <div class="form-grupo"><label>Fabricante</label><input type="text" id="formEquipFabricante" class="input-padrao" placeholder="Ex: Samtronic"></div>
+          <div class="form-grupo">
+            <label>Status Inicial</label>
+            <select id="formEquipStatus" class="select-padrao" disabled style="background:#f1f5f9;">
+              <option value="DISPONÍVEL EM ESTOQUE">DISPONÍVEL EM ESTOQUE</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
+          <button id="btnFecharFormEquipamento" class="btn-secondary">Cancelar</button>
+          <button id="btnSalvarEquipamentoPlanilha" class="btn-success">💾 Salvar Ativo</button>
+        </div>
+      </div>
+
+      <div class="card-padrao">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
           <h3 style="color:var(--cor-secundaria);">Equipamentos Registrados</h3>
           <div style="display:flex; align-items:center; gap:6px;">
@@ -625,12 +637,21 @@ function renderizarTelaPatrimonio(container) {
     atualizarTabelaPatrimonioLocal();
   });
 
+  // Eventos para abrir, fechar e salvar o formulário de novos equipamentos
+  document.getElementById('btnAbrirFormEquipamento').addEventListener('click', function() {
+    document.getElementById('cardFormEquipamento').classList.remove('hidden');
+    document.getElementById('formEquipTag').focus();
+  });
+  
+  document.getElementById('btnFecharFormEquipamento').addEventListener('click', limparFormularioEquipamento);
+  document.getElementById('btnSalvarEquipamentoPlanilha').addEventListener('click', enviarEquipamentoPlanilha);
+
   atualizarTabelaPatrimonioLocal();
 }
 
 function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Nenhum item carregado do inventário no momento.</td></tr>`; return; }
+  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Nenhum item cadastrado ou carregando base...</td></tr>`; return; }
   
   var patrimonioFiltrado = appState.patrimonio.filter(p => {
     const tagPat = (p.tag || '').toUpperCase();
@@ -662,6 +683,61 @@ function atualizarTabelaPatrimonioLocal() {
     tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bColor}">${p.status}</span></td><td><b>${p.localizacao || 'Sede Central'}</b></td>`;
     tbody.appendChild(tr);
   });
+}
+
+function limparFormularioEquipamento() {
+  document.getElementById('formEquipTag').value = '';
+  document.getElementById('formEquipNome').value = '';
+  document.getElementById('formEquipSerie').value = '';
+  document.getElementById('formEquipPatrimonio').value = '';
+  document.getElementById('formEquipModelo').value = '';
+  document.getElementById('formEquipFabricante').value = '';
+  document.getElementById('cardFormEquipamento').classList.add('hidden');
+}
+
+// Callback estruturado e limpo para retorno de ativos
+window.processarRetornoEquipamentoSheets = function(respostaServer) {
+  const btn = document.getElementById('btnSalvarEquipamentoPlanilha');
+  if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Ativo'; }
+  alert('Equipamento cadastrado com sucesso!');
+  limparFormularioEquipamento();
+  sincronizarDadosPlanilha();
+};
+
+function enviarEquipamentoPlanilha() {
+  const tag = document.getElementById('formEquipTag').value.trim().toUpperCase();
+  const equipamento = document.getElementById('formEquipNome').value.trim();
+  const serie = document.getElementById('formEquipSerie').value.trim();
+  
+  if(!tag || !equipamento || !serie) return alert('Por favor, preencha os campos obrigatórios (*)!');
+  
+  // Validação imediata de TAG Duplicada baseada no banco local
+  const dup = appState.patrimonio.find(p => p.tag.toUpperCase() === tag);
+  if (dup) return alert('TAG já cadastrada!');
+
+  const d = {
+    tag: tag,
+    equipamento: equipamento,
+    serie: serie,
+    patrimonio: document.getElementById('formEquipPatrimonio').value.trim(),
+    modelo: document.getElementById('formEquipModelo').value.trim(),
+    fabricante: document.getElementById('formEquipFabricante').value.trim(),
+    status: 'DISPONÍVEL EM ESTOQUE',
+    localizacao: 'Sede Central'
+  };
+
+  const btn = document.getElementById('btnSalvarEquipamentoPlanilha');
+  btn.disabled = true; btn.innerText = '⏳ Gravando...';
+
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=PATRIMONIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoEquipamentoSheets`;
+
+  const scriptAntigo = document.getElementById('jsonp_equip_execution_script');
+  if(scriptAntigo) scriptAntigo.remove();
+
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_equip_execution_script';
+  scriptElement.src = urlFinal;
+  document.body.appendChild(scriptElement);
 }
 
 // =========================================================================
@@ -1007,7 +1083,7 @@ function atualizarTabelaUsuariosLocal() {
   tbody.innerHTML = '';
   
   if (!appState.usuarios || appState.usuarios.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário localizado ou base sincronizando...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum usuário localizado...</td></tr>`;
     return;
   }
   
@@ -1027,7 +1103,7 @@ function atualizarTabelaUsuariosLocal() {
   });
 
   if (usuariosFiltrados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador localizado para os filtros aplicados.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador localizado...</td></tr>`;
     return;
   }
   
@@ -1055,6 +1131,8 @@ function atualizarTabelaUsuariosLocal() {
     tbody.appendChild(tr);
   });
 }
+
+function verificarDocumentoEReceita() {}
 
 function prepararEdicaoUsuarioPeloId(id) {
   const u = appState.usuarios.find(user => String(user.id) === String(id));
