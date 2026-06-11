@@ -112,7 +112,8 @@ const appState = {
   idClienteEmEdicao: null,
   idUsuarioEmEdicao: null,
   filtroStatusUsuario: 'ATIVO',
-  filtroStatusCliente: 'ATIVO'
+  filtroStatusCliente: 'ATIVO',
+  buscaTextoCliente: '' // Nova chave para guardar o termo pesquisado na busca de clientes
 };
 
 sincronizarDadosPlanilha();
@@ -283,15 +284,21 @@ function renderizarTelaClientes(container) {
       </div>
       
       <div class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
           <h3>Clientes na Base</h3>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
-            <select id="selectFiltroStatusClienteGrid" class="select-padrao" style="width:160px; padding:6px;">
-              <option value="ATIVO">Apenas Ativos</option>
-              <option value="INATIVO">Apenas Inativos</option>
-              <option value="TODOS">Todos os Registros</option>
-            </select>
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar:</label>
+              <input type="text" id="inputBuscaTextoCliente" class="input-padrao" placeholder="Digitar nome do cliente..." style="width:200px; padding:6px 10px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
+              <select id="selectFiltroStatusClienteGrid" class="select-padrao" style="width:140px; padding:6px;">
+                <option value="ATIVO">Apenas Ativos</option>
+                <option value="INATIVO">Apenas Inativos</option>
+                <option value="TODOS">Todos os Registros</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="tabela-container">
@@ -314,9 +321,18 @@ function renderizarTelaClientes(container) {
   document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
   document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
   
+  // Sincroniza o valor do filtro e da busca por texto
   document.getElementById('selectFiltroStatusClienteGrid').value = appState.filtroStatusCliente;
+  document.getElementById('inputBuscaTextoCliente').value = appState.buscaTextoCliente;
+
   document.getElementById('selectFiltroStatusClienteGrid').addEventListener('change', function() {
     appState.filtroStatusCliente = this.value;
+    atualizarTabelaClientesLocal();
+  });
+
+  // Escuta a digitação na barra de busca de clientes para filtrar em tempo real
+  document.getElementById('inputBuscaTextoCliente').addEventListener('input', function() {
+    appState.buscaTextoCliente = this.value.trim().toUpperCase();
     atualizarTabelaClientesLocal();
   });
 
@@ -329,7 +345,6 @@ function verificarDocumentoEReceita() {
   const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
   
   if (dup) { 
-    // Mensagem Simplificada e Padronizada
     alert(isCnpj ? 'CNPJ já cadastrado!' : 'CPF já cadastrado!'); 
     this.value = ''; 
     return; 
@@ -371,18 +386,30 @@ function atualizarTabelaClientesLocal() {
     return;
   }
 
-  const clientesFiltrados = appState.clientes.filter(c => {
+  // Multi-Filtro Avançado: Status Operacional + Busca por Texto (Iniciais ou partes do nome)
+  var clientesFiltrados = appState.clientes.filter(c => {
     const statusCli = (c.status || 'ATIVO').toUpperCase();
-    if (appState.filtroStatusCliente === 'TODOS') return true;
-    return statusCli === appState.filtroStatusCliente;
+    const nomeCli = (c.nome || '').toUpperCase();
+    
+    // Verifica se bate com o filtro de status selecionado
+    var bateStatus = (appState.filtroStatusCliente === 'TODOS') || (statusCli === appState.filtroStatusCliente);
+    // Verifica se bate com o termo digitado na pesquisa
+    var bateTexto = (appState.buscaTextoCliente === '') || (nomeCli.indexOf(appState.buscaTextoCliente) !== -1);
+    
+    return bateStatus && bateTexto;
   });
 
   if (clientesFiltrados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#64748b; padding: 15px;">Nenhum cliente localizado para o filtro selecionado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#64748b; padding: 15px;">Nenhum cliente localizado para os filtros aplicados.</td></tr>`;
     return;
   }
 
-  clientesFiltrados.forEach((c, i) => {
+  // REGRA DE OURO: Ordenação Alfabética em tempo real antes de desenhar na tela
+  clientesFiltrados.sort(function(a, b) {
+    return (a.nome || '').localeCompare(b.nome || '');
+  });
+
+  clientesFiltrados.forEach((c) => {
     const indexGlobal = appState.clientes.findIndex(orig => orig.id === c.id);
     const tr = document.createElement('tr');
     tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || '-'}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''} / ${c.uf || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${indexGlobal})">📝</button></td>`;
@@ -395,11 +422,9 @@ function prepararEdicaoCliente(i) {
 }
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 
-// Retorno controlado da gravação de Clientes
 window.processarRetornoClienteSheets = function(respostaServer) {
   const btn = document.getElementById('btnSalvarClientePlanilha');
   if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Cliente'; }
-  // Mensagem Simplificada e Padronizada
   alert('Cliente cadastrado com sucesso!');
   limparFormularioCliente();
   sincronizarDadosPlanilha();
@@ -413,7 +438,6 @@ function enviarClientePlanilha() {
   const btn = document.getElementById('btnSalvarClientePlanilha');
   btn.disabled = true; btn.innerText = '⏳ Gravando...';
   
-  // Mudança definitiva para usar injeção JSONP com callback de sucesso e não travar o banco
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoClienteSheets`;
   
   const scriptAntigo = document.getElementById('jsonp_client_execution_script');
@@ -603,7 +627,6 @@ function processarMovimentacaoLocacao() {
 
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacoteMov))}`, { method: 'POST', mode: 'no-cors' })
   .then(() => {
-    // Mensagem Simplificada e Padronizada
     alert('Equipamento movimentado com sucesso!');
     sincronizarDadosPlanilha();
     setTimeout(() => { abrirTela('locacao'); }, 1200);
@@ -915,7 +938,6 @@ function limparFormularioUsuario() {
 window.processarRetornoGoogleSheets = function(respostaServer) {
   const btn = document.getElementById('btnSalvarUsuarioPlanilha');
   if (btn) { btn.disabled = false; btn.innerText = '💾 Salvar Colaborador'; }
-  // Mensagem Simplificada e Padronizada
   alert('Colaborador cadastrado com sucesso!');
   limparFormularioUsuario();
   sincronizarDadosPlanilha();
@@ -927,7 +949,6 @@ function enviarUsuarioPlanilha() {
   const checkDup = appState.usuarios.find(u => u.cpf === docNum && u.id !== appState.idUsuarioEmEdicao);
   
   if (checkDup && docNum !== '') {
-    // Validação extra simplificada baseada no pedido do usuário
     alert(idTipo === 'FISICA' ? 'CPF já cadastrado!' : 'CNPJ já cadastrado!');
     return;
   }
