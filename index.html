@@ -55,6 +55,13 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .tabs-gestao { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
 .tab-item { padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 2px solid transparent; }
 .tab-item.active { color: var(--cor-primaria); border-color: var(--cor-primaria); }
+
+/* Estilos Exclusivos dos Motores Visuais do Dashboard */
+.dash-card-num { border-left: 5px solid var(--cor-primaria); display: flex; flex-direction: column; justify-content: center; }
+.dash-card-num h4 { font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: bold; }
+.dash-card-num .num { font-size: 32px; font-weight: 900; color: #0f172a; margin-top: 5px; }
+.bar-progresso-container { background: #e2e8f0; border-radius: 6px; width: 100%; height: 10px; margin-top: 8px; overflow: hidden; }
+.bar-progresso-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; }
 </style>
 </head>
 <body>
@@ -115,7 +122,7 @@ const appState = {
   filtroStatusCliente: 'ATIVO',
   buscaTextoCliente: '',
   buscaTextoUsuario: '',
-  buscaTextoPatrimonio: '' // Nova chave para gerenciar a consulta de equipamentos
+  buscaTextoPatrimonio: ''
 };
 
 sincronizarDadosPlanilha();
@@ -236,6 +243,8 @@ function abrirTela(menu) {
     renderizarTelaPatrimonio(principal);
   } else if (menu === 'locacao') {
     renderizarTelaLocacao(principal);
+  } else if (menu === 'dashboards') {
+    renderizarTelaDashboards(principal);
   } else if (menu === 'rotas') {
     principal.innerHTML = `
       <div style="width: 100%; height: 100%; min-height: calc(100vh - 160px);">
@@ -251,6 +260,135 @@ function abrirTela(menu) {
 }
 
 function voltarInicio() { abrirTela('inicio'); }
+
+// =========================================================================
+// INTERFACE: PAINEL DE DASHBOARDS (PRODUÇÃO E INDICADORES)
+// =========================================================================
+function renderizarTelaDashboards(container) {
+  // 1. Processamento e Cálculo de Métricas de Clientes
+  const totalClientes = appState.clientes.length;
+  const clientesAtivos = appState.clientes.filter(c => (c.status || 'ATIVO').toUpperCase() === 'ATIVO').length;
+  const clientesInativos = totalClientes - clientesAtivos;
+  const pctAtivos = totalClientes > 0 ? Math.round((clientesAtivos / totalClientes) * 100) : 0;
+
+  // 2. Processamento e Cálculo de Métricas de Equipamentos (Patrimônio)
+  const totalPatrimonio = appState.patrimonio.length;
+  const patLocados = appState.patrimonio.filter(p => (p.status || '').toUpperCase() === 'LOCADO').length;
+  const patEstoque = appState.patrimonio.filter(p => (p.status || '').toUpperCase() === 'DISPONÍVEL EM ESTOQUE').length;
+  const patOutros = totalPatrimonio - (patLocados + patEstoque);
+  const pctLocados = totalPatrimonio > 0 ? Math.round((patLocados / totalPatrimonio) * 100) : 0;
+
+  // 3. Agrupamento dos Equipamentos Instalados por Unidade (Top Clientes)
+  const contagemPorCliente = {};
+  appState.patrimonio.forEach(p => {
+    if ((p.status || '').toUpperCase() === 'LOCADO' && p.localizacao) {
+      contagemPorCliente[p.localizacao] = (contagemPorCliente[p.localizacao] || 0) + 1;
+    }
+  });
+
+  const topClientesOrdenados = Object.keys(contagemPorCliente).map(key => {
+    return { nome: key, total: contagemPorCliente[key] };
+  }).sort((a, b) => b.total - a.total).slice(0, 5);
+
+  // 4. Injeção da Estrutura Visual Baseada no appState Local
+  container.innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+          <h2>📊 Dashboards & Indicadores Operacionais</h2>
+          <p style="color:#64748b; font-size:13px; margin-top:2px;">Dados gerenciais consolidados em tempo real com base no inventário central.</p>
+        </div>
+        <button onclick="sincronizarDadosPlanilha(); setTimeout(() => abrirTela('dashboards'), 1500);" class="btn-secondary" style="font-size:12px;">🔄 Atualizar Gráficos</button>
+      </div>
+
+      <div class="dashboard-grid" style="margin-bottom:25px; margin-top: 0;">
+        <div class="card-padrao dash-card-num" style="border-color-left: var(--cor-primaria);">
+          <h4>🏥 Total de Clientes</h4>
+          <div class="num">${totalClientes}</div>
+          <small style="color:#64748b; margin-top:5px;"><b>${clientesAtivos}</b> Ativos • <b>${clientesInativos}</b> Inativos</small>
+        </div>
+        
+        <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-sucesso);">
+          <h4>📦 Ativos em Clientes (Locados)</h4>
+          <div class="num" style="color: var(--cor-sucesso);">${patLocados}</div>
+          <small style="color:#64748b; margin-top:5px;">Equipamentos em operação externa</small>
+        </div>
+
+        <div class="card-padrao dash-card-num" style="border-left-color: #f59e0b;">
+          <h4>🏢 Ativos em Estoque (Sede)</h4>
+          <div class="num" style="color: #f59e0b;">${patEstoque}</div>
+          <small style="color:#64748b; margin-top:5px;">Prontos para novas movimentações</small>
+        </div>
+
+        <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-secundaria);">
+          <h4>🧮 Patrimônio Total Cadastrado</h4>
+          <div class="num" style="color: var(--cor-secundaria);">${totalPatrimonio}</div>
+          <small style="color:#64748b; margin-top:5px;">Soma total de ativos da base</small>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
+        
+        <div class="card-padrao">
+          <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">📈 Distribuição de Ativos e Clientes</h3>
+          
+          <div style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;">
+              <span>Taxa de Locação de Equipamentos</span>
+              <span style="color: var(--cor-sucesso);">${pctLocados}%</span>
+            </div>
+            <div class="bar-progresso-container">
+              <div class="bar-progresso-fill" style="width: ${pctLocados}%; background: var(--cor-sucesso);"></div>
+            </div>
+            <small style="color:#64748b; font-size:11px; display:block; margin-top:4px;">Percentual do patrimônio total alocado em contratos ativos.</small>
+          </div>
+
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;">
+              <span>Clientes com Cadastro Ativo</span>
+              <span style="color: var(--cor-primaria);">${pctAtivos}%</span>
+            </div>
+            <div class="bar-progresso-container">
+              <div class="bar-progresso-fill" style="width: ${pctAtivos}%; background: var(--cor-primaria);"></div>
+            </div>
+            <small style="color:#64748b; font-size:11px; display:block; margin-top:4px;">Proporção de unidades de saúde aptas para recebimento de faturamento/rotas.</small>
+          </div>
+        </div>
+
+        <div class="card-padrao">
+          <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">🏆 Maiores Clientes por Volume de Ativos</h3>
+          <div id="dashContainerTopClientes" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+            </div>
+        </div>
+
+      </div>
+    </div>`;
+
+  // Preenchimento Dinâmico do Top 5 Clientes com maior número de Ativos Instalados
+  const containerTop = document.getElementById('dashContainerTopClientes');
+  if (topClientesOrdenados.length === 0) {
+    containerTop.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">Nenhum equipamento consta como "LOCADO" nas unidades cadastrais.</div>`;
+    return;
+  }
+
+  // Define a base máxima para criar o efeito proporcional das barrinhas de ranking
+  const maxAtivosVal = topClientesOrdenados[0].total;
+
+  topClientesOrdenados.forEach((item, index) => {
+    const itemPctWidth = Math.max(15, Math.round((item.total / maxAtivosVal) * 100));
+    const row = document.createElement('div');
+    row.style = "display: flex; flex-direction: column; gap: 3px;";
+    row.innerHTML = `
+      <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; color:#1e293b;">
+        <span>${index + 1}º - ${item.nome}</span>
+        <span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:11px;">${item.total} eq.</span>
+      </div>
+      <div style="background:#f1f5f9; height:8px; border-radius:4px; width:100%; overflow:hidden;">
+        <div style="background: linear-gradient(90deg, #3b82f6, #1d4ed8); height:100%; width:${itemPctWidth}%; border-radius:4px;"></div>
+      </div>`;
+    containerTop.appendChild(row);
+  });
+}
 
 // =========================================================================
 // INTERFACE: CADASTRO DE CLIENTES
@@ -482,7 +620,6 @@ function renderizarTelaPatrimonio(container) {
 
   document.getElementById('inputBuscaTextoPatrimonio').value = appState.buscaTextoPatrimonio;
   
-  // Vincula o evento em tempo real para a filtragem rápida do estoque
   document.getElementById('inputBuscaTextoPatrimonio').addEventListener('input', function() {
     appState.buscaTextoPatrimonio = this.value.trim().toUpperCase();
     atualizarTabelaPatrimonioLocal();
@@ -495,7 +632,6 @@ function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
   if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Nenhum item carregado do inventário no momento.</td></tr>`; return; }
   
-  // Motor de Multi-Filtro do Estoque Central (TAG, Série, Patrimônio, Equipamento ou Fabricante)
   var patrimonioFiltrado = appState.patrimonio.filter(p => {
     const tagPat = (p.tag || '').toUpperCase();
     const equipamentoPat = (p.equipamento || '').toUpperCase();
@@ -516,7 +652,6 @@ function atualizarTabelaPatrimonioLocal() {
     return;
   }
 
-  // Ordenação Alfabética dos Equipamentos do Inventário
   patrimonioFiltrado.sort(function(a, b) {
     return (a.equipamento || '').localeCompare(b.equipamento || '');
   });
@@ -882,13 +1017,13 @@ function atualizarTabelaUsuariosLocal() {
     const loginUser = (u.login || '').toUpperCase();
     const cpfUser = (u.cpf || '').replace(/\D/g, '');
     
-    var bateStatus = (appState.filtroStatusUsuario === 'TODOS') || (statusUser === appState.filtroStatusUsuario);
+    var badgeStatus = (appState.filtroStatusUsuario === 'TODOS') || (statusUser === appState.filtroStatusUsuario);
     var bateTexto = (appState.buscaTextoUsuario === '') || 
                     (nomeUser.indexOf(appState.buscaTextoUsuario) !== -1) || 
                     (loginUser.indexOf(appState.buscaTextoUsuario) !== -1) ||
                     (cpfUser.indexOf(appState.buscaTextoUsuario) !== -1);
                     
-    return bateStatus && bateTexto;
+    return badgeStatus && bateTexto;
   });
 
   if (usuariosFiltrados.length === 0) {
