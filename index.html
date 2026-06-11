@@ -113,7 +113,8 @@ const appState = {
   idUsuarioEmEdicao: null,
   filtroStatusUsuario: 'ATIVO',
   filtroStatusCliente: 'ATIVO',
-  buscaTextoCliente: '' // Nova chave para guardar o termo pesquisado na busca de clientes
+  buscaTextoCliente: '',
+  buscaTextoUsuario: '' // Nova chave para gerenciar o termo pesquisado na busca de colaboradores
 };
 
 sincronizarDadosPlanilha();
@@ -158,12 +159,16 @@ function liberarPainel(usuario) {
   voltarInicio();
 }
 
-function efetuarLogout() {
-  if (!confirm('Deseja realmente sair?')) return;
+function sidebarLogoutSemPopup() {
   appState.usuarioLogado = null;
   sessionStorage.removeItem('orizonUsuarioAtivo');
   document.getElementById('wrapperSistema').classList.add('hidden');
   document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function efetuarLogout() {
+  if (!confirm('Deseja realmente sair?')) return;
+  sidebarLogoutSemPopup();
 }
 
 function verificarSessaoAtiva() {
@@ -177,9 +182,6 @@ function verificarSessaoAtiva() {
   }
 }
 
-// =========================================================================
-// RETORNO DA SINCRONIZAÇÃO VIA JSONP
-// =========================================================================
 window.processarRetornoSincronizacao = function(res) {
   if (res && res.sucesso) {
     appState.clientes = res.clientes || [];
@@ -289,7 +291,7 @@ function renderizarTelaClientes(container) {
           <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
             <div style="display:flex; align-items:center; gap:6px;">
               <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar:</label>
-              <input type="text" id="inputBuscaTextoCliente" class="input-padrao" placeholder="Digitar nome do cliente..." style="width:200px; padding:6px 10px;">
+              <input type="text" id="inputBuscaTextoCliente" class="input-padrao" placeholder="Nome, Fantasia ou CNPJ..." style="width:220px; padding:6px 10px;">
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
               <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
@@ -321,7 +323,6 @@ function renderizarTelaClientes(container) {
   document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
   document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
   
-  // Sincroniza o valor do filtro e da busca por texto
   document.getElementById('selectFiltroStatusClienteGrid').value = appState.filtroStatusCliente;
   document.getElementById('inputBuscaTextoCliente').value = appState.buscaTextoCliente;
 
@@ -330,7 +331,6 @@ function renderizarTelaClientes(container) {
     atualizarTabelaClientesLocal();
   });
 
-  // Escuta a digitação na barra de busca de clientes para filtrar em tempo real
   document.getElementById('inputBuscaTextoCliente').addEventListener('input', function() {
     appState.buscaTextoCliente = this.value.trim().toUpperCase();
     atualizarTabelaClientesLocal();
@@ -355,13 +355,19 @@ function verificarDocumentoEReceita() {
     fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
       .then(res => res.json())
       .then(dados => {
-        document.getElementById('formCliente').value = dados.razao_social || '';
+        // Ajuste Estratégico: Preenche o formulário com a Razão Social completa da Receita
+        document.getElementById('formCliente').value = dados.razao_social || dados.nome || '';
         document.getElementById('formCep').value = dados.cep || '';
         document.getElementById('formLogradouro').value = dados.logradouro || '';
         document.getElementById('formNumero').value = dados.numero || '';
         document.getElementById('formBairro').value = dados.bairro || '';
         document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
         document.getElementById('formUf').value = dados.uf || 'SP';
+        
+        // Se a BrasilAPI trouxer o nome_fantasia estruturado, injeta no campo de observações ou guarda para indexação
+        if(dados.nome_fantasia && dados.nome_fantasia.trim() !== '') {
+          document.getElementById('formObservacao').value = "Fantasia: " + dados.nome_fantasia;
+        }
       }).catch(() => {});
   }
 }
@@ -386,15 +392,19 @@ function atualizarTabelaClientesLocal() {
     return;
   }
 
-  // Multi-Filtro Avançado: Status Operacional + Busca por Texto (Iniciais ou partes do nome)
   var clientesFiltrados = appState.clientes.filter(c => {
     const statusCli = (c.status || 'ATIVO').toUpperCase();
     const nomeCli = (c.nome || '').toUpperCase();
+    const cnpjCli = (c.cnpj || '').replace(/\D/g, '');
+    const obsCli = (c.observacao || '').toUpperCase(); // O campo Observações guarda o Nome Fantasia preenchido
     
-    // Verifica se bate com o filtro de status selecionado
     var bateStatus = (appState.filtroStatusCliente === 'TODOS') || (statusCli === appState.filtroStatusCliente);
-    // Verifica se bate com o termo digitado na pesquisa
-    var bateTexto = (appState.buscaTextoCliente === '') || (nomeCli.indexOf(appState.buscaTextoCliente) !== -1);
+    
+    // Consulta Cruzada Inteligente: Busca pelo Nome Principal, pelas Observações (Fantasia) ou pelos dígitos do CNPJ
+    var bateTexto = (appState.buscaTextoCliente === '') || 
+                    (nomeCli.indexOf(appState.buscaTextoCliente) !== -1) || 
+                    (obsCli.indexOf(appState.buscaTextoCliente) !== -1) ||
+                    (cnpjCli.indexOf(appState.buscaTextoCliente) !== -1);
     
     return bateStatus && bateTexto;
   });
@@ -404,7 +414,6 @@ function atualizarTabelaClientesLocal() {
     return;
   }
 
-  // REGRA DE OURO: Ordenação Alfabética em tempo real antes de desenhar na tela
   clientesFiltrados.sort(function(a, b) {
     return (a.nome || '').localeCompare(b.nome || '');
   });
@@ -416,6 +425,7 @@ function atualizarTabelaClientesLocal() {
     tbody.appendChild(tr);
   });
 }
+
 function prepararEdicaoCliente(i) {
   const c = appState.clientes[i]; appState.idClienteEmEdicao = c.id;
   document.getElementById('formCliente').value = c.nome; document.getElementById('formCnpj').value = c.cnpj; document.getElementById('formContrato').value = c.contrato; document.getElementById('formCep').value = c.cep; document.getElementById('formLogradouro').value = c.logradouro; document.getElementById('formNumero').value = c.numero; document.getElementById('formComplemento').value = c.complemento; document.getElementById('formBairro').value = c.bairro; document.getElementById('formCidade').value = c.cidade; document.getElementById('formUf').value = c.uf; document.getElementById('formRegiao').value = c.regiao; document.getElementById('formResponsavel').value = c.responsavel; document.getElementById('formTelefone').value = c.telefone; document.getElementById('formEmail').value = c.email; document.getElementById('formStatus').value = c.status; document.getElementById('formObservacao').value = c.observacao; document.getElementById('btnCancelarEdicao').classList.remove('hidden');
@@ -723,15 +733,21 @@ function alternarSubAbaGestao(aba) {
       </div>
 
       <div class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
           <h3>👥 Funcionários Cadastrados</h3>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
-            <select id="selectFiltroStatusGrid" class="select-padrao" style="width:160px; padding:6px;">
-              <option value="ATIVO">Apenas Ativos</option>
-              <option value="INATIVO">Apenas Inativos</option>
-              <option value="TODOS">Todos os Registros</option>
-            </select>
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar:</label>
+              <input type="text" id="inputBuscaTextoUsuario" class="input-padrao" placeholder="Nome, login ou CPF..." style="width:200px; padding:6px 10px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
+              <select id="selectFiltroStatusGrid" class="select-padrao" style="width:140px; padding:6px;">
+                <option value="ATIVO">Apenas Ativos</option>
+                <option value="INATIVO">Apenas Inativos</option>
+                <option value="TODOS">Todos os Registros</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="tabela-container">
@@ -761,8 +777,16 @@ function alternarSubAbaGestao(aba) {
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
     
     document.getElementById('selectFiltroStatusGrid').value = appState.filtroStatusUsuario;
+    document.getElementById('inputBuscaTextoUsuario').value = appState.buscaTextoUsuario;
+
     document.getElementById('selectFiltroStatusGrid').addEventListener('change', function() {
       appState.filtroStatusUsuario = this.value;
+      atualizarTabelaUsuariosLocal();
+    });
+
+    // Escuta em tempo real a digitação para a busca rápida de usuários
+    document.getElementById('inputBuscaTextoUsuario').addEventListener('input', function() {
+      appState.buscaTextoUsuario = this.value.trim().toUpperCase();
       atualizarTabelaUsuariosLocal();
     });
 
@@ -814,17 +838,33 @@ function atualizarTabelaUsuariosLocal() {
     return;
   }
   
-  const usuariosFiltrados = appState.usuarios.filter(u => {
+  var usuariosFiltrados = appState.usuarios.filter(u => {
     const statusUser = (u.status || 'ATIVO').toUpperCase();
-    if (appState.filtroStatusUsuario === 'TODOS') return true;
-    return statusUser === appState.filtroStatusUsuario;
+    const nomeUser = (u.nome || '').toUpperCase();
+    const loginUser = (u.login || '').toUpperCase();
+    const cpfUser = (u.cpf || '').replace(/\D/g, '');
+    
+    var bateStatus = (appState.filtroStatusUsuario === 'TODOS') || (statusUser === appState.filtroStatusUsuario);
+    
+    // Consulta Cruzada do Usuário: Filtra por Nome, Login de Acesso ou dígitos do CPF
+    var bateTexto = (appState.buscaTextoUsuario === '') || 
+                    (nomeUser.indexOf(appState.buscaTextoUsuario) !== -1) || 
+                    (loginUser.indexOf(appState.buscaTextoUsuario) !== -1) ||
+                    (cpfUser.indexOf(appState.buscaTextoUsuario) !== -1);
+                    
+    return bateStatus && bateTexto;
   });
 
   if (usuariosFiltrados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador localizado para o filtro selecionado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding: 15px;">Nenhum colaborador localizado para os filtros aplicados.</td></tr>`;
     return;
   }
   
+  // Ordena os usuários por ordem alfabética (A-Z) nativa
+  usuariosFiltrados.sort(function(a, b) {
+    return (a.nome || '').localeCompare(b.nome || '');
+  });
+
   usuariosFiltrados.forEach((u) => {
     const tr = document.createElement('tr');
     const isAtivo = (u.status || 'ATIVO').toUpperCase() === 'ATIVO';
