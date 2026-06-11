@@ -398,7 +398,7 @@ function renderizarTelaClientes(container) {
       <div class="card-padrao">
         <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro</h3>
         <div class="form-grid">
-          <div class="form-grid"><div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div></div>
+          <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
           <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
           <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao"></div>
           <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao"></div>
@@ -471,25 +471,35 @@ function renderizarTelaClientes(container) {
   atualizarTabelaClientesLocal();
 }
 
-function aplicarMascaraDocumento() {
-  let v = this.value.replace(/\D/g, '');
-  if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
-    v = v.substring(0, 14); v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
-  } else {
-    v = v.substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
-  }
-  this.value = v;
-}
 function aplicarMascaraCep() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
 function aplicarMascaraTelefone() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
 function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro; document.getElementById('formBairro').value = d.bairro; } }); }
 
+function verificarDocumentoEReceita() {
+  const doc = this.value.trim(); if (!doc) return;
+  const isCnpj = document.getElementById('formTipoPessoa').value === 'JURIDICA';
+  const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
+  if (dup) { alert(isCnpj ? 'CNPJ já cadastrado!' : 'CPF já cadastrado!'); this.value = ''; return; }
+  const clean = doc.replace(/\D/g, '');
+  if (isCnpj && clean.length === 14) {
+    fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
+      .then(res => res.json())
+      .then(dados => {
+        document.getElementById('formCliente').value = dados.razao_social || dados.nome || '';
+        document.getElementById('formCep').value = dados.cep || '';
+        document.getElementById('formLogradouro').value = dados.logradouro || '';
+        document.getElementById('formNumero').value = dados.numero || '';
+        document.getElementById('formBairro').value = dados.bairro || '';
+        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
+        document.getElementById('formUf').value = dados.uf || 'SP';
+        if(dados.nome_fantasia && dados.nome_fantasia.trim() !== '') { document.getElementById('formObservacao').value = "Fantasia: " + dados.nome_fantasia; }
+      }).catch(() => {});
+  }
+}
+
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if (!appState.clientes || appState.clientes.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente cadastrado...</td></tr>`;
-    return;
-  }
+  if (!appState.clientes || appState.clientes.length === 0) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente cadastrado...</td></tr>`; return; }
 
   var filtrados = appState.clientes.filter(c => {
     return (appState.filtroStatusCliente === 'TODOS' || (c.status || 'ATIVO').toUpperCase() === appState.filtroStatusCliente) &&
@@ -668,8 +678,24 @@ function atualizarDatalistTags() {
   });
 }
 
+function filtrarEquipamentosDoCliente() {
+  const cli = this.value; const tbody = document.getElementById('tbodyItensLocadosCliente'); tbody.innerHTML = '';
+  if(!cli) return;
+  appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === cli).forEach(p => {
+    tbody.innerHTML += `<tr><td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td></tr>`;
+  });
+}
+
+function processarMovimentacaoLocacao() {
+  const tipo = document.getElementById('movTipo').value; const tag = document.getElementById('movTagInput').value.trim().toUpperCase(); const cli = document.getElementById('movCliente').value;
+  if(!tag || !cli) return alert('Preencha os campos!');
+  const p = appState.patrimonio.find(x => x.tag.toUpperCase() === tag); if(!p) return alert('Não encontrado!');
+  const pacote = { tag: tag, equipamento: p.equipamento, origen: tipo === 'ENVIO' ? 'Sede Central' : cli, destino: tipo === 'ENVIO' ? cli : 'Sede Central', tipo: tipo, responsavel: appState.usuarioLogado?.nome || 'Sistema', observacao: document.getElementById('movObs').value };
+  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Sucesso!'); sincronizarDadosPlanilha(); });
+}
+
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO
+// INTERFACE: MÓDULO GESTÃO (RESTAURADO E SEGURO)
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -731,4 +757,195 @@ function abrirSubMóduloGestao(aba) {
         <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">📍 Endereço Residencial</h4>
         <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
-          <div class="form-grupo"><label>Logradouro / Rua</label><input type
+          <div class="form-grupo"><label>Logradouro / Rua</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
+        </div>
+
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 Contrato e Status</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
+          <div class="form-grupo">
+            <label>Status Operacional</label>
+            <select id="formUserStatus" class="select-padrao">
+              <option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option>
+            </select>
+          </div>
+          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Preenchimento obrigatório caso inativado" disabled style="background:#f1f5f9;"></div>
+        </div>
+
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
+          <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden">Cancelar</button><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 Salvar Colaborador</button>
+        </div>
+      </div>
+
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
+          <h3>👥 Funcionários Cadastrados</h3>
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar:</label>
+              <input type="text" id="inputBuscaTextoUsuario" class="input-padrao" placeholder="Nome, login ou CPF..." style="width:200px; padding:6px 10px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
+              <select id="selectFiltroStatusGrid" class="select-padrao" style="width:140px; padding:6px;">
+                <option value="ATIVO">Apenas Ativos</option><option value="INATIVO">Apenas Inativos</option><option value="TODOS">Todos os Registros</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead><tr><th>NOME COMPLETO</th><th>LOGIN</th><th>CPF</th><th>ADMISSÃO</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead>
+            <tbody id="listaUsuariosTbody"></tbody>
+          </table>
+        </div>
+      </div>`;
+
+    document.getElementById('formUserCep').addEventListener('input', aplicarMascaraCepUsuario);
+    document.getElementById('formUserCep').addEventListener('blur', buscarCepUsuarioAutomatico);
+    document.getElementById('formUserTelefone').addEventListener('input', aplicarMascaraTelefoneUsuario);
+    document.getElementById('formUserCpf').addEventListener('input', aplicarMascaraCpfUsuario);
+    document.getElementById('formUserStatus').addEventListener('change', function() {
+      const inputMotivo = document.getElementById('formUserMotivo');
+      if (this.value === 'INATIVO') { inputMotivo.disabled = false; inputMotivo.style.background = 'white'; inputMotivo.focus(); }
+      else { inputMotivo.disabled = true; inputMotivo.value = ''; inputMotivo.style.background = '#f1f5f9'; }
+    });
+
+    document.getElementById('btnCancelarEdicaoUsuario').addEventListener('click', limparFormularioUsuario);
+    document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
+    
+    document.getElementById('selectFiltroStatusGrid').value = appState.filtroStatusUsuario;
+    document.getElementById('inputBuscaTextoUsuario').value = appState.buscaTextoUsuario;
+
+    document.getElementById('selectFiltroStatusGrid').addEventListener('change', function() { appState.filtroStatusUsuario = this.value; atualizarTabelaUsuariosLocal(); });
+    document.getElementById('inputBuscaTextoUsuario').addEventListener('input', function() { appState.buscaTextoUsuario = this.value.trim().toUpperCase(); atualizarTabelaUsuariosLocal(); });
+
+    atualizarTabelaUsuariosLocal();
+
+  } else if (aba === 'itens_inventario') {
+    document.getElementById('tabItensInventario').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <h3 style="color:var(--cor-primaria); margin-bottom:15px;">📋 Homologação e Vínculo de Ativos</h3>
+        <div class="form-grid">
+          <div class="form-grupo"><label>Tipo de Equipamento *</label><input type="text" id="inputMatrizEquip" class="input-padrao" placeholder="Ex: Bomba de Infusão"></div>
+          <div class="form-grupo"><label>Modelo Oficial de Fábrica *</label><input type="text" id="inputMatrizModelo" class="input-padrao" placeholder="Ex: Smart Pump V5"></div>
+          <div class="form-grupo"><label>Fabricante Regulamentado *</label><input type="text" id="inputMatrizFab" class="input-padrao" placeholder="Ex: Samtronic"></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:15px;"><button onclick="salvarVinculoMatrizAtivos()" class="btn-success">➕ Homologar Combinação Comercial</button></div>
+      </div>
+      <div class="card-padrao">
+        <h3>Matriz de Modelos e Fabricantes Ativos</h3>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO / DESCRIÇÃO</th><th>MODELO HOMOLOGADO</th><th>FABRICANTE OFICIAL</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div>
+      </div>`;
+      desenharTabelaMatrizAtivos();
+
+  } else {
+    document.getElementById('tabConfiguracoes').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao"><h3>🛠️ Parâmetros Gerais do Sistema</h3></div>`;
+  }
+}
+
+window.desenharTabelaMatrizAtivos = function() {
+  const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return; tbody.innerHTML = '';
+  appState.matrizAtivosHomologados.sort((a,b) => a.equipamento.localeCompare(b.equipamento));
+  appState.matrizAtivosHomologados.forEach(item => {
+    tbody.innerHTML += `<tr><td><b>${item.equipamento}</b></td><td>${item.modelo}</td><td><span style="padding:4px 8px; background:#f1f5f9; border-radius:6px; font-weight:bold; color:var(--cor-secundaria);">${item.fabricante}</span></td></tr>`;
+  });
+};
+
+window.salvarVinculoMatrizAtivos = function() {
+  const equip = document.getElementById('inputMatrizEquip').value.trim(); const modelo = document.getElementById('inputMatrizModelo').value.trim(); const fab = document.getElementById('inputMatrizFab').value.trim();
+  if(!equip || !modelo || !fab) return alert('Preencha os campos!');
+  if(appState.matrizAtivosHomologados.find(x => x.equipamento.toUpperCase() === equip.toUpperCase() && x.modelo.toUpperCase() === modelo.toUpperCase())) return alert('Já cadastrado!');
+  appState.matrizAtivosHomologados.push({ equipamento: equip, modelo: modelo, fabricante: fab });
+  document.getElementById('inputMatrizEquip').value = ''; document.getElementById('inputMatrizModelo').value = ''; document.getElementById('inputMatrizFab').value = '';
+  desenharTabelaMatrizAtivos();
+};
+
+function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
+function aplicarMascaraTelefoneUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
+function aplicarMascaraCpfUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2"); this.value = v; }
+
+function buscarCepUsuarioAutomatico() { 
+  const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; 
+  fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { 
+    if (!d.erro) { document.getElementById('formUserLogradouro').value = d.logradouro || ''; document.getElementById('formUserBairro').value = d.bairro || ''; document.getElementById('formUserCidade').value = d.localidade || 'SÃO PAULO'; document.getElementById('formUserUf').value = d.uf || 'SP'; } 
+  }); 
+}
+
+function formatarDataBr(dataUs) {
+  if(!dataUs) return '-';
+  if(String(dataUs).includes('/')) return String(dataUs).split(' ')[0]; 
+  const partes = String(dataUs).split('-');
+  if(partes.length !== 3) return dataUs;
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function atualizarTabelaUsuariosLocal() {
+  const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
+  if (!appState.usuarios || appState.usuarios.length === 0) return;
+  
+  var filtrados = appState.usuarios.filter(u => {
+    return (appState.filtroStatusUsuario === 'TODOS' || (u.status || 'ATIVO').toUpperCase() === appState.filtroStatusUsuario) &&
+           (appState.buscaTextoUsuario === '' || (u.nome || '').toUpperCase().includes(appState.buscaTextoUsuario) || (u.login || '').toUpperCase().includes(appState.buscaTextoUsuario));
+  });
+
+  filtrados.sort((a,b) => (a.nome || '').localeCompare(b.nome || ''));
+  filtrados.forEach((u) => {
+    const isAtivo = (u.status || 'ATIVO').toUpperCase() === 'ATIVO'; 
+    const bg = isAtivo ? '#dcfce7' : '#fee2e2'; 
+    const tx = isAtivo ? '#16a34a' : '#dc2626';
+    const cpfLimpo = (u.cpf && u.cpf.length > 5) ? u.cpf : '-';
+    const dataAdmissaoTratada = u.admissao ? formatarDataBr(u.admissao) : '-';
+    
+    tbody.innerHTML += `<tr><td><b>${u.nome || ''}</b></td><td>${u.login || '-'}</td><td>${cpfLimpo}</td><td>${dataAdmissaoTratada}</td><td>${u.perfil || 'Técnico'}</td><td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoUsuarioPeloId('${u.id}')">📝</button></td></tr>`;
+  });
+}
+
+function prepararEdicaoUsuarioPeloId(id) {
+  const u = appState.usuarios.find(user => String(user.id) === String(id)); if (!u) return alert('Não encontrado.');
+  appState.idUsuarioEmEdicao = u.id;
+  document.getElementById('formUserNome').value = u.nome || '';
+  document.getElementById('formUserLogin').value = u.login || '';
+  document.getElementById('formUserSenha').value = u.senha || '';
+  document.getElementById('formUserPerfil').value = u.perfil || 'Técnico';
+  document.getElementById('formUserCpf').value = u.cpf || '';
+  document.getElementById('formUserRg').value = u.rg || '';
+  document.getElementById('formUserCnh').value = u.cnh || '';
+  document.getElementById('formUserTelefone').value = u.telefone || '';
+  document.getElementById('formUserCep').value = u.cep || '';
+  document.getElementById('formUserLogradouro').value = u.logradouro || '';
+  document.getElementById('formUserNumero').value = u.numero || '';
+  document.getElementById('formUserBairro').value = u.bairro || '';
+  document.getElementById('formUserCidade').value = u.cidade || 'SÃO PAULO';
+  document.getElementById('formUserUf').value = u.uf || 'SP';
+  document.getElementById('formUserAdmissao').value = u.admissao || '';
+  document.getElementById('formUserStatus').value = u.status || 'ATIVO';
+  document.getElementById('btnCancelarEdicaoUsuario').classList.remove('hidden');
+}
+
+function limparFormularioUsuario() {
+  appState.idUsuarioEmEdicao = null;
+  document.getElementById('formUserNome').value = ''; document.getElementById('formUserLogin').value = ''; document.getElementById('formUserSenha').value = ''; document.getElementById('formUserCpf').value = ''; document.getElementById('formUserRg').value = ''; document.getElementById('formUserCnh').value = ''; document.getElementById('formUserTelefone').value = ''; document.getElementById('formUserCep').value = ''; document.getElementById('formUserLogradouro').value = ''; document.getElementById('formUserNumero').value = ''; document.getElementById('formUserBairro').value = ''; document.getElementById('formUserAdmissao').value = '';
+  document.getElementById('btnCancelarEdicaoUsuario').classList.add('hidden');
+}
+
+window.processarRetornoGoogleSheets = function() { alert('Colaborador cadastrado!'); limparFormularioUsuario(); sincronizarDadosPlanilha(); };
+function enviarUsuarioPlanilha() {
+  const nome = document.getElementById('formUserNome').value.trim(); const login = document.getElementById('formUserLogin').value.trim(); const senha = document.getElementById('formUserSenha').value;
+  if (!nome || !login || !senha) return alert('Campos obrigatórios!');
+  const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value, telefone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value, numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value, cidade: document.getElementById('formUserCidade').value, uf: document.getElementById('formUserUf').value, admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value };
+  const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
+  const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+}
+</script>
+</body>
+</html>
