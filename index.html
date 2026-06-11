@@ -114,7 +114,8 @@ const appState = {
   filtroStatusUsuario: 'ATIVO',
   filtroStatusCliente: 'ATIVO',
   buscaTextoCliente: '',
-  buscaTextoUsuario: '' // Nova chave para gerenciar o termo pesquisado na busca de colaboradores
+  buscaTextoUsuario: '',
+  buscaTextoPatrimonio: '' // Nova chave para gerenciar a consulta de equipamentos
 };
 
 sincronizarDadosPlanilha();
@@ -355,7 +356,6 @@ function verificarDocumentoEReceita() {
     fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
       .then(res => res.json())
       .then(dados => {
-        // Ajuste Estratégico: Preenche o formulário com a Razão Social completa da Receita
         document.getElementById('formCliente').value = dados.razao_social || dados.nome || '';
         document.getElementById('formCep').value = dados.cep || '';
         document.getElementById('formLogradouro').value = dados.logradouro || '';
@@ -364,7 +364,6 @@ function verificarDocumentoEReceita() {
         document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
         document.getElementById('formUf').value = dados.uf || 'SP';
         
-        // Se a BrasilAPI trouxer o nome_fantasia estruturado, injeta no campo de observações ou guarda para indexação
         if(dados.nome_fantasia && dados.nome_fantasia.trim() !== '') {
           document.getElementById('formObservacao').value = "Fantasia: " + dados.nome_fantasia;
         }
@@ -396,11 +395,9 @@ function atualizarTabelaClientesLocal() {
     const statusCli = (c.status || 'ATIVO').toUpperCase();
     const nomeCli = (c.nome || '').toUpperCase();
     const cnpjCli = (c.cnpj || '').replace(/\D/g, '');
-    const obsCli = (c.observacao || '').toUpperCase(); // O campo Observações guarda o Nome Fantasia preenchido
+    const obsCli = (c.observacao || '').toUpperCase();
     
     var bateStatus = (appState.filtroStatusCliente === 'TODOS') || (statusCli === appState.filtroStatusCliente);
-    
-    // Consulta Cruzada Inteligente: Busca pelo Nome Principal, pelas Observações (Fantasia) ou pelos dígitos do CNPJ
     var bateTexto = (appState.buscaTextoCliente === '') || 
                     (nomeCli.indexOf(appState.buscaTextoCliente) !== -1) || 
                     (obsCli.indexOf(appState.buscaTextoCliente) !== -1) ||
@@ -467,6 +464,13 @@ function renderizarTelaPatrimonio(container) {
     <div>
       <h2>📦 Estoque e Inventário Central</h2>
       <div class="card-padrao" style="margin-top:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
+          <h3 style="color:var(--cor-secundaria);">Equipamentos Registrados</h3>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar Ativo:</label>
+            <input type="text" id="inputBuscaTextoPatrimonio" class="input-padrao" placeholder="TAG, Série, Patrimônio ou Nome..." style="width:260px; padding:6px 10px;">
+          </div>
+        </div>
         <div class="tabela-container">
           <table class="tabela-sistema">
             <thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th><th>STATUS OPERACIONAL</th><th>LOCALIZAÇÃO</th></tr></thead>
@@ -475,6 +479,15 @@ function renderizarTelaPatrimonio(container) {
         </div>
       </div>
     </div>`;
+
+  document.getElementById('inputBuscaTextoPatrimonio').value = appState.buscaTextoPatrimonio;
+  
+  // Vincula o evento em tempo real para a filtragem rápida do estoque
+  document.getElementById('inputBuscaTextoPatrimonio').addEventListener('input', function() {
+    appState.buscaTextoPatrimonio = this.value.trim().toUpperCase();
+    atualizarTabelaPatrimonioLocal();
+  });
+
   atualizarTabelaPatrimonioLocal();
 }
 
@@ -482,7 +495,33 @@ function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
   if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Nenhum item carregado do inventário no momento.</td></tr>`; return; }
   
-  appState.patrimonio.forEach(p => {
+  // Motor de Multi-Filtro do Estoque Central (TAG, Série, Patrimônio, Equipamento ou Fabricante)
+  var patrimonioFiltrado = appState.patrimonio.filter(p => {
+    const tagPat = (p.tag || '').toUpperCase();
+    const equipamentoPat = (p.equipamento || '').toUpperCase();
+    const seriePat = (p.serie || '').toUpperCase();
+    const numPatrimonio = (p.patrimonio || '').toUpperCase();
+    const fabricantePat = (p.fabricante || '').toUpperCase();
+    
+    return (appState.buscaTextoPatrimonio === '') ||
+           (tagPat.indexOf(appState.buscaTextoPatrimonio) !== -1) ||
+           (equipamentoPat.indexOf(appState.buscaTextoPatrimonio) !== -1) ||
+           (seriePat.indexOf(appState.buscaTextoPatrimonio) !== -1) ||
+           (numPatrimonio.indexOf(appState.buscaTextoPatrimonio) !== -1) ||
+           (fabricantePat.indexOf(appState.buscaTextoPatrimonio) !== -1);
+  });
+
+  if (patrimonioFiltrado.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#64748b; padding:15px;">Nenhum equipamento localizado para a consulta informada.</td></tr>`;
+    return;
+  }
+
+  // Ordenação Alfabética dos Equipamentos do Inventário
+  patrimonioFiltrado.sort(function(a, b) {
+    return (a.equipamento || '').localeCompare(b.equipamento || '');
+  });
+
+  patrimonioFiltrado.forEach(p => {
     const tr = document.createElement('tr');
     const bColor = p.status === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
     tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bColor}">${p.status}</span></td><td><b>${p.localizacao || 'Sede Central'}</b></td>`;
@@ -784,7 +823,6 @@ function alternarSubAbaGestao(aba) {
       atualizarTabelaUsuariosLocal();
     });
 
-    // Escuta em tempo real a digitação para a busca rápida de usuários
     document.getElementById('inputBuscaTextoUsuario').addEventListener('input', function() {
       appState.buscaTextoUsuario = this.value.trim().toUpperCase();
       atualizarTabelaUsuariosLocal();
@@ -845,8 +883,6 @@ function atualizarTabelaUsuariosLocal() {
     const cpfUser = (u.cpf || '').replace(/\D/g, '');
     
     var bateStatus = (appState.filtroStatusUsuario === 'TODOS') || (statusUser === appState.filtroStatusUsuario);
-    
-    // Consulta Cruzada do Usuário: Filtra por Nome, Login de Acesso ou dígitos do CPF
     var bateTexto = (appState.buscaTextoUsuario === '') || 
                     (nomeUser.indexOf(appState.buscaTextoUsuario) !== -1) || 
                     (loginUser.indexOf(appState.buscaTextoUsuario) !== -1) ||
@@ -860,7 +896,6 @@ function atualizarTabelaUsuariosLocal() {
     return;
   }
   
-  // Ordena os usuários por ordem alfabética (A-Z) nativa
   usuariosFiltrados.sort(function(a, b) {
     return (a.nome || '').localeCompare(b.nome || '');
   });
