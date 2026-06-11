@@ -52,7 +52,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .form-grid label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
 .form-grupo { display: flex; flex-direction: column; margin-bottom: 8px; }
 
-.tabs-gestao { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--borda); padding-bottom: 5px; }
+.tabs-gestao { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
 .tab-item { padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 2px solid transparent; }
 .tab-item.active { color: var(--cor-primaria); border-color: var(--cor-primaria); }
 </style>
@@ -98,7 +98,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <datalist id="datalistClientesGlobal"></datalist>
 
 <script>
-// NOTA: Se você gerou uma nova versão do Apps Script após adicionar as 2 telas HTML, certifique-se de atualizar esta URL caso tenha mudado.
+// URL unificada do back-end que gerencia Clientes, Patrimônio e Usuários
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHIvNs0aEU9ZbNzg6mYd5g1y5bl1dbMgnJywmp9VXxLLcC9c_qIrUHiyTNapa1zpyksA/exec';
 
 const appState = {
@@ -115,7 +115,7 @@ const appState = {
   filtroStatusUsuario: 'ATIVO'
 };
 
-// Executa carga inicial com segurança
+// Executa carga inicial via JSONP seguro
 sincronizarDadosPlanilha();
 verificarSessaoAtiva();
 
@@ -179,7 +179,7 @@ function verificarSessaoAtiva() {
 }
 
 // =========================================================================
-// NOVO CANAL DE RETORNO DA SINCRONIZAÇÃO (JSONP - SEM ERROS DE REDE)
+// RETORNO DA SINCRONIZAÇÃO VIA JSONP (FURA O BLOQUEIO DE CORS DO GOOGLE)
 // =========================================================================
 window.processarRetornoSincronizacao = function(res) {
   if (res && res.sucesso) {
