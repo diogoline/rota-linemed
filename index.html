@@ -263,7 +263,7 @@ function abrirTela(menu) {
   } else if (menu === 'gestao') {
     renderizarTelaGestao(principal);
   } else {
-    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Tela em desenvolvimento ou integrada na planilha.</p>`;
+    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Tela em desenvolvimento.</p>`;
   }
 }
 
@@ -398,7 +398,7 @@ function renderizarTelaClientes(container) {
       <div class="card-padrao">
         <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro</h3>
         <div class="form-grid">
-          <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
+          <div class="form-grid"><div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div></div>
           <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
           <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao"></div>
           <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao"></div>
@@ -430,9 +430,7 @@ function renderizarTelaClientes(container) {
             <div style="display:flex; align-items:center; gap:6px;">
               <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
               <select id="selectFiltroStatusClienteGrid" class="select-padrao" style="width:140px; padding:6px;">
-                <option value="ATIVO">Apenas Ativos</option>
-                <option value="INATIVO">Apenas Inativos</option>
-                <option value="TODOS">Todos os Registros</option>
+                <option value="ATIVO">Apenas Ativos</option><option value="INATIVO">Apenas Inativos</option><option value="TODOS">Todos os Registros</option>
               </select>
             </div>
           </div>
@@ -473,36 +471,18 @@ function renderizarTelaClientes(container) {
   atualizarTabelaClientesLocal();
 }
 
-function verificarDocumentoEReceita() {
-  const doc = this.value.trim(); if (!doc) return;
-  const isCnpj = document.getElementById('formTipoPessoa').value === 'JURIDICA';
-  const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
-  
-  if (dup) { 
-    alert(isCnpj ? 'CNPJ já cadastrado!' : 'CPF já cadastrado!'); 
-    this.value = ''; 
-    return; 
+function aplicarMascaraDocumento() {
+  let v = this.value.replace(/\D/g, '');
+  if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
+    v = v.substring(0, 14); v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+  } else {
+    v = v.substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
   }
-  
-  const clean = doc.replace(/\D/g, '');
-  if (isCnpj && clean.length === 14) {
-    fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
-      .then(res => res.json())
-      .then(dados => {
-        document.getElementById('formCliente').value = dados.razao_social || dados.nome || '';
-        document.getElementById('formCep').value = dados.cep || '';
-        document.getElementById('formLogradouro').value = dados.logradouro || '';
-        document.getElementById('formNumero').value = dados.numero || '';
-        document.getElementById('formBairro').value = dados.bairro || '';
-        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
-        document.getElementById('formUf').value = dados.uf || 'SP';
-        
-        if(dados.nome_fantasia && dados.nome_fantasia.trim() !== '') {
-          document.getElementById('formObservacao').value = "Fantasia: " + dados.nome_fantasia;
-        }
-      }).catch(() => {});
-  }
+  this.value = v;
 }
+function aplicarMascaraCep() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
+function aplicarMascaraTelefone() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
+function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro; document.getElementById('formBairro').value = d.bairro; } }); }
 
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
@@ -511,32 +491,16 @@ function atualizarTabelaClientesLocal() {
     return;
   }
 
-  var clientesFiltrados = appState.clientes.filter(c => {
-    const statusCli = (c.status || 'ATIVO').toUpperCase();
-    const nomeCli = (c.nome || '').toUpperCase();
-    const cnpjCli = (c.cnpj || '').replace(/\D/g, '');
-    const obsCli = (c.observacao || '').toUpperCase();
-    
-    var bateStatus = (appState.filtroStatusCliente === 'TODOS') || (statusCli === appState.filtroStatusCliente);
-    var bateTexto = (appState.buscaTextoCliente === '') || 
-                    (nomeCli.indexOf(appState.buscaTextoCliente) !== -1) || 
-                    (obsCli.indexOf(appState.buscaTextoCliente) !== -1) ||
-                    (cnpjCli.indexOf(appState.buscaTextoCliente) !== -1);
-    
-    return bateStatus && bateTexto;
+  var filtrados = appState.clientes.filter(c => {
+    return (appState.filtroStatusCliente === 'TODOS' || (c.status || 'ATIVO').toUpperCase() === appState.filtroStatusCliente) &&
+           (appState.buscaTextoCliente === '' || (c.nome || '').toUpperCase().includes(appState.buscaTextoCliente) || (c.cnpj || '').includes(appState.buscaTextoCliente));
   });
 
-  if (clientesFiltrados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#64748b; padding: 15px;">Nenhum cliente localizado...</td></tr>`;
-    return;
-  }
-
-  clientesFiltrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-
-  clientesFiltrados.forEach((c) => {
-    const indexGlobal = appState.clientes.findIndex(orig => orig.id === c.id);
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || '-'}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''} / ${c.uf || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${indexGlobal})">📝</button></td>`;
+  filtrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+  filtrados.forEach((c) => {
+    const idx = appState.clientes.findIndex(orig => orig.id === c.id);
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || '-'}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''} / ${c.uf || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${idx})">📝</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -547,12 +511,7 @@ function prepararEdicaoCliente(i) {
 }
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 
-window.processarRetornoClienteSheets = function(respostaServer) {
-  alert('Cliente cadastrado com sucesso!');
-  limparFormularioCliente();
-  sincronizarDadosPlanilha();
-};
-
+window.processarRetornoClienteSheets = function() { alert('Cliente cadastrado!'); limparFormularioCliente(); sincronizarDadosPlanilha(); };
 function enviarClientePlanilha() {
   const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
   const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, city: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
@@ -599,7 +558,7 @@ function renderizarTelaPatrimonio(container) {
 
       <div class="card-padrao">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
-          <h3 style="color:var(--cor-secundaria);">Equipamentos Registrados</h3>
+          <h3>Equipamentos Registrados</h3>
           <div style="display:flex; align-items:center; gap:6px;">
             <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar Ativo:</label>
             <input type="text" id="inputBuscaTextoPatrimonio" class="input-padrao" placeholder="TAG, Série, Patrimônio ou Nome..." style="width:260px; padding:6px 10px;">
@@ -624,14 +583,14 @@ function renderizarTelaPatrimonio(container) {
     const equipSel = this.value; const selectModelo = document.getElementById('formEquipModelo'); const inputFabricante = document.getElementById('formEquipFabricante');
     selectModelo.innerHTML = '<option value="">Selecione o Modelo...</option>'; inputFabricante.value = '';
     if(!equipSel) { selectModelo.disabled = true; return; }
-    appState.matrizAtivosHomologados.filter(item => item.equipment === equipSel || item.equipamento === equipSel).forEach(item => { selectModelo.innerHTML += `<option value="${item.modelo}">${item.modelo}</option>`; });
+    appState.matrizAtivosHomologados.filter(item => item.equipamento === equipSel).forEach(item => { selectModelo.innerHTML += `<option value="${item.modelo}">${item.modelo}</option>`; });
     selectModelo.disabled = false;
   });
 
   document.getElementById('formEquipModelo').addEventListener('change', function() {
     const modSel = this.value; const equipSel = document.getElementById('formEquipNome').value; const inputFabricante = document.getElementById('formEquipFabricante');
     if(!modSel) { inputFabricante.value = ''; return; }
-    const corr = appState.matrizAtivosHomologados.find(item => (item.equipment === equipSel || item.equipamento === equipSel) && item.modelo === modSel);
+    const corr = appState.matrizAtivosHomologados.find(item => item.equipamento === equipSel && item.modelo === modSel);
     if(corr) inputFabricante.value = corr.fabricante.toUpperCase();
   });
 
@@ -640,10 +599,10 @@ function renderizarTelaPatrimonio(container) {
 
 function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(!appState.patrimonio || appState.patrimonio.length === 0) return;
+  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px;">Nenhum item cadastrado...</td></tr>`; return; }
   
   var filtrados = appState.patrimonio.filter(p => {
-    return (appState.buscaTextoPatrimonio === '') || (p.tag || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.equipamento || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.serie || '').toUpperCase().includes(appState.buscaTextoPatrimonio);
+    return (appState.buscaTextoPatrimonio === '') || (p.tag || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.equipamento || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.serie || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.patrimonio || '').toUpperCase().includes(appState.buscaTextoPatrimonio);
   });
 
   filtrados.sort((a,b) => (a.equipamento || '').localeCompare(b.equipamento || ''));
@@ -709,24 +668,8 @@ function atualizarDatalistTags() {
   });
 }
 
-function filtrarEquipamentosDoCliente() {
-  const cli = this.value; const tbody = document.getElementById('tbodyItensLocadosCliente'); tbody.innerHTML = '';
-  if(!cli) return;
-  appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === cli).forEach(p => {
-    tbody.innerHTML += `<tr><td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td></tr>`;
-  });
-}
-
-function processarMovimentacaoLocacao() {
-  const tipo = document.getElementById('movTipo').value; const tag = document.getElementById('movTagInput').value.trim().toUpperCase(); const cli = document.getElementById('movCliente').value;
-  if(!tag || !cli) return alert('Preencha os campos!');
-  const p = appState.patrimonio.find(x => x.tag.toUpperCase() === tag); if(!p) return alert('Não encontrado!');
-  const pacote = { tag: tag, equipamento: p.equipamento, origem: tipo === 'ENVIO' ? 'Sede Central' : cli, destino: tipo === 'ENVIO' ? cli : 'Sede Central', tipo: tipo, responsavel: appState.usuarioLogado?.nome || 'Sistema', observacao: document.getElementById('movObs').value };
-  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Sucesso!'); sincronizarDadosPlanilha(); });
-}
-
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (RESTAURAÇÃO TOTAL DO COLABORADOR HOMOLOGADO)
+// INTERFACE: MÓDULO GESTÃO
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -760,7 +703,6 @@ function abrirSubMóduloGestao(aba) {
   if (aba === 'colaboradores') {
     document.getElementById('tabColaboradores').classList.add('active');
     
-    // RESTAURAÇÃO COMPLETA: Todos os blocos originais da ficha homologada
     subContainer.innerHTML = `
       <div class="card-padrao">
         <h3 id="tituloFormUsuario" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha do Colaborador</h3>
@@ -789,20 +731,4 @@ function abrirSubMóduloGestao(aba) {
         <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">📍 Endereço Residencial</h4>
         <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
-          <div class="form-grupo"><label>Logradouro / Rua</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
-          <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
-          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
-        </div>
-
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 Contrato e Status</h4>
-        <div class="form-grid">
-          <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
-          <div class="form-grupo">
-            <label>Status Operacional</label>
-            <select id="formUserStatus" class="select-padrao">
-              <option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option>
-            </select>
-          </div>
-          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Des
+          <div class="form-grupo"><label>Logradouro / Rua</label><input type
