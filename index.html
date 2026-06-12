@@ -548,7 +548,7 @@ function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTel
 window.processarRetornoClienteSheets = function() { alert('CLIENTE CADASTRADO!'); limparFormularioCliente(); sincronizarDadosPlanilha(); };
 function enviarClientePlanilha() {
   const nome = document.getElementById('formCliente').value.trim().toUpperCase(); if(!nome) return alert('NOME OBRIGATÓRIO');
-  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value.toUpperCase(), cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value.toUpperCase(), numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value.toUpperCase(), bairro: document.getElementById('formBairro').value.toUpperCase(), city: document.getElementById('formCidade').value.toUpperCase(), uf: document.getElementById('formUf').value.toUpperCase(), regiao: document.getElementById('formRegiao').value.toUpperCase(), responsavel: document.getElementById('formResponsavel').value.toUpperCase(), telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value.toUpperCase() };
+  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value.toUpperCase(), cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value.toUpperCase(), numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value.toUpperCase(), bairro: document.getElementById('formBairro').value.toUpperCase(), city: document.getElementById('formCidade').value.toUpperCase(), uf: document.getElementById('formUf').value.toUpperCase(), regiao: document.getElementById('formRegiao').value.toUpperCase(), responsavel: document.getElementById('formResponsavel').value.toUpperCase(), telephone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value.toUpperCase() };
   const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoClienteSheets`;
   const scriptAntigo = document.getElementById('jsonp_client_execution_script'); if(scriptAntigo) scriptAntigo.remove();
@@ -1098,8 +1098,29 @@ window.salvarModalVinculo = function() {
   executarEnvioMatriz(d);
 };
 
-function executarEnvioMatriz(pacote) {
-  const acao = appState.idMatrizEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+window.alternarStatusMatriz = function(id) {
+  const item = appState.matrizAtivos.find(x => String(x.ID_REGISTRO || x.id_registro) === String(id));
+  if(!item) return;
+  
+  const novoStatus = (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+  if(!confirm(`DESEJA REALMENTE ALTERAR O STATUS DESTE TERMO PARA ${novoStatus}?`)) return;
+  
+  const d = {
+    ID_REGISTRO: id,
+    EQUIPAMENTO: (item.EQUIPAMENTO || item.equipamento).toUpperCase(),
+    MODELO: (item.MODELO || item.modelo || '').toUpperCase(),
+    FABRICANTE: (item.FABRICANTE || item.fabricante || '').toUpperCase(),
+    ANVISA: (item.ANVISA || item.anvisa || '').toUpperCase(),
+    STATUS: novoStatus
+  };
+  
+  // Forçamos o ID em edição para garantir que a rota seja de atualização na planilha
+  appState.idMatrizEmEdicao = id;
+  executarEnvioMatriz(d, 'editarCadastro');
+};
+
+function executarEnvioMatriz(pacote, acaoForcada = null) {
+  const acao = acaoForcada || (appState.idMatrizEmEdicao ? 'editarCadastro' : 'salvarCadastro');
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(pacote))}&prefix=fecharModalProcesso`;
   
   const scriptAntigo = document.getElementById('jsonp_matriz_script');
@@ -1152,25 +1173,6 @@ window.desenharTabelaMatrizAtivos = function() {
 window.prepararEdicaoMatriz = function(id, isApenasDescricao) {
   if(isApenasDescricao === true || isApenasDescricao === 'true') abrirModalDescricao(id);
   else abrirModalModeloVinculo(id);
-};
-
-window.alternarStatusMatriz = function(id) {
-  const item = appState.matrizAtivos.find(x => String(x.ID_REGISTRO || x.id_registro) === String(id));
-  if(!item) return;
-  
-  const novoStatus = (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO' ? 'INATIVO' : 'ATIVO';
-  if(!confirm(`DESEJA REALMENTE ALTERAR O STATUS DESTE TERMO PARA ${novoStatus}?`)) return;
-  
-  const d = {
-    ID_REGISTRO: id,
-    EQUIPAMENTO: (item.EQUIPAMENTO || item.equipamento).toUpperCase(),
-    MODELO: (item.MODELO || item.modelo || '').toUpperCase(),
-    FABRICANTE: (item.FABRICANTE || item.fabricante || '').toUpperCase(),
-    ANVISA: (item.ANVISA || item.anvisa || '').toUpperCase(),
-    STATUS: novoStatus
-  };
-  
-  executarEnvioMatriz(d);
 };
 
 function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
@@ -1245,7 +1247,7 @@ window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
-  const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telefone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value.toUpperCase() };
+  const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telephone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value.toUpperCase() };
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
   const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
