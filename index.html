@@ -320,7 +320,7 @@ function renderizarTelaDashboards(container) {
         <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-sucesso);">
           <h4>📦 Ativos em Clientes (Locados)</h4>
           <div class="num" style="color: var(--cor-sucesso);">${patLocados}</div>
-          <small style="color:#64748b; margin-top:5px;">Equipamentos em operation externa</small>
+          <small style="color:#64748b; margin-top:5px;">Equipamentos em operação externa</small>
         </div>
 
         <div class="card-padrao dash-card-num" style="border-left-color: #f59e0b;">
@@ -714,7 +714,7 @@ function processarMovimentacaoLocacao() {
   const tipo = document.getElementById('movTipo').value; const tag = document.getElementById('movTagInput').value.trim().toUpperCase(); const cli = document.getElementById('movCliente').value;
   if(!tag || !cli) return alert('Preencha os campos!');
   const p = appState.patrimonio.find(x => x.tag.toUpperCase() === tag); if(!p) return alert('Não encontrado!');
-  const pacote = { tag: tag, equipamento: p.equipamento, origens: tipo === 'ENVIO' ? 'Sede Central' : cli, destino: tipo === 'ENVIO' ? cli : 'Sede Central', tipo: tipo, responsavel: appState.usuarioLogado?.nome || 'Sistema', observacao: document.getElementById('movObs').value };
+  const pacote = { tag: tag, equipment: p.equipamento, origens: tipo === 'ENVIO' ? 'Sede Central' : cli, destino: tipo === 'ENVIO' ? cli : 'Sede Central', tipo: tipo, responsavel: appState.usuarioLogado?.nome || 'Sistema', observacao: document.getElementById('movObs').value };
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Sucesso!'); sincronizarDadosPlanilha(); });
 }
 
@@ -1067,7 +1067,7 @@ window.desenharTabelaMatrizAtivos = function() {
 };
 
 window.prepararEdicaoMatriz = function(id, isApenasDescricao) {
-  if(isApenasDescricao === true || isApenasDescricao === 'true') abrirModalIDescricao(id);
+  if(isApenasDescricao === true || isApenasDescricao === 'true') abrirModalDescricao(id);
   else abrirModalModeloVinculo(id);
 };
 
@@ -1129,7 +1129,7 @@ function atualizarTabelaUsuariosLocal() {
   });
 }
 
-function幕prepararEdicaoUsuarioPeloId(id) {
+function prepararEdicaoUsuarioPeloId(id) {
   const u = appState.usuarios.find(user => String(user.id) === String(id)); if (!u) return alert('Não encontrado.');
   appState.idUsuarioEmEdicao = u.id;
   document.getElementById('formUserNome').value = u.nome || '';
@@ -1163,7 +1163,7 @@ function enviarUsuarioPlanilha() {
   if (!nome || !login || !senha) return alert('Campos obrigatórios!');
   const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value, telefone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value, numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value, cidade: document.getElementById('formUserCidade').value, uf: document.getElementById('formUserUf').value, admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value };
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
-  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
   const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
