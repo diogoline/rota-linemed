@@ -165,7 +165,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .card-atalho-home { background: #fff; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: all .2s ease; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
 .card-atalho-home:hover { border-color: var(--cor-primaria); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(37,99,235,0.08); }
 .card-atalho-home h4 { font-size: 13px; color: #1e293b; font-weight: 700; }
-.card-atalho-home p { font-size: 11px; color: #64748b; text-transform: none; }
+.card-atalho-home p { font-size: 11px; color: #64748b; }
 </style>
 </head>
 <body>
@@ -377,7 +377,6 @@ function sincronizarDadosPlanilha() {
   document.body.appendChild(scriptElement);
 }
 
-// INTERFACE CENTRALIZADA DA TELA INICIAL (DASHBOARD INTEGRADO DINÂMICO)
 function renderizarHomePainelDinâmico() {
   const containerHome = document.getElementById('idContainerHomePrincipal');
   if(!containerHome) return;
@@ -387,7 +386,6 @@ function renderizarHomePainelDinâmico() {
   const estoque = appState.patrimonio.filter(p => p.status.toUpperCase() === 'DISPONÍVEL EM ESTOQUE').length;
   const totalCli = appState.clientes.filter(c => c.status === 'ATIVO').length;
 
-  // PROCESSA DISTRIBUIÇÃO OPERACIONAL PARA EXIBIÇÃO EM TABELA NA HOME
   const dicionarioContagem = {};
   appState.patrimonio.forEach(p => {
     const nomeEq = p.equipamento.toUpperCase();
@@ -458,19 +456,19 @@ function renderizarHomePainelDinâmico() {
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:14px;">
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuRotas').click()">
         <h4>📍 CONTROLE DE ROTAS</h4>
-        <p>Planejamento de rotas e acompanhamento diário.</p>
+        <p class="no-uppercase">Planejamento de rotas e acompanhamento diário.</p>
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuClientes').click()">
         <h4>🏥 CADASTRO DE CLIENTES</h4>
-        <p>Acesse o gerenciador de unidades e contratos.</p>
+        <p class="no-uppercase">Acesse o gerenciador de unidades e contratos.</p>
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuLocacao').click()">
         <h4>🤝 MOVIMENTAR LOCAÇÕES</h4>
-        <p>Gerencie remessas e devoluções externas de ativos.</p>
+        <p class="no-uppercase">Gerencie remessas e devoluções externas de ativos.</p>
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuPatrimonio').click()">
         <h4>📦 INVENTÁRIO DE ATIVOS</h4>
-        <p>Consulte números de série, marcas e modelos.</p>
+        <p class="no-uppercase">Consulte números de série, marcas e modelos.</p>
       </div>
     </div>`;
 }
@@ -1359,7 +1357,7 @@ window.alternarStatusMatriz = function(id) {
   executarEnvioMatriz(d, 'editarCadastro');
 };
 
-function executarEnvioMatriz(pacote, acaoForcada = null) {
+function ejecutarEnvioMatriz(pacote, acaoForcada = null) {
   const acao = acaoForcada || (appState.idMatrizEmEdicao ? 'editarCadastro' : 'salvarCadastro');
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(pacote))}&prefix=fecharModalProcesso`;
   
