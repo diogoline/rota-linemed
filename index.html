@@ -132,7 +132,6 @@ const appState = {
   buscaTextoUsuario: '',
   buscaTextoPatrimonio: '',
   
-  // Banco de dados dinâmico alimentado via aba MATRIZ_ATIVOS da planilha
   matrizAtivos: [],
   idMatrizEmEdicao: null
 };
@@ -551,7 +550,6 @@ function enviarClientePlanilha() {
 // INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL (FILTRADO ANTI-REPETIÇÃO)
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
-  // Pega todas as descrições ativas do Sheets e remove duplicidades em tempo real
   const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').map(item => item.EQUIPAMENTO || item.equipamento))].filter(Boolean).sort();
   let optEquip = '<option value="">Selecione o Tipo de Equipamento...</option>';
   tiposUnicos.forEach(t => optEquip += `<option value="${t}">${t}</option>`);
@@ -719,7 +717,7 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (COLABORADORES TOTALMENTE BLINDADOS)
+// INTERFACE: MÓDULO GESTÃO
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -853,7 +851,6 @@ function abrirSubMóduloGestao(aba) {
   } else if (aba === 'itens_inventario') {
     document.getElementById('tabItensInventario').classList.add('active');
     
-    // NOVA INTERFACE CENTRALIZADA COM POP-UPS MODAIS
     subContainer.innerHTML = `
       <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
         <button onclick="abrirModalDescricao()" class="btn-success" style="font-size: 13px;">➕ Cadastrar Descrição Geral</button>
@@ -870,12 +867,13 @@ function abrirSubMóduloGestao(aba) {
                 <th>EQUIPAMENTO / DESCRIÇÃO</th>
                 <th>MODELO DE FÁBRICA</th>
                 <th>FABRICANTE OFICIAL</th>
+                <th>CÓDIGO ANVISA</th>
                 <th>STATUS OPERACIONAL</th>
                 <th style="text-align: center;">AÇÕES</th>
               </tr>
             </thead>
             <tbody id="tbodyMatrizAtivosParam">
-              <tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">Carregando matriz da planilha...</td></tr>
+              <tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">Carregando matriz da planilha...</td></tr>
             </tbody>
           </table>
         </div>
@@ -891,7 +889,7 @@ function abrirSubMóduloGestao(aba) {
 }
 
 // =========================================================================
-// ENGENHARIA DE POPUPS E LÓGICA DE NEGÓCIO DA MATRIZ_ATIVOS
+// ENGENHARIA DE POPUPS E LÓGICA DE NEGÓCIO DA MATRIZ_ATIVOS (ORDEM DA PLANILHA)
 // =========================================================================
 window.abrirModalDescricao = function(id = null) {
   appState.idMatrizEmEdicao = id;
@@ -927,7 +925,7 @@ window.abrirModalDescricao = function(id = null) {
 
 window.abrirModalModeloVinculo = function(id = null) {
   appState.idMatrizEmEdicao = id;
-  let eqVal = "", modVal = "", fabVal = "";
+  let eqVal = "", modVal = "", fabVal = "", anvVal = "";
   
   if(id) {
     const registro = appState.matrizAtivos.find(x => String(x.ID_REGISTRO || x.id_registro) === String(id));
@@ -935,10 +933,10 @@ window.abrirModalModeloVinculo = function(id = null) {
       eqVal = registro.EQUIPAMENTO || registro.equipamento || "";
       modVal = registro.MODELO || registro.modelo || "";
       fabVal = registro.FABRICANTE || registro.fabricante || "";
+      anvVal = registro.ANVISA || registro.anvisa || "";
     }
   }
 
-  // Pega as descrições únicas cadastradas para o Dropdown
   const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => item.EQUIPAMENTO || item.equipamento))].filter(Boolean).sort();
   let options = '<option value="">Selecione a Descrição vinculada...</option>';
   descricoesUnicas.forEach(d => {
@@ -960,9 +958,13 @@ window.abrirModalModeloVinculo = function(id = null) {
           <label>Modelo Oficial de Fábrica *</label>
           <input type="text" id="modalInputModelo" class="input-padrao" value="${modVal}" placeholder="Ex: Smart Pump V5">
         </div>
-        <div class="form-grupo">
+        <div class="form-grupo" style="margin-bottom:12px;">
           <label>Fabricante Regulamentado *</label>
           <input type="text" id="modalInputFab" class="input-padrao" value="${fabVal}" placeholder="Ex: Samtronic">
+        </div>
+        <div class="form-grupo">
+          <label>Código ANVISA (Opcional)</label>
+          <input type="text" id="modalInputAnvisa" class="input-padrao" value="${anvVal}" placeholder="Ex: 80123456789">
         </div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
           <button onclick="fecharModal()" class="btn-secondary">Cancelar</button>
@@ -992,6 +994,7 @@ window.salvarModalDescricao = function() {
     EQUIPAMENTO: equip,
     MODELO: '',
     FABRICANTE: '',
+    ANVISA: '',
     STATUS: 'ATIVO'
   };
   
@@ -1003,14 +1006,16 @@ window.salvarModalVinculo = function() {
   const equip = document.getElementById('modalSelectEquip').value;
   const modelo = document.getElementById('modalInputModelo').value.trim();
   const fab = document.getElementById('modalInputFab').value.trim();
+  const anvisa = document.getElementById('modalInputAnvisa').value.trim();
   
-  if(!equip || !modelo || !fab) return alert('Todos os campos são obrigatórios para a homologação!');
+  if(!equip || !modelo || !fab) return alert('Os campos com asterisco (*) são obrigatórios!');
   
   const d = {
     ID_REGISTRO: appState.idMatrizEmEdicao || 'mat_' + Date.now(),
     EQUIPAMENTO: equip,
     MODELO: modelo,
     FABRICANTE: fab,
+    ANVISA: anvisa,
     STATUS: 'ATIVO'
   };
   
@@ -1035,7 +1040,7 @@ window.desenharTabelaMatrizAtivos = function() {
   tbody.innerHTML = '';
   
   if(!appState.matrizAtivos || appState.matrizAtivos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">Nenhum item localizado na aba MATRIZ_ATIVOS.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">Nenhum item localizado na aba MATRIZ_ATIVOS.</td></tr>`;
     return;
   }
   
@@ -1045,6 +1050,7 @@ window.desenharTabelaMatrizAtivos = function() {
     const eq = item.EQUIPAMENTO || item.equipamento || '';
     const mo = item.MODELO || item.modelo || '-';
     const fa = item.FABRICANTE || item.fabricante || '-';
+    const an = item.ANVISA || item.anvisa || '-';
     const st = (item.STATUS || item.status || 'ATIVO').toUpperCase();
     
     const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
@@ -1055,6 +1061,7 @@ window.desenharTabelaMatrizAtivos = function() {
       <td><b>${eq}</b></td>
       <td>${mo}</td>
       <td>${fa}</td>
+      <td><span style="color:#475569; font-family:monospace;">${an}</span></td>
       <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
       <td style="text-align:center;">
         <button class="btn-primary" style="padding:4px 8px; font-size:11px;" onclick="prepararEdicaoMatriz('${id}', '${mo === '-'}')">📝 Alterar</button>
@@ -1083,6 +1090,7 @@ window.alternarStatusMatriz = function(id) {
     EQUIPAMENTO: item.EQUIPAMENTO || item.equipamento,
     MODELO: item.MODELO || item.modelo || '',
     FABRICANTE: item.FABRICANTE || item.fabricante || '',
+    ANVISA: item.ANVISA || item.anvisa || '',
     STATUS: novoStatus
   };
   
