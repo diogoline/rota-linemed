@@ -61,6 +61,14 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .dash-card-num .num { font-size: 32px; font-weight: 900; color: #0f172a; margin-top: 5px; }
 .bar-progresso-container { background: #e2e8f0; border-radius: 6px; width: 100%; height: 10px; margin-top: 8px; overflow: hidden; }
 .bar-progresso-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; }
+
+/* ESTILOS DOS POPUPS MODAIS */
+.modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+.modal-box { background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 500px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+.modal-header h3 { font-size: 18px; font-weight: bold; }
+.modal-close { background: none; font-size: 20px; color: #64748b; padding: 0; }
+.modal-close:hover { color: var(--cor-perigo); transform: none; }
 </style>
 </head>
 <body>
@@ -101,6 +109,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
   </div>
 </div>
 
+<div id="modalContainer" class="hidden"></div>
 <datalist id="datalistClientesGlobal"></datalist>
 
 <script>
@@ -123,14 +132,9 @@ const appState = {
   buscaTextoUsuario: '',
   buscaTextoPatrimonio: '',
   
-  matrizAtivosHomologados: [
-    { equipamento: 'Bomba de Infusão', modelo: 'Smart Pump V5', fabricante: 'Samtronic' },
-    { equipamento: 'Bomba de Infusão', modelo: 'LF Smart 2000', fabricante: 'Lifemed' },
-    { equipamento: 'Autoclave', modelo: 'HS60101', fabricante: 'Getinge' },
-    { equipamento: 'Autoclave', modelo: 'Sterivap 60', fabricante: 'BMT Medical' },
-    { equipamento: 'Câmara de Vacina', modelo: 'Refrigerada Pro v1', fabricante: 'Fanem' },
-    { equipamento: 'Câmara de Vacina', modelo: 'Biomedical 300L', fabricante: 'Panasonic' }
-  ]
+  // Banco de dados dinâmico alimentado via aba MATRIZ_ATIVOS da planilha
+  matrizAtivos: [],
+  idMatrizEmEdicao: null
 };
 
 sincronizarDadosPlanilha();
@@ -205,6 +209,7 @@ window.processarRetornoSincronizacao = function(res) {
     appState.movimentacoes = res.movimentacoes || [];
     appState.usuarios = res.usuarios || [];
     appState.veiculos = res.veiculos || []; 
+    appState.matrizAtivos = res.matrizAtivos || [];
     
     localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
     
@@ -220,6 +225,7 @@ window.processarRetornoSincronizacao = function(res) {
     if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
     if (document.getElementById('movTagInput')) atualizarDatalistTags();
     if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
+    if (document.getElementById('tbodyMatrizAtivosParam')) desenharTabelaMatrizAtivos();
   }
 };
 
@@ -314,7 +320,7 @@ function renderizarTelaDashboards(container) {
         <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-sucesso);">
           <h4>📦 Ativos em Clientes (Locados)</h4>
           <div class="num" style="color: var(--cor-sucesso);">${patLocados}</div>
-          <small style="color:#64748b; margin-top:5px;">Equipamentos em operação externa</small>
+          <small style="color:#64748b; margin-top:5px;">Equipamentos em operation externa</small>
         </div>
 
         <div class="card-padrao dash-card-num" style="border-left-color: #f59e0b;">
@@ -497,6 +503,16 @@ function verificarDocumentoEReceita() {
   }
 }
 
+function aplicarMascaraDocumento() {
+  let v = this.value.replace(/\D/g, '');
+  if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
+    v = v.substring(0, 14); v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+  } else {
+    v = v.substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+  }
+  this.value = v;
+}
+
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
   if (!appState.clientes || appState.clientes.length === 0) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente cadastrado...</td></tr>`; return; }
@@ -532,10 +548,11 @@ function enviarClientePlanilha() {
 }
 
 // =========================================================================
-// INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL (VÍNCULOS EM CASCATA)
+// INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL (FILTRADO ANTI-REPETIÇÃO)
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
-  const tiposUnicos = [...new Set(appState.matrizAtivosHomologados.map(item => item.equipamento))].sort();
+  // Pega todas as descrições ativas do Sheets e remove duplicidades em tempo real
+  const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').map(item => item.EQUIPAMENTO || item.equipamento))].filter(Boolean).sort();
   let optEquip = '<option value="">Selecione o Tipo de Equipamento...</option>';
   tiposUnicos.forEach(t => optEquip += `<option value="${t}">${t}</option>`);
 
@@ -593,15 +610,22 @@ function renderizarTelaPatrimonio(container) {
     const equipSel = this.value; const selectModelo = document.getElementById('formEquipModelo'); const inputFabricante = document.getElementById('formEquipFabricante');
     selectModelo.innerHTML = '<option value="">Selecione o Modelo...</option>'; inputFabricante.value = '';
     if(!equipSel) { selectModelo.disabled = true; return; }
-    appState.matrizAtivosHomologados.filter(item => item.equipamento === equipSel).forEach(item => { selectModelo.innerHTML += `<option value="${item.modelo}">${item.modelo}</option>`; });
+    
+    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.equipamento) === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
+      const m = item.MODELO || item.modelo;
+      if (m && m.trim() !== '') selectModelo.innerHTML += `<option value="${m}">${m}</option>`; 
+    });
     selectModelo.disabled = false;
   });
 
   document.getElementById('formEquipModelo').addEventListener('change', function() {
     const modSel = this.value; const equipSel = document.getElementById('formEquipNome').value; const inputFabricante = document.getElementById('formEquipFabricante');
     if(!modSel) { inputFabricante.value = ''; return; }
-    const corr = appState.matrizAtivosHomologados.find(item => item.equipamento === equipSel && item.modelo === modSel);
-    if(corr) inputFabricante.value = corr.fabricante.toUpperCase();
+    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.equipamento) === equipSel && (item.MODELO || item.modelo) === modSel);
+    if(corr) {
+      const f = corr.FABRICANTE || corr.fabricante;
+      inputFabricante.value = f ? f.toUpperCase() : '';
+    }
   });
 
   atualizarTabelaPatrimonioLocal();
@@ -690,12 +714,12 @@ function processarMovimentacaoLocacao() {
   const tipo = document.getElementById('movTipo').value; const tag = document.getElementById('movTagInput').value.trim().toUpperCase(); const cli = document.getElementById('movCliente').value;
   if(!tag || !cli) return alert('Preencha os campos!');
   const p = appState.patrimonio.find(x => x.tag.toUpperCase() === tag); if(!p) return alert('Não encontrado!');
-  const pacote = { tag: tag, equipamento: p.equipamento, origen: tipo === 'ENVIO' ? 'Sede Central' : cli, destino: tipo === 'ENVIO' ? cli : 'Sede Central', tipo: tipo, responsavel: appState.usuarioLogado?.nome || 'Sistema', observacao: document.getElementById('movObs').value };
+  const pacote = { tag: tag, equipamento: p.equipamento, origens: tipo === 'ENVIO' ? 'Sede Central' : cli, destino: tipo === 'ENVIO' ? cli : 'Sede Central', tipo: tipo, responsavel: appState.usuarioLogado?.nome || 'Sistema', observacao: document.getElementById('movObs').value };
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Sucesso!'); sincronizarDadosPlanilha(); });
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (RESTAURADO E SEGURO)
+// INTERFACE: MÓDULO GESTÃO (COLABORADORES TOTALMENTE BLINDADOS)
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -828,20 +852,35 @@ function abrirSubMóduloGestao(aba) {
 
   } else if (aba === 'itens_inventario') {
     document.getElementById('tabItensInventario').classList.add('active');
+    
+    // NOVA INTERFACE CENTRALIZADA COM POP-UPS MODAIS
     subContainer.innerHTML = `
-      <div class="card-padrao">
-        <h3 style="color:var(--cor-primaria); margin-bottom:15px;">📋 Homologação e Vínculo de Ativos</h3>
-        <div class="form-grid">
-          <div class="form-grupo"><label>Tipo de Equipamento *</label><input type="text" id="inputMatrizEquip" class="input-padrao" placeholder="Ex: Bomba de Infusão"></div>
-          <div class="form-grupo"><label>Modelo Oficial de Fábrica *</label><input type="text" id="inputMatrizModelo" class="input-padrao" placeholder="Ex: Smart Pump V5"></div>
-          <div class="form-grupo"><label>Fabricante Regulamentado *</label><input type="text" id="inputMatrizFab" class="input-padrao" placeholder="Ex: Samtronic"></div>
-        </div>
-        <div style="display:flex; justify-content:flex-end; margin-top:15px;"><button onclick="salvarVinculoMatrizAtivos()" class="btn-success">➕ Homologar Combinação Comercial</button></div>
+      <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <button onclick="abrirModalDescricao()" class="btn-success" style="font-size: 13px;">➕ Cadastrar Descrição Geral</button>
+        <button onclick="abrirModalModeloVinculo()" class="btn-primary" style="font-size: 13px;">➕ Homologar Modelo/Fabricante</button>
+        <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="font-size: 12px; margin-left: auto;">🔄 Sincronizar</button>
       </div>
+      
       <div class="card-padrao">
-        <h3>Matriz de Modelos e Fabricantes Ativos</h3>
-        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO / DESCRIÇÃO</th><th>MODELO HOMOLOGADO</th><th>FABRICANTE OFICIAL</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div>
+        <h3 style="color: var(--cor-secundaria); margin-bottom: 15px;">Matriz de Modelos e Termos Homologados</h3>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr>
+                <th>EQUIPAMENTO / DESCRIÇÃO</th>
+                <th>MODELO DE FÁBRICA</th>
+                <th>FABRICANTE OFICIAL</th>
+                <th>STATUS OPERACIONAL</th>
+                <th style="text-align: center;">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyMatrizAtivosParam">
+              <tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">Carregando matriz da planilha...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>`;
+      
       desenharTabelaMatrizAtivos();
 
   } else {
@@ -851,21 +890,203 @@ function abrirSubMóduloGestao(aba) {
   }
 }
 
+// =========================================================================
+// ENGENHARIA DE POPUPS E LÓGICA DE NEGÓCIO DA MATRIZ_ATIVOS
+// =========================================================================
+window.abrirModalDescricao = function(id = null) {
+  appState.idMatrizEmEdicao = id;
+  let valorExistente = "";
+  if(id) {
+    const registro = appState.matrizAtivos.find(x => String(x.ID_REGISTRO || x.id_registro) === String(id));
+    if(registro) valorExistente = registro.EQUIPAMENTO || registro.equipamento || "";
+  }
+
+  const html = `
+    <div class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>${id ? '📝 Alterar Termo Mestre' : '🏥 Nova Descrição do Equipamento'}</h3>
+          <button onclick="fecharModal()" class="modal-close">✕</button>
+        </div>
+        <div class="form-grupo">
+          <label>Nome / Descrição Geral *</label>
+          <input type="text" id="modalInputEquip" class="input-padrao" value="${valorExistente}" placeholder="Ex: Ventilador Pulmonar">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <button onclick="fecharModal()" class="btn-secondary">Cancelar</button>
+          <button onclick="salvarModalDescricao()" class="btn-success">💾 Salvar Termo</button>
+        </div>
+      </div>
+    </div>`;
+  
+  const container = document.getElementById('modalContainer');
+  container.innerHTML = html;
+  container.classList.remove('hidden');
+  document.getElementById('modalInputEquip').focus();
+};
+
+window.abrirModalModeloVinculo = function(id = null) {
+  appState.idMatrizEmEdicao = id;
+  let eqVal = "", modVal = "", fabVal = "";
+  
+  if(id) {
+    const registro = appState.matrizAtivos.find(x => String(x.ID_REGISTRO || x.id_registro) === String(id));
+    if(registro) {
+      eqVal = registro.EQUIPAMENTO || registro.equipamento || "";
+      modVal = registro.MODELO || registro.modelo || "";
+      fabVal = registro.FABRICANTE || registro.fabricante || "";
+    }
+  }
+
+  // Pega as descrições únicas cadastradas para o Dropdown
+  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => item.EQUIPAMENTO || item.equipamento))].filter(Boolean).sort();
+  let options = '<option value="">Selecione a Descrição vinculada...</option>';
+  descricoesUnicas.forEach(d => {
+    options += `<option value="${d}" ${d === eqVal ? 'selected' : ''}>${d}</option>`;
+  });
+
+  const html = `
+    <div class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>${id ? '📝 Alterar Combinação Comercial' : '📐 Homologar Modelo/Fabricante'}</h3>
+          <button onclick="fecharModal()" class="modal-close">✕</button>
+        </div>
+        <div class="form-grupo" style="margin-bottom:12px;">
+          <label>Descrição Master Vinculada *</label>
+          <select id="modalSelectEquip" class="select-padrao">${options}</select>
+        </div>
+        <div class="form-grupo" style="margin-bottom:12px;">
+          <label>Modelo Oficial de Fábrica *</label>
+          <input type="text" id="modalInputModelo" class="input-padrao" value="${modVal}" placeholder="Ex: Smart Pump V5">
+        </div>
+        <div class="form-grupo">
+          <label>Fabricante Regulamentado *</label>
+          <input type="text" id="modalInputFab" class="input-padrao" value="${fabVal}" placeholder="Ex: Samtronic">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <button onclick="fecharModal()" class="btn-secondary">Cancelar</button>
+          <button onclick="salvarModalVinculo()" class="btn-primary">💾 Salvar Vínculo</button>
+        </div>
+      </div>
+    </div>`;
+    
+  const container = document.getElementById('modalContainer');
+  container.innerHTML = html;
+  container.classList.remove('hidden');
+};
+
+window.fecharModal = function() {
+  const container = document.getElementById('modalContainer');
+  container.innerHTML = '';
+  container.classList.add('hidden');
+  appState.idMatrizEmEdicao = null;
+};
+
+window.salvarModalDescricao = function() {
+  const equip = document.getElementById('modalInputEquip').value.trim();
+  if(!equip) return alert('Por favor, insira o nome da descrição!');
+  
+  const d = {
+    ID_REGISTRO: appState.idMatrizEmEdicao || 'mat_' + Date.now(),
+    EQUIPAMENTO: equip,
+    MODELO: '',
+    FABRICANTE: '',
+    STATUS: 'ATIVO'
+  };
+  
+  executarEnvioMatriz(d);
+};
+
+window.fecharModalProcesso = function() { fecharModal(); sincronizarDadosPlanilha(); };
+window.salvarModalVinculo = function() {
+  const equip = document.getElementById('modalSelectEquip').value;
+  const modelo = document.getElementById('modalInputModelo').value.trim();
+  const fab = document.getElementById('modalInputFab').value.trim();
+  
+  if(!equip || !modelo || !fab) return alert('Todos os campos são obrigatórios para a homologação!');
+  
+  const d = {
+    ID_REGISTRO: appState.idMatrizEmEdicao || 'mat_' + Date.now(),
+    EQUIPAMENTO: equip,
+    MODELO: modelo,
+    FABRICANTE: fab,
+    STATUS: 'ATIVO'
+  };
+  
+  executarEnvioMatriz(d);
+};
+
+function executarEnvioMatriz(pacote) {
+  const acao = appState.idMatrizEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(pacote))}&prefix=fecharModalProcesso`;
+  
+  const scriptAntigo = document.getElementById('jsonp_matriz_script');
+  if(scriptAntigo) scriptAntigo.remove();
+  
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_matriz_script';
+  scriptElement.src = urlFinal;
+  document.body.appendChild(scriptElement);
+}
+
 window.desenharTabelaMatrizAtivos = function() {
-  const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return; tbody.innerHTML = '';
-  appState.matrizAtivosHomologados.sort((a,b) => a.equipamento.localeCompare(b.equipamento));
-  appState.matrizAtivosHomologados.forEach(item => {
-    tbody.innerHTML += `<tr><td><b>${item.equipamento}</b></td><td>${item.modelo}</td><td><span style="padding:4px 8px; background:#f1f5f9; border-radius:6px; font-weight:bold; color:var(--cor-secundaria);">${item.fabricante}</span></td></tr>`;
+  const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return;
+  tbody.innerHTML = '';
+  
+  if(!appState.matrizAtivos || appState.matrizAtivos.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">Nenhum item localizado na aba MATRIZ_ATIVOS.</td></tr>`;
+    return;
+  }
+  
+  appState.matrizAtivos.sort((a,b) => (a.EQUIPAMENTO || a.equipamento || '').localeCompare(b.EQUIPAMENTO || b.equipamento || ''));
+  appState.matrizAtivos.forEach(item => {
+    const id = item.ID_REGISTRO || item.id_registro;
+    const eq = item.EQUIPAMENTO || item.equipamento || '';
+    const mo = item.MODELO || item.modelo || '-';
+    const fa = item.FABRICANTE || item.fabricante || '-';
+    const st = (item.STATUS || item.status || 'ATIVO').toUpperCase();
+    
+    const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
+    const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
+    
+    let tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${eq}</b></td>
+      <td>${mo}</td>
+      <td>${fa}</td>
+      <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
+      <td style="text-align:center;">
+        <button class="btn-primary" style="padding:4px 8px; font-size:11px;" onclick="prepararEdicaoMatriz('${id}', '${mo === '-'}')">📝 Alterar</button>
+        <button class="${st === 'ATIVO' ? 'btn-danger' : 'btn-success'}" style="padding:4px 8px; font-size:11px; margin-left:4px;" onclick="alternarStatusMatriz('${id}')">
+          ${st === 'ATIVO' ? '🚫 Inativar' : '⚡ Ativar'}
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
   });
 };
 
-window.salvarVinculoMatrizAtivos = function() {
-  const equip = document.getElementById('inputMatrizEquip').value.trim(); const modelo = document.getElementById('inputMatrizModelo').value.trim(); const fab = document.getElementById('inputMatrizFab').value.trim();
-  if(!equip || !modelo || !fab) return alert('Preencha os campos!');
-  if(appState.matrizAtivosHomologados.find(x => x.equipamento.toUpperCase() === equip.toUpperCase() && x.modelo.toUpperCase() === modelo.toUpperCase())) return alert('Já cadastrado!');
-  appState.matrizAtivosHomologados.push({ equipamento: equip, modelo: modelo, fabricante: fab });
-  document.getElementById('inputMatrizEquip').value = ''; document.getElementById('inputMatrizModelo').value = ''; document.getElementById('inputMatrizFab').value = '';
-  desenharTabelaMatrizAtivos();
+window.prepararEdicaoMatriz = function(id, isApenasDescricao) {
+  if(isApenasDescricao === true || isApenasDescricao === 'true') abrirModalIDescricao(id);
+  else abrirModalModeloVinculo(id);
+};
+
+window.alternarStatusMatriz = function(id) {
+  const item = appState.matrizAtivos.find(x => String(x.ID_REGISTRO || x.id_registro) === String(id));
+  if(!item) return;
+  
+  const novoStatus = (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+  if(!confirm(`Deseja realmente alterar o status deste termo para ${novoStatus}?`)) return;
+  
+  const d = {
+    ID_REGISTRO: id,
+    EQUIPAMENTO: item.EQUIPAMENTO || item.equipamento,
+    MODELO: item.MODELO || item.modelo || '',
+    FABRICANTE: item.FABRICANTE || item.fabricante || '',
+    STATUS: novoStatus
+  };
+  
+  executarEnvioMatriz(d);
 };
 
 function aplicarMascaraCepUsuario() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
@@ -908,7 +1129,7 @@ function atualizarTabelaUsuariosLocal() {
   });
 }
 
-function prepararEdicaoUsuarioPeloId(id) {
+function幕prepararEdicaoUsuarioPeloId(id) {
   const u = appState.usuarios.find(user => String(user.id) === String(id)); if (!u) return alert('Não encontrado.');
   appState.idUsuarioEmEdicao = u.id;
   document.getElementById('formUserNome').value = u.nome || '';
@@ -942,7 +1163,7 @@ function enviarUsuarioPlanilha() {
   if (!nome || !login || !senha) return alert('Campos obrigatórios!');
   const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value, telefone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value, numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value, cidade: document.getElementById('formUserCidade').value, uf: document.getElementById('formUserUf').value, admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value };
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
-  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
   const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
