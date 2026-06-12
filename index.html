@@ -140,6 +140,7 @@ const appState = {
   buscaTextoCliente: '',
   buscaTextoUsuario: '',
   buscaTextoPatrimonio: '',
+  buscaTextoMatrizParam: '', // Novo filtro do painel de itens homologados
   
   matrizAtivos: [],
   idMatrizEmEdicao: null
@@ -861,10 +862,16 @@ function abrirSubMóduloGestao(aba) {
     document.getElementById('tabItensInventario').classList.add('active');
     
     subContainer.innerHTML = `
-      <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <button onclick="abrirModalDescricao()" class="btn-success" style="font-size: 13px;">➕ CADASTRAR DESCRIÇÃO GERAL</button>
-        <button onclick="abrirModalModeloVinculo()" class="btn-primary" style="font-size: 13px;">➕ HOMOLOGAR MODELO/FABRICANTE</button>
-        <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="font-size: 12px; margin-left: auto;">🔄 SINCRONIZAR</button>
+      <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: space-between;">
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <button onclick="abrirModalDescricao()" class="btn-success" style="font-size: 13px;">➕ CADASTRAR DESCRIÇÃO GERAL</button>
+          <button onclick="abrirModalModeloVinculo()" class="btn-primary" style="font-size: 13px;">➕ HOMOLOGAR MODELO/FABRICANTE</button>
+          <button id="btnSincronizarMatrizDireto" class="btn-secondary" style="font-size: 12px;">🔄 SINCRONIZAR</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <label style="font-size: 12px; font-weight: bold; color: #475569;">PESQUISAR ITEM:</label>
+          <input type="text" id="inputBuscaMatrizParam" class="input-padrao" placeholder="NOME, MODELO, MARCA OU ANVISA..." style="width: 280px; padding: 6px 10px;">
+        </div>
       </div>
       
       <div class="card-padrao">
@@ -887,6 +894,18 @@ function abrirSubMóduloGestao(aba) {
           </table>
         </div>
       </div>`;
+      
+      document.getElementById('inputBuscaMatrizParam').value = appState.buscaTextoMatrizParam;
+      document.getElementById('inputBuscaMatrizParam').addEventListener('input', function() {
+        appState.buscaTextoMatrizParam = this.value.trim().toUpperCase();
+        desenharTabelaMatrizAtivos();
+      });
+
+      document.getElementById('btnSincronizarMatrizDireto').addEventListener('click', function() {
+        const tbody = document.getElementById('tbodyMatrizAtivosParam');
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">ATUALIZANDO MATRIZ COM GOOGLE SHEETS...</td></tr>`;
+        sincronizarDadosPlanilha();
+      });
       
       desenharTabelaMatrizAtivos();
 
@@ -1114,7 +1133,6 @@ window.alternarStatusMatriz = function(id) {
     STATUS: novoStatus
   };
   
-  // Forçamos o ID em edição para garantir que a rota seja de atualização na planilha
   appState.idMatrizEmEdicao = id;
   executarEnvioMatriz(d, 'editarCadastro');
 };
@@ -1141,8 +1159,28 @@ window.desenharTabelaMatrizAtivos = function() {
     return;
   }
   
-  appState.matrizAtivos.sort((a,b) => (a.EQUIPAMENTO || a.equipamento || '').localeCompare(b.EQUIPAMENTO || b.equipamento || ''));
-  appState.matrizAtivos.forEach(item => {
+  // FILTRAGEM DINÂMICA DA MATRIZ POR BARRA DE PESQUISA
+  const filtrados = appState.matrizAtivos.filter(item => {
+    if (appState.buscaTextoMatrizParam === '') return true;
+    
+    const eq = (item.EQUIPAMENTO || item.equipamento || '').toUpperCase();
+    const mo = (item.MODELO || item.modelo || '').toUpperCase();
+    const fa = (item.FABRICANTE || item.fabricante || '').toUpperCase();
+    const an = (item.ANVISA || item.anvisa || '').toUpperCase();
+    
+    return eq.includes(appState.buscaTextoMatrizParam) || 
+           mo.includes(appState.buscaTextoMatrizParam) || 
+           fa.includes(appState.buscaTextoMatrizParam) || 
+           an.includes(appState.buscaTextoMatrizParam);
+  });
+  
+  if (filtrados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">NENHUM TERMO HOMOLOGADO CORRESPONDE À BUSCA.</td></tr>`;
+    return;
+  }
+
+  filtrados.sort((a,b) => (a.EQUIPAMENTO || a.equipamento || '').localeCompare(b.EQUIPAMENTO || b.equipamento || ''));
+  filtrados.forEach(item => {
     const id = item.ID_REGISTRO || item.id_registro;
     const eq = (item.EQUIPAMENTO || item.equipamento || '').toUpperCase();
     const mo = (item.MODELO || item.modelo || '-').toUpperCase();
