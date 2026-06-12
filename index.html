@@ -7,14 +7,18 @@
 <style>
 :root {
   --cor-primaria: #2563eb;
+  --cor-primaria-hover: #3b82f6;
   --cor-secundaria: #334155;
   --cor-sucesso: #16a34a;
   --cor-perigo: #dc2626;
   --borda: #cbd5e1;
+  --bg-sidebar: #0f172a;
+  --bg-sidebar-hover: rgba(255, 255, 255, 0.06);
 }
+
 /* CAIXA ALTA EM TODO O SISTEMA, EXCEÇÃO APENAS PARA CAMPOS DE SENHA E E-MAIL */
 * { 
-  margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; 
+  margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; 
   text-transform: uppercase; 
 }
 body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
@@ -33,16 +37,91 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .btn-secondary { background: var(--cor-secundaria); color: white; }
 
 .card-padrao { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; margin-bottom: 25px; }
-.sidebar { width: 240px; background: linear-gradient(180deg, #0f172a, #111827); color: #fff; position: fixed; top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; }
-.menu-items { flex-grow: 1; }
-.logo { font-size: 34px; font-weight: bold; color: #60a5fa; cursor: pointer; margin-bottom: 8px; }
-.sidebar small { color: #94a3b8; display: block; margin-bottom: 28px; }
-.sidebar button { width: 100%; border: none; background: linear-gradient(180deg, #1e293b, #111827); color: #fff; padding: 12px 14px; border-radius: 10px; text-align: left; margin-bottom: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all .2s ease; }
-.sidebar button:hover { background: #2563eb; transform: translateX(4px); }
-.sidebar button.btn-logout { background: #1e293b; border: 1px solid rgba(220, 38, 38, 0.2); margin-top: auto; }
-.sidebar button.btn-logout:hover { background: #dc2626; border-color: #dc2626; }
 
-.main { margin-left: 240px; width: calc(100% - 240px); display: flex; flex-direction: column; min-height: 100vh; }
+/* =========================================================================
+   NOVA ARQUITETURA DE DESIGN DA SIDEBAR (MODERNA & SEM QUEBRAS DE LINHA)
+   ========================================================================= */
+.sidebar { 
+  width: 270px; 
+  background: var(--bg-sidebar); 
+  color: #fff; 
+  position: fixed; 
+  top: 0; left: 0; bottom: 0; 
+  padding: 24px 16px; 
+  display: flex; 
+  flex-direction: column; 
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+.logo-container {
+  padding: 0 8px;
+  margin-bottom: 24px;
+}
+.logo { font-size: 26px; font-weight: 800; color: #3b82f6; cursor: pointer; letter-spacing: 1px; }
+.sidebar small { color: #64748b; display: block; margin-top: 4px; font-size: 11px; font-weight: 700; }
+
+.menu-items { 
+  flex-grow: 1; 
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* BOTÕES ESTILIZADOS DO MENU */
+.sidebar button { 
+  width: 100%; 
+  border: none; 
+  background: transparent; 
+  color: #94a3b8; 
+  padding: 12px 14px; 
+  border-radius: 8px; 
+  text-align: left; 
+  cursor: pointer; 
+  font-weight: 600; 
+  font-size: 12px; 
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all .2s ease-in-out; 
+  white-space: nowrap;
+}
+.sidebar button svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  transition: fill .2s ease;
+}
+.sidebar button:hover { 
+  background: var(--bg-sidebar-hover); 
+  color: #fff;
+}
+/* MARCAÇÃO VISUAL DA TELA EM EXIBIÇÃO */
+.sidebar button.active-menu {
+  background: rgba(37, 99, 235, 0.15);
+  color: #3b82f6;
+  font-weight: 700;
+  border-left: 4px solid #2563eb;
+  border-radius: 4px 8px 8px 4px;
+  padding-left: 10px;
+}
+
+/* BOTÃO DE SAÍDA REFINADO */
+.sidebar button.btn-logout { 
+  background: transparent; 
+  border: 1px solid rgba(220, 38, 38, 0.3); 
+  color: #f87171;
+  margin-top: auto; 
+  justify-content: center;
+  font-weight: 700;
+}
+.sidebar button.btn-logout:hover { 
+  background: var(--cor-perigo); 
+  color: #fff;
+  border-color: var(--cor-perigo);
+}
+
+/* AJUSTE DO MAIN DEVIDO À NOVA LARGURA DA SIDEBAR */
+.main { margin-left: 270px; width: calc(100% - 270px); display: flex; flex-direction: column; min-height: 100vh; }
 .topbar { background: #fff; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
 .topbar h1 { color: #1565C0; font-size: 34px; }
 .topbar p { color: #64748b; margin-top: 4px; }
@@ -95,18 +174,44 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
   <div class="sidebar">
-    <div class="logo" id="logoInicio">⚡ ORIZON</div>
-    <small>PAINEL DE OPERAÇÕES</small>
-    <div class="menu-items">
-      <button id="btnMenuRotas">📍 ROTAS DIÁRIAS</button>
-      <button id="btnMenuClientes">🏥 CLIENTES / UNIDADES</button>
-      <button id="btnMenuChamados">🛠 CHAMADOS DE MAINT</button>
-      <button id="btnMenuLocacao">🤝 LOCAÇÃO DE EQUIPAMENTOS</button>
-      <button id="btnMenuPatrimonio">📦 PATRIMÔNIO (INVENTÁRIO)</button>
-      <button id="btnMenuDashboards">📊 DASHBOARDS</button>
-      <button id="btnMenuGestao">⚙️ GESTÃO</button>
+    <div class="logo-container">
+      <div class="logo" id="logoInicio">ORIZON</div>
+      <small>INTELLIGENT SYSTEM</small>
     </div>
-    <button id="btnSidebarLogout" class="btn-logout">🚪 SAIR DO SISTEMA</button>
+    <div class="menu-items">
+      <button id="btnMenuRotas">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13cc0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        ROTAS DIÁRIAS
+      </button>
+      <button id="btnMenuClientes">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg>
+        CLIENTES / UNIDADES
+      </button>
+      <button id="btnMenuChamados">
+        <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-15.7c-.5-.8-1.4-1.3-2.4-1.3s-1.9.5-2.4 1.3L1.3 19c-.5.8-.5 1.8 0 2.6.4.8 1.3 1.3 2.3 1.3h18.2c1 0 1.9-.5 2.3-1.3.5-.8.5-1.8 0-2.6zm-11.2-8.5c0-.6.4-1 1-1s1 .4 1 1v4c0 .6-.4 1-1 1s-1-.4-1-1v-4zm1 9.3c-.7 0-1.3-.6-1.3-1.3 0-.7.6-1.3 1.3-1.3.7 0 1.3.6 1.3 1.3 0 .7-.6 1.3-1.3 1.3z"/></svg>
+        CHAMADOS DE MAINT
+      </button>
+      <button id="btnMenuLocacao">
+        <svg viewBox="0 0 24 24"><path d="M18 1h-8C8.9 1 8 1.9 8 3v3h2V5h8v14h-8v-1h-2v3c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zM6.71 15.29l1.42 1.42L13.42 12l-5.3-5.3-1.42 1.42L9.59 11H1v2h8.59l-2.88 2.29z"/></svg>
+        LOCAÇÃO DE ATIVOS
+      </button>
+      <button id="btnMenuPatrimonio">
+        <svg viewBox="0 0 24 24"><path d="M22 6.18L12 2 2 6.18V12c0 5.52 4.48 10 10 10s10-4.48 10-10V6.18zm-10 13.8c-4.41 0-8-3.59-8-8V7.58l8-3.35 8 3.35v4.41c0 4.41-3.59 8-8 8z"/></svg>
+        PATRIMÔNIO (INVENTÁRIO)
+      </button>
+      <button id="btnMenuDashboards">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+        DASHBOARDS
+      </button>
+      <button id="btnMenuGestao">
+        <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46.21 14.25 0 14 0h-4c-.25 0-.46.21-.49.46l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.25.24.46.49.46h4c.25 0 .46-.21.49-.46l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+        GESTÃO DO SISTEMA
+      </button>
+    </div>
+    <button id="btnSidebarLogout" class="btn-logout">
+      <svg viewBox="0 0 24 24" style="width:16px; height:16px;"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+      SAIR DO SISTEMA
+    </button>
   </div>
 
   <div class="main">
@@ -140,7 +245,7 @@ const appState = {
   buscaTextoCliente: '',
   buscaTextoUsuario: '',
   buscaTextoPatrimonio: '',
-  buscaTextoMatrizParam: '', // Novo filtro do painel de itens homologados
+  buscaTextoMatrizParam: '', 
   
   matrizAtivos: [],
   idMatrizEmEdicao: null
@@ -149,16 +254,25 @@ const appState = {
 sincronizarDadosPlanilha();
 verificarSessaoAtiva();
 
+// GERENCIADOR DE ESTADO VISUAL DO MENU ACTIVE
+function marcarAbaAtivaMenu(idBotao) {
+  const botoes = document.querySelectorAll('.sidebar button');
+  botoes.forEach(b => b.classList.remove('active-menu'));
+  const btnAlvo = document.getElementById(idBotao);
+  if (btnAlvo) btnAlvo.classList.add('active-menu');
+}
+
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
-document.getElementById('btnMenuRotas').addEventListener('click', () => abrirTela('rotas'));
-document.getElementById('btnMenuClientes').addEventListener('click', () => abrirTela('clientes'));
-document.getElementById('btnMenuChamados').addEventListener('click', () => abrirTela('chamados'));
-document.getElementById('btnMenuLocacao').addEventListener('click', () => abrirTela('locacao'));
-document.getElementById('btnMenuPatrimonio').addEventListener('click', () => abrirTela('patrimonio'));
-document.getElementById('btnMenuDashboards').addEventListener('click', () => abrirTela('dashboards'));
-document.getElementById('btnMenuGestao').addEventListener('click', () => abrirTela('gestao'));
+
+document.getElementById('btnMenuRotas').addEventListener('click', () => { abrirTela('rotas'); marcarAbaAtivaMenu('btnMenuRotas'); });
+document.getElementById('btnMenuClientes').addEventListener('click', () => { abrirTela('clientes'); marcarAbaAtivaMenu('btnMenuClientes'); });
+document.getElementById('btnMenuChamados').addEventListener('click', () => { abrirTela('chamados'); marcarAbaAtivaMenu('btnMenuChamados'); });
+document.getElementById('btnMenuLocacao').addEventListener('click', () => { abrirTela('locacao'); marcarAbaAtivaMenu('btnMenuLocacao'); });
+document.getElementById('btnMenuPatrimonio').addEventListener('click', () => { abrirTela('patrimonio'); marcarAbaAtivaMenu('btnMenuPatrimonio'); });
+document.getElementById('btnMenuDashboards').addEventListener('click', () => { abrirTela('dashboards'); marcarAbaAtivaMenu('btnMenuDashboards'); });
+document.getElementById('btnMenuGestao').addEventListener('click', () => { abrirTela('gestao'); marcarAbaAtivaMenu('btnMenuGestao'); });
 
 function fazerLogin() {
   const userIn = document.getElementById('loginUser').value.trim().toUpperCase();
@@ -252,6 +366,7 @@ function sincronizarDadosPlanilha() {
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
+    marcarAbaAtivaMenu('none');
     principal.innerHTML = `
       <h2>BEM-VINDO AO ORIZON</h2>
       <div class="dashboard-grid">
@@ -657,7 +772,7 @@ function atualizarTabelaPatrimonioLocal() {
 }
 
 function limparFormularioEquipamento() {
-  document.getElementById('formEquipTag').value = ''; document.getElementById('formEquipNome').value = ''; document.getElementById('formEquipModelo').innerHTML = '<option value="">AGUARDANDO TIPO...</option>'; document.getElementById('formEquipModelo').disabled = true; document.getElementById('formEquipFabricante').value = ''; document.getElementById('formEquipSerie').value = ''; document.getElementById('formEquipPatrimonio').value = ''; document.getElementById('cardFormEquipamento').classList.add('hidden');
+  document.getElementById('formEquipTag').value = ''; document.getElementById('formEquipNome').value = ''; document.getElementById('formEquipModelo').innerHTML = '<option value="">AGUARDANDO TIPO...</option>'; document.getElementById('formEquipModelo').disabled = true; document.getElementById('formEquipFabricante').value = ''; document.getElementById('formEquipSerie').value = ''; document.getElementById('formEquip團').value = ''; document.getElementById('cardFormEquipamento').classList.add('hidden');
 }
 
 window.processarRetornoEquipamentoSheets = function() { alert('EQUIPAMENTO CADASTRADO!'); limparFormularioEquipamento(); sincronizarDadosPlanilha(); };
@@ -1159,7 +1274,6 @@ window.desenharTabelaMatrizAtivos = function() {
     return;
   }
   
-  // FILTRAGEM DINÂMICA DA MATRIZ POR BARRA DE PESQUISA
   const filtrados = appState.matrizAtivos.filter(item => {
     if (appState.buscaTextoMatrizParam === '') return true;
     
@@ -1285,7 +1399,7 @@ window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
-  const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telephone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value.toUpperCase() };
+  const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senate, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telephone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value.toUpperCase() };
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
   const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
