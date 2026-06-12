@@ -79,6 +79,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
     <p style="color:#64748b; margin-bottom:28px;">Smart Operations Platform</p>
     <input id="loginUser" type="text" placeholder="Usuário" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
     <input id="loginPass" type="password" placeholder="Senha" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;"></div>
     <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px;">Entrar no sistema</button>
     <p style="margin-top:18px; font-size:12px; color:#94a3b8;">by DMA Solutions • Operational Management</p>
   </div>
@@ -889,7 +890,7 @@ function abrirSubMóduloGestao(aba) {
 }
 
 // =========================================================================
-// ENGENHARIA DE POPUPS E LÓGICA DE NEGÓCIO DA MATRIZ_ATIVOS (ORDEM DA PLANILHA)
+// ENGENHARIA DE POPUPS E LÓGICA DE NEGÓCIO DA MATRIZ_ATIVOS (TRAVA DE DUPLICADOS)
 // =========================================================================
 window.abrirModalDescricao = function(id = null) {
   appState.idMatrizEmEdicao = id;
@@ -988,6 +989,16 @@ window.fecharModal = function() {
 window.salvarModalDescricao = function() {
   const equip = document.getElementById('modalInputEquip').value.trim();
   if(!equip) return alert('Por favor, insira o nome da descrição!');
+  
+  // TRAVA ANTIDUPLICIDADE EM TEMPO REAL
+  const termoExiste = appState.matrizAtivos.some(item => 
+    (item.EQUIPAMENTO || item.equipamento || '').trim().toUpperCase() === equip.toUpperCase()
+  );
+  
+  if (termoExiste && !appState.idMatrizEmEdicao) {
+    alert(`A descrição "${equip.toUpperCase()}" já está cadastrada no sistema! Use a opção de homologar modelos para associar marcas a ela.`);
+    return;
+  }
   
   const d = {
     ID_REGISTRO: appState.idMatrizEmEdicao || 'mat_' + Date.now(),
@@ -1162,7 +1173,7 @@ function prepararEdicaoUsuarioPeloId(id) {
 function limparFormularioUsuario() {
   appState.idUsuarioEmEdicao = null;
   document.getElementById('formUserNome').value = ''; document.getElementById('formUserLogin').value = ''; document.getElementById('formUserSenha').value = ''; document.getElementById('formUserCpf').value = ''; document.getElementById('formUserRg').value = ''; document.getElementById('formUserCnh').value = ''; document.getElementById('formUserTelefone').value = ''; document.getElementById('formUserCep').value = ''; document.getElementById('formUserLogradouro').value = ''; document.getElementById('formUserNumero').value = ''; document.getElementById('formUserBairro').value = ''; document.getElementById('formUserAdmissao').value = '';
-  document.getElementById('btnCancelarEdicaoUsuario').classList.add('hidden');
+  document.getElementById('btnCancelarEdicaoUsuario').add('hidden');
 }
 
 window.processarRetornoGoogleSheets = function() { alert('Colaborador cadastrado!'); limparFormularioUsuario(); sincronizarDadosPlanilha(); };
