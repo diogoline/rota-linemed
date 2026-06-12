@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ORIZON - Gestão Inteligente</title>
+<title>ORIZON - GESTÃO INTELIGENTE</title>
 <style>
 :root {
   --cor-primaria: #2563eb;
@@ -12,12 +12,21 @@
   --cor-perigo: #dc2626;
   --borda: #cbd5e1;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+/* CAIXA ALTA EM TODO O SISTEMA, EXCEÇÃO APENAS PARA CAMPOS DE SENHA E E-MAIL */
+* { 
+  margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; 
+  text-transform: uppercase; 
+}
 body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 
 .input-padrao, .select-padrao, .textarea-padrao {
   width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; background: white; font-size: 13px;
 }
+/* REMOVE CAIXA ALTA DE CAMPOS QUE CRITICAMENTE PRECISAM DE MINÚSCULAS */
+#loginPass, #formUserSenha, input[type="password"], input[type="email"], .no-uppercase { 
+  text-transform: none !important; 
+}
+
 .btn-primary { background: var(--cor-primaria); color: white; }
 .btn-danger { background: var(--cor-perigo); color: white; }
 .btn-success { background: var(--cor-sucesso); color: white; }
@@ -76,11 +85,10 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:99999;">
   <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
     <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">⚡ ORIZON</div>
-    <p style="color:#64748b; margin-bottom:28px;">Smart Operations Platform</p>
-    <input id="loginUser" type="text" placeholder="Usuário" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
-    <input id="loginPass" type="password" placeholder="Senha" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;"></div>
-    <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px;">Entrar no sistema</button>
+    <p style="color:#64748b; margin-bottom:28px;">SMART OPERATIONS PLATFORM</p>
+    <input id="loginUser" type="text" placeholder="USUÁRIO" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
+    <input id="loginPass" type="password" placeholder="SENHA" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
+    <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px;">ENTRAR NO SISTEMA</button>
     <p style="margin-top:18px; font-size:12px; color:#94a3b8;">by DMA Solutions • Operational Management</p>
   </div>
 </div>
@@ -88,23 +96,23 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
   <div class="sidebar">
     <div class="logo" id="logoInicio">⚡ ORIZON</div>
-    <small>Painel de Operações</small>
+    <small>PAINEL DE OPERAÇÕES</small>
     <div class="menu-items">
-      <button id="btnMenuRotas">📍 Rotas Diárias</button>
-      <button id="btnMenuClientes">🏥 Clientes / Unidades</button>
-      <button id="btnMenuChamados">🛠 Chamados de Maint</button>
-      <button id="btnMenuLocacao">🤝 Locação de Equipamentos</button>
-      <button id="btnMenuPatrimonio">📦 Patrimônio (Inventário)</button>
-      <button id="btnMenuDashboards">📊 Dashboards</button>
-      <button id="btnMenuGestao">⚙️ Gestão</button>
+      <button id="btnMenuRotas">📍 ROTAS DIÁRIAS</button>
+      <button id="btnMenuClientes">🏥 CLIENTES / UNIDADES</button>
+      <button id="btnMenuChamados">🛠 CHAMADOS DE MAINT</button>
+      <button id="btnMenuLocacao">🤝 LOCAÇÃO DE EQUIPAMENTOS</button>
+      <button id="btnMenuPatrimonio">📦 PATRIMÔNIO (INVENTÁRIO)</button>
+      <button id="btnMenuDashboards">📊 DASHBOARDS</button>
+      <button id="btnMenuGestao">⚙️ GESTÃO</button>
     </div>
-    <button id="btnSidebarLogout" class="btn-logout">🚪 Sair do Sistema</button>
+    <button id="btnSidebarLogout" class="btn-logout">🚪 SAIR DO SISTEMA</button>
   </div>
 
   <div class="main">
     <div class="topbar">
       <h1>ORIZON</h1>
-      <p id="subtituloTopbar">Gestão inteligente de rotas e operations</p>
+      <p id="subtituloTopbar">GESTÃO INTELIGENTE DE ROTAS E OPERATIONS</p>
     </div>
     <div class="content" id="conteudoPrincipal"></div>
   </div>
@@ -120,7 +128,7 @@ const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   patrimonio: [],
   movimentacoes: [],
-  tecnicos: ['Diogo', 'Administrador'],
+  tecnicos: ['DIOGO', 'ADMINISTRADOR'],
   veiculos: [],
   rotas: [],
   usuarios: [], 
@@ -152,22 +160,22 @@ document.getElementById('btnMenuDashboards').addEventListener('click', () => abr
 document.getElementById('btnMenuGestao').addEventListener('click', () => abrirTela('gestao'));
 
 function fazerLogin() {
-  const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
+  const userIn = document.getElementById('loginUser').value.trim().toUpperCase();
   const passIn = document.getElementById('loginPass').value;
 
-  if ((userIn === 'admin' && passIn === '@181989Di') || (userIn === 'visitante' && passIn === '123')) {
-    liberarPainel({ nome: userIn === 'admin' ? 'Administrador' : 'Visitante', perfil: userIn.toUpperCase() });
+  if ((userIn === 'ADMIN' && passIn === '@181989Di') || (userIn === 'VISITANTE' && passIn === '123')) {
+    liberarPainel({ nome: userIn === 'ADMIN' ? 'ADMINISTRADOR' : 'VISITANTE', perfil: userIn });
     return;
   }
   
   if (appState.usuarios && appState.usuarios.length > 0) {
-    const conta = appState.usuarios.find(u => String(u.login).toLowerCase() === userIn && String(u.senha) === passIn);
+    const conta = appState.usuarios.find(u => String(u.login).toUpperCase() === userIn && String(u.senha) === passIn);
     if (conta) { 
       liberarPainel(conta); 
       return;
     }
   }
-  alert('Usuário ou senha incorretos ou base ainda carregando!');
+  alert('USUÁRIO OU SENHA INCORRETOS OU BASE AINDA CARREGANDO!');
 }
 
 function liberarPainel(usuario) {
@@ -175,7 +183,7 @@ function liberarPainel(usuario) {
   sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('wrapperSistema').classList.remove('hidden');
-  document.getElementById('subtituloTopbar').innerText = `Logado como: ${usuario.nome} (${usuario.perfil || 'USUÁRIO'})`;
+  document.getElementById('subtituloTopbar').innerText = `LOGADO COMO: ${usuario.nome.toUpperCase()} (${(usuario.perfil || 'USUÁRIO').toUpperCase()})`;
   voltarInicio();
 }
 
@@ -187,7 +195,7 @@ function sidebarLogoutSemPopup() {
 }
 
 function efetuarLogout() {
-  if (!confirm('Deseja realmente sair?')) return;
+  if (!confirm('DESEJA REALMENTE SAIR?')) return;
   sidebarLogoutSemPopup();
 }
 
@@ -197,7 +205,7 @@ function verificarSessaoAtiva() {
     appState.usuarioLogado = JSON.parse(sessaoSalva);
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('wrapperSistema').classList.remove('hidden');
-    document.getElementById('subtituloTopbar').innerText = `Logado como: ${appState.usuarioLogado.nome}`;
+    document.getElementById('subtituloTopbar').innerText = `LOGADO COMO: ${appState.usuarioLogado.nome.toUpperCase()}`;
     voltarInicio();
   }
 }
@@ -217,7 +225,7 @@ window.processarRetornoSincronizacao = function(res) {
     if(dl) {
       dl.innerHTML = '';
       appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
-        let opt = document.createElement('option'); opt.value = c.nome; dl.appendChild(opt);
+        let opt = document.createElement('option'); opt.value = c.nome.toUpperCase(); dl.appendChild(opt);
       });
     }
 
@@ -244,12 +252,12 @@ function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
     principal.innerHTML = `
-      <h2>Bem-vindo ao ORIZON</h2>
+      <h2>BEM-VINDO AO ORIZON</h2>
       <div class="dashboard-grid">
-        <div class="card-padrao"><h3>📍 Controle de Rotas</h3><p>Planejamento e acompanhamento diário.</p></div>
-        <div class="card-padrao"><h3>🏥 Clientes</h3><p>Cadastro integrado de unidades.</p></div>
-        <div class="card-padrao"><h3>🤝 Locação</h3><p>Rastreamento quantitativo de ativos em clientes.</p></div>
-        <div class="card-padrao"><h3>📦 Patrimônio</h3><p>Inventário centralizado de equipamentos.</p></div>
+        <div class="card-padrao"><h3>📍 CONTROLE DE ROTAS</h3><p>PLANEJAMENTO E ACOMPANHAMENTO DIÁRIO.</p></div>
+        <div class="card-padrao"><h3>🏥 CLIENTES</h3><p>CADASTRO INTEGRADO DE UNIDADES.</p></div>
+        <div class="card-padrao"><h3>🤝 LOCAÇÃO</h3><p>RASTREAMENTO QUANTITATIVO DE ATIVOS EM CLIENTES.</p></div>
+        <div class="card-padrao"><h3>📦 PATRIMÔNIO</h3><p>INVENTÁRIO CENTRALIZED DE EQUIPAMENTOS.</p></div>
       </div>`;
   } else if (menu === 'clientes') {
     renderizarTelaClientes(principal);
@@ -269,7 +277,7 @@ function abrirTela(menu) {
   } else if (menu === 'gestao') {
     renderizarTelaGestao(principal);
   } else {
-    principal.innerHTML = `<h2>🚧 Módulo ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">Tela em desenvolvimento.</p>`;
+    principal.innerHTML = `<h2>🚧 MÓDULO ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">TELA EM DESENVOLVIMENTO.</p>`;
   }
 }
 
@@ -304,45 +312,45 @@ function renderizarTelaDashboards(container) {
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <div>
-          <h2>📊 Dashboards & Indicadores Operacionais</h2>
-          <p style="color:#64748b; font-size:13px; margin-top:2px;">Dados gerenciais consolidados em tempo real com base no inventário central.</p>
+          <h2>📊 DASHBOARDS & INDICADORES OPERACIONAIS</h2>
+          <p style="color:#64748b; font-size:13px; margin-top:2px;">DADOS GERENCIAIS CONSOLIDADOS EM TEMPO REAL COM BASE NO INVENTÁRIO CENTRAL.</p>
         </div>
-        <button onclick="sincronizarDadosPlanilha(); setTimeout(() => abrirTela('dashboards'), 1500);" class="btn-secondary" style="font-size:12px;">🔄 Atualizar Gráficos</button>
+        <button onclick="sincronizarDadosPlanilha(); setTimeout(() => abrirTela('dashboards'), 1500);" class="btn-secondary" style="font-size:12px;">🔄 ATUALIZAR GRÁFICOS</button>
       </div>
 
       <div class="dashboard-grid" style="margin-bottom:25px; margin-top: 0;">
         <div class="card-padrao dash-card-num">
-          <h4>🏥 Total de Clientes</h4>
+          <h4>🏥 TOTAL DE CLIENTES</h4>
           <div class="num">${totalClientes}</div>
-          <small style="color:#64748b; margin-top:5px;"><b>${clientesAtivos}</b> Ativos • <b>${clientesInativos}</b> Inativos</small>
+          <small style="color:#64748b; margin-top:5px;"><b>${clientesAtivos}</b> ATIVOS • <b>${clientesInativos}</b> INATIVOS</small>
         </div>
         
         <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-sucesso);">
-          <h4>📦 Ativos em Clientes (Locados)</h4>
+          <h4>📦 ATIVOS EM CLIENTES (LOCADOS)</h4>
           <div class="num" style="color: var(--cor-sucesso);">${patLocados}</div>
-          <small style="color:#64748b; margin-top:5px;">Equipamentos em operação externa</small>
+          <small style="color:#64748b; margin-top:5px;">EQUIPAMENTOS EM OPERAÇÃO EXTERNA</small>
         </div>
 
         <div class="card-padrao dash-card-num" style="border-left-color: #f59e0b;">
-          <h4>🏢 Ativos em Estoque (Sede)</h4>
+          <h4>🏢 ATIVOS EM ESTOQUE (SEDE)</h4>
           <div class="num" style="color: #f59e0b;">${patEstoque}</div>
-          <small style="color:#64748b; margin-top:5px;">Prontos para novas movimentações</small>
+          <small style="color:#64748b; margin-top:5px;">PRONTOS PARA NOVAS MOVIMENTAÇÕES</small>
         </div>
 
         <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-secundaria);">
-          <h4>🧮 Patrimônio Total Cadastrado</h4>
+          <h4>🧮 PATRIMÔNIO TOTAL CADASTRADO</h4>
           <div class="num" style="color: var(--cor-secundaria);">${totalPatrimonio}</div>
-          <small style="color:#64748b; margin-top:5px;">Soma total de ativos da base</small>
+          <small style="color:#64748b; margin-top:5px;">SOMA TOTAL DE ATIVOS DA BASE</small>
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
         <div class="card-padrao">
-          <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">📈 Distribuição de Ativos e Clientes</h3>
+          <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">📈 DISTRIBUIÇÃO DE ATIVOS E CLIENTES</h3>
           
           <div style="margin-bottom:20px;">
             <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;">
-              <span>Taxa de Locação de Equipamentos</span>
+              <span>TAXA DE LOCAÇÃO DE EQUIPAMENTOS</span>
               <span style="color: var(--cor-sucesso);">${pctLocados}%</span>
             </div>
             <div class="bar-progresso-container">
@@ -352,7 +360,7 @@ function renderizarTelaDashboards(container) {
 
           <div>
             <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;">
-              <span>Clientes com Cadastro Ativo</span>
+              <span>CLIENTES COM CADASTRO ATIVO</span>
               <span style="color: var(--cor-primaria);">${pctAtivos}%</span>
             </div>
             <div class="bar-progresso-container">
@@ -362,7 +370,7 @@ function renderizarTelaDashboards(container) {
         </div>
 
         <div class="card-padrao">
-          <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">🏆 Maiores Clientes por Volume de Ativos</h3>
+          <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">🏆 MAIORES CLIENTES POR VOLUME DE ATIVOS</h3>
           <div id="dashContainerTopClientes" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
         </div>
       </div>
@@ -370,7 +378,7 @@ function renderizarTelaDashboards(container) {
 
   const containerTop = document.getElementById('dashContainerTopClientes');
   if (topClientesOrdenados.length === 0) {
-    containerTop.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">Nenhum equipamento consta como "LOCADO".</div>`;
+    containerTop.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">NENHUM EQUIPAMENTO CONSTA COMO "LOCADO".</div>`;
     return;
   }
 
@@ -381,8 +389,8 @@ function renderizarTelaDashboards(container) {
     row.style = "display: flex; flex-direction: column; gap: 3px;";
     row.innerHTML = `
       <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; color:#1e293b;">
-        <span>${index + 1}º - ${item.nome}</span>
-        <span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:11px;">${item.total} eq.</span>
+        <span>${index + 1}º - ${item.nome.toUpperCase()}</span>
+        <span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:11px;">${item.total} EQ.</span>
       </div>
       <div style="background:#f1f5f9; height:8px; border-radius:4px; width:100%; overflow:hidden;">
         <div style="background: linear-gradient(90deg, #3b82f6, #1d4ed8); height:100%; width:${itemPctWidth}%; border-radius:4px;"></div>
@@ -398,45 +406,45 @@ function renderizarTelaClientes(container) {
   container.innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2>🏥 Cadastro e Listagem de Clientes</h2>
-        <button id="btnSyncClientesPlanilha" class="btn-secondary" style="font-size:12px;">🔄 Sincronizar Planilha</button>
+        <h2>🏥 CADASTRO E LISTAGEM DE CLIENTES</h2>
+        <button id="btnSyncClientesPlanilha" class="btn-secondary" style="font-size:12px;">🔄 SINCRONIZAR PLANILHA</button>
       </div>
       <div class="card-padrao">
-        <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha de Cadastro</h3>
+        <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">FICHA DE CADASTRO</h3>
         <div class="form-grid">
-          <div class="form-grupo"><label>Tipo de Pessoa</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">Pessoa Jurídica (CNPJ)</option><option value="FISICA">Pessoa Física (CPF)</option></select></div>
+          <div class="form-grupo"><label>TIPO DE PESSOA</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">PESSOA JURÍDICA (CNPJ)</option><option value="FISICA">PESSOA FÍSICA (CPF)</option></select></div>
           <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
-          <div class="form-grupo"><label>Cliente / Unidade *</label><input type="text" id="formCliente" class="input-padrao"></div>
-          <div class="form-grupo"><label>Contrato</label><input type="text" id="formContrato" class="input-padrao"></div>
+          <div class="form-grupo"><label>CLIENTE / UNIDADE *</label><input type="text" id="formCliente" class="input-padrao"></div>
+          <div class="form-grupo"><label>CONTRATO</label><input type="text" id="formContrato" class="input-padrao"></div>
           <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao"></div>
-          <div class="form-grupo"><label>Logradouro</label><input type="text" id="formLogradouro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Número</label><input type="text" id="formNumero" class="input-padrao"></div>
-          <div class="form-grupo"><label>Complemento</label><input type="text" id="formComplemento" class="input-padrao"></div>
-          <div class="form-grupo"><label>Bairro</label><input type="text" id="formBairro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Cidade</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>COMPLEMENTO</label><input type="text" id="formComplemento" class="input-padrao"></div>
+          <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>CIDADE</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
           <div class="form-grupo"><label>UF</label><input type="text" id="formUf" class="input-padrao" value="SP"></div>
-          <div class="form-grupo"><label>Região</label><input type="text" id="formRegiao" class="input-padrao"></div>
-          <div class="form-grupo"><label>Responsável</label><input type="text" id="formResponsavel" class="input-padrao"></div>
-          <div class="form-grupo"><label>Telefone</label><input type="text" id="formTelefone" class="input-padrao"></div>
-          <div class="form-grupo"><label>E-mail</label><input type="email" id="formEmail" class="input-padrao"></div>
-          <div class="form-grupo"><label>Status</label><select id="formStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select></div>
+          <div class="form-grupo"><label>REGIÃO</label><input type="text" id="formRegiao" class="input-padrao"></div>
+          <div class="form-grupo"><label>RESPONSÁVEL</label><input type="text" id="formResponsavel" class="input-padrao"></div>
+          <div class="form-grupo"><label>TELEFONE</label><input type="text" id="formTelefone" class="input-padrao"></div>
+          <div class="form-grupo"><label>E-MAIL</label><input type="email" id="formEmail" class="input-padrao"></div>
+          <div class="form-grupo"><label>STATUS</label><select id="formStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select></div>
         </div>
-        <div style="margin-top:12px;"><div class="form-grupo"><label>Observações</label><input type="text" id="formObservacao" class="input-padrao"></div></div>
-        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;"><button id="btnCancelarEdicao" class="btn-secondary hidden">Cancelar</button><button id="btnSalvarClientePlanilha" class="btn-success">💾 Salvar Cliente</button></div>
+        <div style="margin-top:12px;"><div class="form-grupo"><label>OBSERVAÇÕES</label><input type="text" id="formObservacao" class="input-padrao"></div></div>
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;"><button id="btnCancelarEdicao" class="btn-secondary hidden">CANCELAR</button><button id="btnSalvarClientePlanilha" class="btn-success">💾 SALVAR CLIENTE</button></div>
       </div>
       
       <div class="card-padrao">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
-          <h3>Clientes na Base</h3>
+          <h3>CLIENTES NA BASE</h3>
           <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
             <div style="display:flex; align-items:center; gap:6px;">
-              <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar:</label>
-              <input type="text" id="inputBuscaTextoCliente" class="input-padrao" placeholder="Nome, Fantasia ou CNPJ..." style="width:220px; padding:6px 10px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">CONSULTAR:</label>
+              <input type="text" id="inputBuscaTextoCliente" class="input-padrao" placeholder="NOME, FANTASIA OU CNPJ..." style="width:220px; padding:6px 10px;">
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
-              <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
+              <label style="font-size:12px; font-weight:bold; color:#475569;">VISUALIZAR:</label>
               <select id="selectFiltroStatusClienteGrid" class="select-padrao" style="width:140px; padding:6px;">
-                <option value="ATIVO">Apenas Ativos</option><option value="INATIVO">Apenas Inativos</option><option value="TODOS">Todos os Registros</option>
+                <option value="ATIVO">APENAS ATIVOS</option><option value="INATIVO">APENAS INATIVOS</option><option value="TODOS">TODOS OS REGISTROS</option>
               </select>
             </div>
           </div>
@@ -479,26 +487,26 @@ function renderizarTelaClientes(container) {
 
 function aplicarMascaraCep() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
 function aplicarMascaraTelefone() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
-function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro; document.getElementById('formBairro').value = d.bairro; } }); }
+function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro.toUpperCase(); document.getElementById('formBairro').value = d.bairro.toUpperCase(); } }); }
 
 function verificarDocumentoEReceita() {
   const doc = this.value.trim(); if (!doc) return;
   const isCnpj = document.getElementById('formTipoPessoa').value === 'JURIDICA';
   const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
-  if (dup) { alert(isCnpj ? 'CNPJ já cadastrado!' : 'CPF já cadastrado!'); this.value = ''; return; }
+  if (dup) { alert(isCnpj ? 'CNPJ JÁ CADASTRADO!' : 'CPF JÁ CADASTRADO!'); this.value = ''; return; }
   const clean = doc.replace(/\D/g, '');
   if (isCnpj && clean.length === 14) {
     fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
       .then(res => res.json())
       .then(dados => {
-        document.getElementById('formCliente').value = dados.razao_social || dados.nome || '';
+        document.getElementById('formCliente').value = (dados.razao_social || dados.nome || '').toUpperCase();
         document.getElementById('formCep').value = dados.cep || '';
-        document.getElementById('formLogradouro').value = dados.logradouro || '';
+        document.getElementById('formLogradouro').value = (dados.logradouro || '').toUpperCase();
         document.getElementById('formNumero').value = dados.numero || '';
-        document.getElementById('formBairro').value = dados.bairro || '';
-        document.getElementById('formCidade').value = dados.municipio || 'SÃO PAULO';
-        document.getElementById('formUf').value = dados.uf || 'SP';
-        if(dados.nome_fantasia && dados.nome_fantasia.trim() !== '') { document.getElementById('formObservacao').value = "Fantasia: " + dados.nome_fantasia; }
+        document.getElementById('formBairro').value = (dados.bairro || '').toUpperCase();
+        document.getElementById('formCidade').value = (dados.municipio || 'SÃO PAULO').toUpperCase();
+        document.getElementById('formUf').value = (dados.uf || 'SP').toUpperCase();
+        if(dados.nome_fantasia && dados.nome_fantasia.trim() !== '') { document.getElementById('formObservacao').value = "FANTASIA: " + dados.nome_fantasia.toUpperCase(); }
       }).catch(() => {});
   }
 }
@@ -515,7 +523,7 @@ function aplicarMascaraDocumento() {
 
 function atualizarTabelaClientesLocal() {
   const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if (!appState.clientes || appState.clientes.length === 0) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Nenhum cliente cadastrado...</td></tr>`; return; }
+  if (!appState.clientes || appState.clientes.length === 0) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">NENHUM CLIENTE CADASTRADO...</td></tr>`; return; }
 
   var filtrados = appState.clientes.filter(c => {
     return (appState.filtroStatusCliente === 'TODOS' || (c.status || 'ATIVO').toUpperCase() === appState.filtroStatusCliente) &&
@@ -526,7 +534,7 @@ function atualizarTabelaClientesLocal() {
   filtrados.forEach((c) => {
     const idx = appState.clientes.findIndex(orig => orig.id === c.id);
     let tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || '-'}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''} / ${c.uf || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${idx})">📝</button></td>`;
+    tr.innerHTML = `<td><b>${c.nome.toUpperCase()}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || '-'}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''} / ${c.uf || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${idx})">📝</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -537,10 +545,10 @@ function prepararEdicaoCliente(i) {
 }
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 
-window.processarRetornoClienteSheets = function() { alert('Cliente cadastrado!'); limparFormularioCliente(); sincronizarDadosPlanilha(); };
+window.processarRetornoClienteSheets = function() { alert('CLIENTE CADASTRADO!'); limparFormularioCliente(); sincronizarDadosPlanilha(); };
 function enviarClientePlanilha() {
-  const nome = document.getElementById('formCliente').value.trim(); if(!nome) return alert('Nome Obrigatório');
-  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value, cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value, numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value, bairro: document.getElementById('formBairro').value, city: document.getElementById('formCidade').value, uf: document.getElementById('formUf').value, regiao: document.getElementById('formRegiao').value, responsavel: document.getElementById('formResponsavel').value, telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value };
+  const nome = document.getElementById('formCliente').value.trim().toUpperCase(); if(!nome) return alert('NOME OBRIGATÓRIO');
+  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value.toUpperCase(), cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value.toUpperCase(), numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value.toUpperCase(), bairro: document.getElementById('formBairro').value.toUpperCase(), city: document.getElementById('formCidade').value.toUpperCase(), uf: document.getElementById('formUf').value.toUpperCase(), regiao: document.getElementById('formRegiao').value.toUpperCase(), responsavel: document.getElementById('formResponsavel').value.toUpperCase(), telefone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value.toUpperCase() };
   const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoClienteSheets`;
   const scriptAntigo = document.getElementById('jsonp_client_execution_script'); if(scriptAntigo) scriptAntigo.remove();
@@ -551,43 +559,43 @@ function enviarClientePlanilha() {
 // INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL (FILTRADO ANTI-REPETIÇÃO)
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
-  const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').map(item => item.EQUIPAMENTO || item.equipamento))].filter(Boolean).sort();
-  let optEquip = '<option value="">Selecione o Tipo de Equipamento...</option>';
+  const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').map(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase()))].filter(Boolean).sort();
+  let optEquip = '<option value="">SELECIONE O TIPO DE EQUIPAMENTO...</option>';
   tiposUnicos.forEach(t => optEquip += `<option value="${t}">${t}</option>`);
 
   container.innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2>📦 Estoque e Inventário Central</h2>
-        <button id="btnAbrirFormEquipamento" class="btn-success">➕ Novo Equipamento</button>
+        <h2>📦 ESTOQUE E INVENTÁRIO CENTRAL</h2>
+        <button id="btnAbrirFormEquipamento" class="btn-success">➕ NOVO EQUIPAMENTO</button>
       </div>
 
       <div id="cardFormEquipamento" class="card-padrao hidden">
-        <h3 id="tituloFormEquipamento" style="margin-bottom:15px; color:var(--cor-sucesso);">Ficha de Cadastro do Ativo</h3>
+        <h3 id="tituloFormEquipamento" style="margin-bottom:15px; color:var(--cor-sucesso);">FICHA DE CADASTRO DO ATIVO</h3>
         <div class="form-grid">
-          <div class="form-grupo"><label>TAG / Código Identificador *</label><input type="text" id="formEquipTag" class="input-padrao" placeholder="Ex: TAG-102"></div>
-          <div class="form-grupo"><label>Tipo de Equipamento *</label><select id="formEquipNome" class="select-padrao">${optEquip}</select></div>
-          <div class="form-grupo"><label>Modelo do Ativo *</label><select id="formEquipModelo" class="select-padrao" disabled><option value="">Aguardando Tipo de Equipamento...</option></select></div>
-          <div class="form-grupo"><label>Fabricante Vinculado</label><input type="text" id="formEquipFabricante" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria);" placeholder="Será preenchido pelo modelo..."></div>
-          <div class="form-grupo"><label>Nº de Série *</label><input type="text" id="formEquipSerie" class="input-padrao" placeholder="Ex: SN983742"></div>
-          <div class="form-grupo"><label>Nº de Patrimônio</label><input type="text" id="formEquipPatrimonio" class="input-padrao" placeholder="Ex: PAT-0449"></div>
+          <div class="form-grupo"><label>TAG / CÓDIGO IDENTIFICADOR *</label><input type="text" id="formEquipTag" class="input-padrao" placeholder="EX: TAG-102"></div>
+          <div class="form-grupo"><label>TIPO DE EQUIPAMENTO *</label><select id="formEquipNome" class="select-padrao">${optEquip}</select></div>
+          <div class="form-grupo"><label>MODELO DO ATIVO *</label><select id="formEquipModelo" class="select-padrao" disabled><option value="">AGUARDANDO TIPO DE EQUIPAMENTO...</option></select></div>
+          <div class="form-grupo"><label>FABRICANTE VINCULADO</label><input type="text" id="formEquipFabricante" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria);" placeholder="SERÁ PREENCHIDO PELO MODELO..."></div>
+          <div class="form-grupo"><label>Nº DE SÉRIE *</label><input type="text" id="formEquipSerie" class="input-padrao" placeholder="EX: SN983742"></div>
+          <div class="form-grupo"><label>Nº DE PATRIMÔNIO</label><input type="text" id="formEquipPatrimonio" class="input-padrao" placeholder="EX: PAT-0449"></div>
           <div class="form-grupo">
-            <label>Status Inicial</label>
+            <label>STATUS INICIAL</label>
             <select id="formEquipStatus" class="select-padrao" disabled style="background:#f1f5f9;"><option value="DISPONÍVEL EM ESTOQUE">DISPONÍVEL EM ESTOQUE</option></select>
           </div>
         </div>
-        <p style="margin-top: 10px; font-size: 11px; color: #64748b;">⚠️ Quer adicionar novas combinações comerciais? Homologue a linha em <b>Gestão > Itens de Inventário</b>.</p>
+        <p style="margin-top: 10px; font-size: 11px; color: #64748b;">⚠️ QUER ADICIONAR NOVAS COMBINAÇÕES COMERCIAIS? HOMOLOGUE A LINHA EM <b>GESTÃO > ITENS DE INVENTÁRIO</b>.</p>
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
-          <button id="btnFecharFormEquipamento" class="btn-secondary">Cancelar</button><button id="btnSalvarEquipamentoPlanilha" class="btn-success">💾 Salvar Ativo</button>
+          <button id="btnFecharFormEquipamento" class="btn-secondary">CANCELAR</button><button id="btnSalvarEquipamentoPlanilha" class="btn-success">💾 SALVAR ATIVO</button>
         </div>
       </div>
 
       <div class="card-padrao">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
-          <h3>Equipamentos Registrados</h3>
+          <h3>EQUIPAMENTOS REGISTRADOS</h3>
           <div style="display:flex; align-items:center; gap:6px;">
-            <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar Ativo:</label>
-            <input type="text" id="inputBuscaTextoPatrimonio" class="input-padrao" placeholder="TAG, Série, Patrimônio ou Nome..." style="width:260px; padding:6px 10px;">
+            <label style="font-size:12px; font-weight:bold; color:#475569;">CONSULTAR ATIVO:</label>
+            <input type="text" id="inputBuscaTextoPatrimonio" class="input-padrao" placeholder="TAG, SÉRIE, PATRIMÔNIO OU NOME..." style="width:260px; padding:6px 10px;">
           </div>
         </div>
         <div class="tabela-container">
@@ -607,12 +615,12 @@ function renderizarTelaPatrimonio(container) {
 
   document.getElementById('formEquipNome').addEventListener('change', function() {
     const equipSel = this.value; const selectModelo = document.getElementById('formEquipModelo'); const inputFabricante = document.getElementById('formEquipFabricante');
-    selectModelo.innerHTML = '<option value="">Selecione o Modelo...</option>'; inputFabricante.value = '';
+    selectModelo.innerHTML = '<option value="">SELECIONE O MODELO...</option>'; inputFabricante.value = '';
     if(!equipSel) { selectModelo.disabled = true; return; }
     
-    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.equipamento) === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
+    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
       const m = item.MODELO || item.modelo;
-      if (m && m.trim() !== '') selectModelo.innerHTML += `<option value="${m}">${m}</option>`; 
+      if (m && m.trim() !== '') selectModelo.innerHTML += `<option value="${m.toUpperCase()}">${m.toUpperCase()}</option>`; 
     });
     selectModelo.disabled = false;
   });
@@ -620,7 +628,7 @@ function renderizarTelaPatrimonio(container) {
   document.getElementById('formEquipModelo').addEventListener('change', function() {
     const modSel = this.value; const equipSel = document.getElementById('formEquipNome').value; const inputFabricante = document.getElementById('formEquipFabricante');
     if(!modSel) { inputFabricante.value = ''; return; }
-    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.equipamento) === equipSel && (item.MODELO || item.modelo) === modSel);
+    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.MODELO || item.modelo).toUpperCase() === modSel);
     if(corr) {
       const f = corr.FABRICANTE || corr.fabricante;
       inputFabricante.value = f ? f.toUpperCase() : '';
@@ -632,7 +640,7 @@ function renderizarTelaPatrimonio(container) {
 
 function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px;">Nenhum item cadastrado...</td></tr>`; return; }
+  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px;">NENHUM ITEM CADASTRADO...</td></tr>`; return; }
   
   var filtrados = appState.patrimonio.filter(p => {
     return (appState.buscaTextoPatrimonio === '') || (p.tag || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.equipamento || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.serie || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.patrimonio || '').toUpperCase().includes(appState.buscaTextoPatrimonio);
@@ -641,22 +649,22 @@ function atualizarTabelaPatrimonioLocal() {
   filtrados.sort((a,b) => (a.equipamento || '').localeCompare(b.equipamento || ''));
   filtrados.forEach(p => {
     let tr = document.createElement('tr');
-    let bg = p.status === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
-    tr.innerHTML = `<td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${p.status}</span></td><td><b>${p.localizacao || 'Sede Central'}</b></td>`;
+    let bg = p.status.toUpperCase() === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
+    tr.innerHTML = `<td><b>${p.tag.toUpperCase()}</b></td><td>${p.equipamento.toUpperCase()}</td><td>${p.serie.toUpperCase()}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo.toUpperCase()}</td><td>${p.fabricante.toUpperCase()}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${p.status.toUpperCase()}</span></td><td><b>${(p.localizacao || 'SEDE CENTRAL').toUpperCase()}</b></td>`;
     tbody.appendChild(tr);
   });
 }
 
 function limparFormularioEquipamento() {
-  document.getElementById('formEquipTag').value = ''; document.getElementById('formEquipNome').value = ''; document.getElementById('formEquipModelo').innerHTML = '<option value="">Aguardando Tipo...</option>'; document.getElementById('formEquipModelo').disabled = true; document.getElementById('formEquipFabricante').value = ''; document.getElementById('formEquipSerie').value = ''; document.getElementById('formEquipPatrimonio').value = ''; document.getElementById('cardFormEquipamento').classList.add('hidden');
+  document.getElementById('formEquipTag').value = ''; document.getElementById('formEquipNome').value = ''; document.getElementById('formEquipModelo').innerHTML = '<option value="">AGUARDANDO TIPO...</option>'; document.getElementById('formEquipModelo').disabled = true; document.getElementById('formEquipFabricante').value = ''; document.getElementById('formEquipSerie').value = ''; document.getElementById('formEquipPatrimonio').value = ''; document.getElementById('cardFormEquipamento').classList.add('hidden');
 }
 
-window.processarRetornoEquipamentoSheets = function() { alert('Equipamento cadastrado!'); limparFormularioEquipamento(); sincronizarDadosPlanilha(); };
+window.processarRetornoEquipamentoSheets = function() { alert('EQUIPAMENTO CADASTRADO!'); limparFormularioEquipamento(); sincronizarDadosPlanilha(); };
 function enviarEquipamentoPlanilha() {
-  const tag = document.getElementById('formEquipTag').value.trim().toUpperCase(); const equip = document.getElementById('formEquipNome').value; const mod = document.getElementById('formEquipModelo').value; const fab = document.getElementById('formEquipFabricante').value; const ser = document.getElementById('formEquipSerie').value.trim();
-  if(!tag || !equip || !mod || !ser) return alert('Preencha os obrigatórios!');
-  if (appState.patrimonio.find(p => p.tag.toUpperCase() === tag)) return alert('TAG já existe!');
-  const d = { tag: tag, equipamento: equip, serie: ser, patrimonio: document.getElementById('formEquipPatrimonio').value.trim(), modelo: mod, fabricante: fab, status: 'DISPONÍVEL EM ESTOQUE', localizacao: 'Sede Central' };
+  const tag = document.getElementById('formEquipTag').value.trim().toUpperCase(); const equip = document.getElementById('formEquipNome').value.toUpperCase(); const mod = document.getElementById('formEquipModelo').value.toUpperCase(); const fab = document.getElementById('formEquipFabricante').value.toUpperCase(); const ser = document.getElementById('formEquipSerie').value.trim().toUpperCase();
+  if(!tag || !equip || !mod || !ser) return alert('PREENCHA OS OBRIGATÓRIOS!');
+  if (appState.patrimonio.find(p => p.tag.toUpperCase() === tag)) return alert('TAG JÁ EXISTE!');
+  const d = { tag: tag, equipamento: equip, serie: ser, patrimonio: document.getElementById('formEquipPatrimonio').value.trim().toUpperCase(), modelo: mod, fabricante: fab, status: 'DISPONÍVEL EM ESTOQUE', localizacao: 'SEDE CENTRAL' };
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=PATRIMONIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoEquipamentoSheets`;
   const scriptAntigo = document.getElementById('jsonp_equip_execution_script'); if(scriptAntigo) scriptAntigo.remove();
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_equip_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
@@ -666,24 +674,24 @@ function enviarEquipamentoPlanilha() {
 // INTERFACE: LOCAÇÃO E QUANTITATIVO POR CLIENTE
 // =========================================================================
 function renderizarTelaLocacao(container) {
-  let optCli = '<option value="">Escolha a Unidade / Cliente</option>';
-  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome}">${c.nome}</option>`);
+  let optCli = '<option value="">ESCOLHA A UNIDADE / CLIENTE</option>';
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`);
 
   container.innerHTML = `
     <div>
-      <h2>🤝 Controle de Locações e Movimentações</h2>
+      <h2>🤝 CONTROLE DE LOCAÇÕES E MOVIMENTAÇÕES</h2>
       <div class="card-padrao">
-        <h3>Registrar Nova Movimentação</h3>
+        <h3>REGISTRAR NOVA MOVIMENTAÇÃO</h3>
         <div class="form-grid">
-          <div class="form-grupo"><label>Tipo</label><select id="movTipo" class="select-padrao"><option value="ENVIO">ENVIO PARA O CLIENTE</option><option value="RETORNO">RETORNO PARA A SEDE</option></select></div>
-          <div class="form-grupo"><label>Equipamento (TAG)</label><input type="text" id="movTagInput" list="listaTagsAutocomplete" class="input-padrao"><datalist id="listaTagsAutocomplete"></datalist></div>
-          <div class="form-grupo"><label>Cliente</label><select id="movCliente" class="select-padrao">${optCli}</select></div>
-          <div class="form-grupo"><label>Observações</label><input type="text" id="movObs" class="input-padrao"></div>
+          <div class="form-grupo"><label>TIPO</label><select id="movTipo" class="select-padrao"><option value="ENVIO">ENVIO PARA O CLIENTE</option><option value="RETORNO">RETORNO PARA A SEDE</option></select></div>
+          <div class="form-grupo"><label>EQUIPAMENTO (TAG)</label><input type="text" id="movTagInput" list="listaTagsAutocomplete" class="input-padrao"><datalist id="listaTagsAutocomplete"></datalist></div>
+          <div class="form-grupo"><label>CLIENTE</label><select id="movCliente" class="select-padrao">${optCli}</select></div>
+          <div class="form-grupo"><label>OBSERVAÇÕES</label><input type="text" id="movObs" class="input-padrao"></div>
         </div>
-        <div style="display:flex; justify-content: flex-end; margin-top:15px;"><button id="btnGravarMovimentacao" class="btn-success">💾 Confirmar Movimentação</button></div>
+        <div style="display:flex; justify-content: flex-end; margin-top:15px;"><button id="btnGravarMovimentacao" class="btn-success">💾 CONFIRMAR MOVIMENTAÇÃO</button></div>
       </div>
       <div class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>📋 Equipamentos Instalados</h3><select id="selectFiltroClienteLocacao" class="select-padrao" style="width:320px;">${optCli}</select></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>📋 EQUIPAMENTOS INSTALADOS</h3><select id="selectFiltroClienteLocacao" class="select-padrao" style="width:320px;">${optCli}</select></div>
         <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th></tr></thead><tbody id="tbodyItensLocadosCliente"></tbody></table></div>
       </div>
     </div>`;
@@ -696,25 +704,25 @@ function renderizarTelaLocacao(container) {
 function atualizarDatalistTags() {
   const dl = document.getElementById('listaTagsAutocomplete'); if(!dl) return; dl.innerHTML = '';
   const tipo = document.getElementById('movTipo').value;
-  appState.patrimonio.filter(p => tipo === 'ENVIO' ? p.status === 'DISPONÍVEL EM ESTOQUE' : p.status === 'LOCADO').forEach(p => {
-    let opt = document.createElement('option'); opt.value = p.tag; dl.appendChild(opt);
+  appState.patrimonio.filter(p => tipo === 'ENVIO' ? p.status.toUpperCase() === 'DISPONÍVEL EM ESTOQUE' : p.status.toUpperCase() === 'LOCADO').forEach(p => {
+    let opt = document.createElement('option'); opt.value = p.tag.toUpperCase(); dl.appendChild(opt);
   });
 }
 
 function filtrarEquipamentosDoCliente() {
   const cli = this.value; const tbody = document.getElementById('tbodyItensLocadosCliente'); tbody.innerHTML = '';
   if(!cli) return;
-  appState.patrimonio.filter(p => p.status === 'LOCADO' && p.localizacao === cli).forEach(p => {
-    tbody.innerHTML += `<tr><td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo}</td><td>${p.fabricante}</td></tr>`;
+  appState.patrimonio.filter(p => p.status.toUpperCase() === 'LOCADO' && p.localizacao.toUpperCase() === cli).forEach(p => {
+    tbody.innerHTML += `<tr><td><b>${p.tag.toUpperCase()}</b></td><td>${p.equipamento.toUpperCase()}</td><td>${p.serie.toUpperCase()}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo.toUpperCase()}</td><td>${p.fabricante.toUpperCase()}</td></tr>`;
   });
 }
 
 function processarMovimentacaoLocacao() {
   const tipo = document.getElementById('movTipo').value; const tag = document.getElementById('movTagInput').value.trim().toUpperCase(); const cli = document.getElementById('movCliente').value;
-  if(!tag || !cli) return alert('Preencha os campos!');
-  const p = appState.patrimonio.find(x => x.tag.toUpperCase() === tag); if(!p) return alert('Não encontrado!');
-  const pacote = { tag: tag, equipment: p.equipamento, origens: tipo === 'ENVIO' ? 'Sede Central' : cli, destino: tipo === 'ENVIO' ? cli : 'Sede Central', tipo: tipo, responsavel: appState.usuarioLogado?.nome || 'Sistema', observacao: document.getElementById('movObs').value };
-  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('Sucesso!'); sincronizarDadosPlanilha(); });
+  if(!tag || !cli) return alert('PREENCHA OS CAMPOS!');
+  const p = appState.patrimonio.find(x => x.tag.toUpperCase() === tag); if(!p) return alert('NÃO ENCONTRADO!');
+  const pacote = { tag: tag, equipment: p.equipamento.toUpperCase(), origens: tipo === 'ENVIO' ? 'SEDE CENTRAL' : cli, destino: tipo === 'ENVIO' ? cli : 'SEDE CENTRAL', tipo: tipo, responsavel: (appState.usuarioLogado?.nome || 'SISTEMA').toUpperCase(), observacao: document.getElementById('movObs').value.toUpperCase() };
+  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('SUCESSO!'); sincronizarDadosPlanilha(); });
 }
 
 // =========================================================================
@@ -723,13 +731,13 @@ function processarMovimentacaoLocacao() {
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
-      <h2>⚙️ Painel Administrativo e Gestão</h2>
-      <p style="color:#64748b; font-size:13px; margin-top:4px; margin-bottom:20px;">Gerenciamento interno de parâmetros do sistema Orizon</p>
+      <h2>⚙️ PAINEL ADMINISTRATIVO E GESTÃO</h2>
+      <p style="color:#64748b; font-size:13px; margin-top:4px; margin-bottom:20px;">GERENCIAMENTO INTERNO DE PARÂMETROS DO SISTEMA ORIZON</p>
       
       <div class="tabs-gestao">
-        <div class="tab-item active" id="tabColaboradores">👤 Colaboradores / Usuários</div>
-        <div class="tab-item" id="tabItensInventario">📋 Itens de Inventário</div>
-        <div class="tab-item" id="tabConfiguracoes">🛠️ Parâmetros Gerais</div>
+        <div class="tab-item active" id="tabColaboradores">👤 COLABORADORES / USUÁRIOS</div>
+        <div class="tab-item" id="tabItensInventario">📋 ITENS DE INVENTÁRIO</div>
+        <div class="tab-item" id="tabConfiguracoes">🛠️ PARÂMETROS GERAIS</div>
       </div>
       
       <div id="subConteudoGestao"></div>
@@ -754,68 +762,68 @@ function abrirSubMóduloGestao(aba) {
     
     subContainer.innerHTML = `
       <div class="card-padrao">
-        <h3 id="tituloFormUsuario" style="margin-bottom:15px; color:var(--cor-primaria);">Ficha do Colaborador</h3>
+        <h3 id="tituloFormUsuario" style="margin-bottom:15px; color:var(--cor-primaria);">FICHA DO COLABORADOR</h3>
         
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🔑 Credenciais e Acesso</h4>
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🔑 CREDENCIAIS E ACESSO</h4>
         <div class="form-grid" style="margin-bottom:15px;">
-          <div class="form-grupo"><label>Nome Completo *</label><input type="text" id="formUserNome" class="input-padrao"></div>
-          <div class="form-grupo"><label>Usuário / Login *</label><input type="text" id="formUserLogin" class="input-padrao" placeholder="ex: diogo.orizon"></div>
-          <div class="form-grupo"><label>Senha de Acesso *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
+          <div class="form-grupo"><label>NOME COMPLETO *</label><input type="text" id="formUserNome" class="input-padrao"></div>
+          <div class="form-grupo"><label>USUÁRIO / LOGIN *</label><input type="text" id="formUserLogin" class="input-padrao" placeholder="EX: DIOGO.ORIZON"></div>
+          <div class="form-grupo"><label>SENHA DE ACESSO *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
           <div class="form-grupo">
-            <label>Perfil do Usuário</label>
+            <label>PERFIL DO USUÁRIO</label>
             <select id="formUserPerfil" class="select-padrao">
-              <option value="Técnico">Técnico</option><option value="Gestor">Gestor</option><option value="Visualizador">Visualizador</option><option value="Admin">Admin</option>
+              <option value="Técnico">TÉCNICO</option><option value="Gestor">GESTOR</option><option value="Visualizador">VISUALIZADOR</option><option value="Admin">ADMIN</option>
             </select>
           </div>
         </div>
 
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🪪 Documentação</h4>
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🪪 DOCUMENTAÇÃO</h4>
         <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
           <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
-          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="Nº de Registro"></div>
-          <div class="form-grupo"><label>Telefone / Celular</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
+          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="Nº DE REGISTRO"></div>
+          <div class="form-grupo"><label>TELEFONE / CELULAR</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
         </div>
 
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">📍 Endereço Residencial</h4>
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">📍 ENDEREÇO RESIDENCIAL</h4>
         <div class="form-grid" style="margin-bottom:15px;">
           <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
-          <div class="form-grupo"><label>Logradouro / Rua</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>LOGRADOURO / RUA</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
           <div class="form-grupo"><label>Nº</label><input type="text" id="formUserNumero" class="input-padrao"></div>
-          <div class="form-grupo"><label>Bairro</label><input type="text" id="formUserBairro" class="input-padrao"></div>
-          <div class="form-grupo"><label>Cidade</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formUserBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>CIDADE</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
           <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
         </div>
 
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 Contrato e Status</h4>
+        <h4 style="font-size:12px; text-transform:uppercase; color:var(--cor-primaria); margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">💼 CONTRATO E STATUS</h4>
         <div class="form-grid">
-          <div class="form-grupo"><label>Data de Admissão</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
+          <div class="form-grupo"><label>DATA DE ADMISSÃO</label><input type="date" id="formUserAdmissao" class="input-padrao"></div>
           <div class="form-grupo">
-            <label>Status Operacional</label>
+            <label>STATUS OPERACIONAL</label>
             <select id="formUserStatus" class="select-padrao">
               <option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option>
             </select>
           </div>
-          <div class="form-grupo" style="grid-column: span 2;"><label>Motivo do Desligamento</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="Preenchimento obrigatório caso inativado" disabled style="background:#f1f5f9;"></div>
+          <div class="form-grupo" style="grid-column: span 2;"><label>MOTIVO DO DESLIGAMENTO</label><input type="text" id="formUserMotivo" class="input-padrao" placeholder="PREENCHIMENTO OBRIGATÓRIO CASO INATIVADO" disabled style="background:#f1f5f9;"></div>
         </div>
 
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;">
-          <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden">Cancelar</button><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 Salvar Colaborador</button>
+          <button id="btnCancelarEdicaoUsuario" class="btn-secondary hidden">CANCELAR</button><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button>
         </div>
       </div>
 
       <div class="card-padrao">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
-          <h3>👥 Funcionários Cadastrados</h3>
+          <h3>👥 FUNCIONÁRIOS CADASTRADOS</h3>
           <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
             <div style="display:flex; align-items:center; gap:6px;">
-              <label style="font-size:12px; font-weight:bold; color:#475569;">Consultar:</label>
-              <input type="text" id="inputBuscaTextoUsuario" class="input-padrao" placeholder="Nome, login ou CPF..." style="width:200px; padding:6px 10px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">CONSULTAR:</label>
+              <input type="text" id="inputBuscaTextoUsuario" class="input-padrao" placeholder="NOME, LOGIN OU CPF..." style="width:200px; padding:6px 10px;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <label style="font-size:12px; font-weight:bold; color:#475569;">Visualizar:</label>
+              <label style="font-size:12px; font-weight:bold; color:#475569;">VISUALIZAR:</label>
               <select id="selectFiltroStatusGrid" class="select-padrao" style="width:140px; padding:6px;">
-                <option value="ATIVO">Apenas Ativos</option><option value="INATIVO">Apenas Inativos</option><option value="TODOS">Todos os Registros</option>
+                <option value="ATIVO">APENAS ATIVOS</option><option value="INATIVO">APENAS INATIVOS</option><option value="TODOS">TODOS OS REGISTROS</option>
               </select>
             </div>
           </div>
@@ -854,13 +862,13 @@ function abrirSubMóduloGestao(aba) {
     
     subContainer.innerHTML = `
       <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <button onclick="abrirModalDescricao()" class="btn-success" style="font-size: 13px;">➕ Cadastrar Descrição Geral</button>
-        <button onclick="abrirModalModeloVinculo()" class="btn-primary" style="font-size: 13px;">➕ Homologar Modelo/Fabricante</button>
-        <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="font-size: 12px; margin-left: auto;">🔄 Sincronizar</button>
+        <button onclick="abrirModalDescricao()" class="btn-success" style="font-size: 13px;">➕ CADASTRAR DESCRIÇÃO GERAL</button>
+        <button onclick="abrirModalModeloVinculo()" class="btn-primary" style="font-size: 13px;">➕ HOMOLOGAR MODELO/FABRICANTE</button>
+        <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="font-size: 12px; margin-left: auto;">🔄 SINCRONIZAR</button>
       </div>
       
       <div class="card-padrao">
-        <h3 style="color: var(--cor-secundaria); margin-bottom: 15px;">Matriz de Modelos e Termos Homologados</h3>
+        <h3 style="color: var(--cor-secundaria); margin-bottom: 15px;">MATRIZ DE MODELOS E TERMOS HOMOLOGADOS</h3>
         <div class="tabela-container">
           <table class="tabela-sistema">
             <thead>
@@ -874,7 +882,7 @@ function abrirSubMóduloGestao(aba) {
               </tr>
             </thead>
             <tbody id="tbodyMatrizAtivosParam">
-              <tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">Carregando matriz da planilha...</td></tr>
+              <tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">CARREGANDO MATRIZ DA PLANILHA...</td></tr>
             </tbody>
           </table>
         </div>
@@ -885,35 +893,69 @@ function abrirSubMóduloGestao(aba) {
   } else {
     document.getElementById('tabConfiguracoes').classList.add('active');
     subContainer.innerHTML = `
-      <div class="card-padrao"><h3>🛠️ Parâmetros Gerais do Sistema</h3></div>`;
+      <div class="card-padrao"><h3>🛠️ PARÂMETROS GERAIS DO SISTEMA</h3></div>`;
   }
 }
 
 // =========================================================================
-// ENGENHARIA DE POPUPS E LÓGICA DE NEGÓCIO DA MATRIZ_ATIVOS (TRAVA DE DUPLICADOS)
+// ENGENHARIA DE POPUPS E LÓGICA DE NEGÓCIO DA MATRIZ_ATIVOS (MÓDULO DE INTELIGÊNCIA)
 // =========================================================================
+
+function normalizarTermoMatriz(str) {
+  if (!str) return '';
+  return str.toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") 
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '') 
+    .trim();
+}
+
+function calcularDistanciaLevenshtein(a, b) {
+  const matriz = [];
+  for (let i = 0; i <= b.length; i++) matriz[i] = [i];
+  for (let j = 0; j <= a.length; j++) matriz[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matriz[i][j] = matriz[i - 1][j - 1];
+      } else {
+        matriz[i][j] = Math.min(
+          matriz[i - 1][j - 1] + 1, 
+          Math.min(
+            matriz[i][j - 1] + 1, 
+            matriz[i - 1][j] + 1  
+          )
+        );
+      }
+    }
+  }
+  return matriz[b.length][a.length];
+}
+
 window.abrirModalDescricao = function(id = null) {
   appState.idMatrizEmEdicao = id;
   let valorExistente = "";
   if(id) {
     const registro = appState.matrizAtivos.find(x => String(x.ID_REGISTRO || x.id_registro) === String(id));
-    if(registro) valorExistente = registro.EQUIPAMENTO || registro.equipamento || "";
+    if(registro) valorExistente = (registro.EQUIPAMENTO || registro.equipamento || "").toUpperCase();
   }
 
   const html = `
     <div class="modal-overlay">
       <div class="modal-box">
         <div class="modal-header">
-          <h3>${id ? '📝 Alterar Termo Mestre' : '🏥 Nova Descrição do Equipamento'}</h3>
+          <h3>${id ? '📝 ALTERAR TERMO MESTRE' : '🏥 NOVA DESCRIÇÃO DO EQUIPAMENTO'}</h3>
           <button onclick="fecharModal()" class="modal-close">✕</button>
         </div>
         <div class="form-grupo">
-          <label>Nome / Descrição Geral *</label>
-          <input type="text" id="modalInputEquip" class="input-padrao" value="${valorExistente}" placeholder="Ex: Ventilador Pulmonar">
+          <label>NOME / DESCRIÇÃO GERAL *</label>
+          <input type="text" id="modalInputEquip" class="input-padrao" value="${valorExistente}" placeholder="EX: VENTILADOR PULMONAR">
         </div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-          <button onclick="fecharModal()" class="btn-secondary">Cancelar</button>
-          <button onclick="salvarModalDescricao()" class="btn-success">💾 Salvar Termo</button>
+          <button onclick="fecharModal()" class="btn-secondary">CANCELAR</button>
+          <button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR TERMO</button>
         </div>
       </div>
     </div>`;
@@ -931,15 +973,15 @@ window.abrirModalModeloVinculo = function(id = null) {
   if(id) {
     const registro = appState.matrizAtivos.find(x => String(x.ID_REGISTRO || x.id_registro) === String(id));
     if(registro) {
-      eqVal = registro.EQUIPAMENTO || registro.equipamento || "";
-      modVal = registro.MODELO || registro.modelo || "";
-      fabVal = registro.FABRICANTE || registro.fabricante || "";
-      anvVal = registro.ANVISA || registro.anvisa || "";
+      eqVal = (registro.EQUIPAMENTO || registro.equipamento || "").toUpperCase();
+      modVal = (registro.MODELO || registro.modelo || "").toUpperCase();
+      fabVal = (registro.FABRICANTE || registro.fabricante || "").toUpperCase();
+      anvVal = (registro.ANVISA || registro.anvisa || "").toUpperCase();
     }
   }
 
-  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => item.EQUIPAMENTO || item.equipamento))].filter(Boolean).sort();
-  let options = '<option value="">Selecione a Descrição vinculada...</option>';
+  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase()))].filter(Boolean).sort();
+  let options = '<option value="">SELECIONE A DESCRIÇÃO VINCULADA...</option>';
   descricoesUnicas.forEach(d => {
     options += `<option value="${d}" ${d === eqVal ? 'selected' : ''}>${d}</option>`;
   });
@@ -948,28 +990,28 @@ window.abrirModalModeloVinculo = function(id = null) {
     <div class="modal-overlay">
       <div class="modal-box">
         <div class="modal-header">
-          <h3>${id ? '📝 Alterar Combinação Comercial' : '📐 Homologar Modelo/Fabricante'}</h3>
+          <h3>${id ? '📝 ALTERAR COMBINAÇÃO COMERCIAL' : '📐 HOMOLOGAR MODELO/FABRICANTE'}</h3>
           <button onclick="fecharModal()" class="modal-close">✕</button>
         </div>
         <div class="form-grupo" style="margin-bottom:12px;">
-          <label>Descrição Master Vinculada *</label>
+          <label>DESCRIÇÃO MASTER VINCULADA *</label>
           <select id="modalSelectEquip" class="select-padrao">${options}</select>
         </div>
         <div class="form-grupo" style="margin-bottom:12px;">
-          <label>Modelo Oficial de Fábrica *</label>
-          <input type="text" id="modalInputModelo" class="input-padrao" value="${modVal}" placeholder="Ex: Smart Pump V5">
+          <label>MODELO OFICIAL DE FÁBRICA *</label>
+          <input type="text" id="modalInputModelo" class="input-padrao" value="${modVal}" placeholder="EX: SMART PUMP V5">
         </div>
         <div class="form-grupo" style="margin-bottom:12px;">
-          <label>Fabricante Regulamentado *</label>
-          <input type="text" id="modalInputFab" class="input-padrao" value="${fabVal}" placeholder="Ex: Samtronic">
+          <label>FABRICANTE REGULAMENTADO *</label>
+          <input type="text" id="modalInputFab" class="input-padrao" value="${fabVal}" placeholder="EX: SAMTRONIC">
         </div>
         <div class="form-grupo">
-          <label>Código ANVISA (Opcional)</label>
-          <input type="text" id="modalInputAnvisa" class="input-padrao" value="${anvVal}" placeholder="Ex: 80123456789">
+          <label>CÓDIGO ANVISA (OPCIONAL)</label>
+          <input type="text" id="modalInputAnvisa" class="input-padrao" value="${anvVal}" placeholder="EX: 80123456789">
         </div>
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-          <button onclick="fecharModal()" class="btn-secondary">Cancelar</button>
-          <button onclick="salvarModalVinculo()" class="btn-primary">💾 Salvar Vínculo</button>
+          <button onclick="fecharModal()" class="btn-secondary">CANCELAR</button>
+          <button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button>
         </div>
       </div>
     </div>`;
@@ -987,22 +1029,45 @@ window.fecharModal = function() {
 };
 
 window.salvarModalDescricao = function() {
-  const equip = document.getElementById('modalInputEquip').value.trim();
-  if(!equip) return alert('Por favor, insira o nome da descrição!');
+  const equipInput = document.getElementById('modalInputEquip').value.trim().toUpperCase();
+  if(!equipInput) return alert('POR FAVOR, INSIRA O NOME DA DESCRIÇÃO!');
   
-  // TRAVA ANTIDUPLICIDADE EM TEMPO REAL
-  const termoExiste = appState.matrizAtivos.some(item => 
-    (item.EQUIPAMENTO || item.equipamento || '').trim().toUpperCase() === equip.toUpperCase()
-  );
-  
-  if (termoExiste && !appState.idMatrizEmEdicao) {
-    alert(`A descrição "${equip.toUpperCase()}" já está cadastrada no sistema! Use a opção de homologar modelos para associar marcas a ela.`);
+  const termoNormalizadoNovo = normalizarTermoMatriz(equipInput);
+  let duplicadoDetectado = null;
+
+  for (let i = 0; i < appState.matrizAtivos.length; i++) {
+    const itemExistente = appState.matrizAtivos[i];
+    const idExistente = itemExistente.ID_REGISTRO || itemExistente.id_registro;
+    
+    if (appState.idMatrizEmEdicao && String(idExistente) === String(appState.idMatrizEmEdicao)) {
+      continue;
+    }
+
+    const nomeExistente = itemExistente.EQUIPAMENTO || itemExistente.equipamento || '';
+    const termoNormalizadoSalvo = normalizarTermoMatriz(nomeExistente);
+
+    if (termoNormalizadoNovo === termoNormalizadoSalvo) {
+      duplicadoDetectado = nomeExistente;
+      break;
+    }
+
+    if (termoNormalizadoNovo.length >= 4 && termoNormalizadoSalvo.length >= 4) {
+      const distancia = calcularDistanciaLevenshtein(termoNormalizadoNovo, termoNormalizadoSalvo);
+      if (distancia <= 2) {
+        duplicadoDetectado = nomeExistente;
+        break;
+      }
+    }
+  }
+
+  if (duplicadoDetectado) {
+    alert(`🚨 BLOQUEIO DE SEGURANÇA:\n\nA DESCRIÇÃO INSERIDA É IDÊNTICA OU MUITO PARECIDA COM "${duplicadoDetectado.toUpperCase()}" QUE JÁ ESTÁ CADASTRADA NA BASE.\n\nEVITE TERMOS DUPLICADOS OU VARIAÇÕES COM ERROS DE DIGITAÇÃO.`);
     return;
   }
   
   const d = {
     ID_REGISTRO: appState.idMatrizEmEdicao || 'mat_' + Date.now(),
-    EQUIPAMENTO: equip,
+    EQUIPAMENTO: equipInput,
     MODELO: '',
     FABRICANTE: '',
     ANVISA: '',
@@ -1014,12 +1079,12 @@ window.salvarModalDescricao = function() {
 
 window.fecharModalProcesso = function() { fecharModal(); sincronizarDadosPlanilha(); };
 window.salvarModalVinculo = function() {
-  const equip = document.getElementById('modalSelectEquip').value;
-  const modelo = document.getElementById('modalInputModelo').value.trim();
-  const fab = document.getElementById('modalInputFab').value.trim();
-  const anvisa = document.getElementById('modalInputAnvisa').value.trim();
+  const equip = document.getElementById('modalSelectEquip').value.toUpperCase();
+  const modelo = document.getElementById('modalInputModelo').value.trim().toUpperCase();
+  const fab = document.getElementById('modalInputFab').value.trim().toUpperCase();
+  const anvisa = document.getElementById('modalInputAnvisa').value.trim().toUpperCase();
   
-  if(!equip || !modelo || !fab) return alert('Os campos com asterisco (*) são obrigatórios!');
+  if(!equip || !modelo || !fab) return alert('OS CAMPOS COM ASTERISCO (*) SÃO OBRIGATÓRIOS!');
   
   const d = {
     ID_REGISTRO: appState.idMatrizEmEdicao || 'mat_' + Date.now(),
@@ -1051,17 +1116,17 @@ window.desenharTabelaMatrizAtivos = function() {
   tbody.innerHTML = '';
   
   if(!appState.matrizAtivos || appState.matrizAtivos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">Nenhum item localizado na aba MATRIZ_ATIVOS.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">NENHUM ITEM LOCALIZADO NA ABA MATRIZ_ATIVOS.</td></tr>`;
     return;
   }
   
   appState.matrizAtivos.sort((a,b) => (a.EQUIPAMENTO || a.equipamento || '').localeCompare(b.EQUIPAMENTO || b.equipamento || ''));
   appState.matrizAtivos.forEach(item => {
     const id = item.ID_REGISTRO || item.id_registro;
-    const eq = item.EQUIPAMENTO || item.equipamento || '';
-    const mo = item.MODELO || item.modelo || '-';
-    const fa = item.FABRICANTE || item.fabricante || '-';
-    const an = item.ANVISA || item.anvisa || '-';
+    const eq = (item.EQUIPAMENTO || item.equipamento || '').toUpperCase();
+    const mo = (item.MODELO || item.modelo || '-').toUpperCase();
+    const fa = (item.FABRICANTE || item.fabricante || '-').toUpperCase();
+    const an = (item.ANVISA || item.anvisa || '-').toUpperCase();
     const st = (item.STATUS || item.status || 'ATIVO').toUpperCase();
     
     const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
@@ -1075,9 +1140,9 @@ window.desenharTabelaMatrizAtivos = function() {
       <td><span style="color:#475569; font-family:monospace;">${an}</span></td>
       <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
       <td style="text-align:center;">
-        <button class="btn-primary" style="padding:4px 8px; font-size:11px;" onclick="prepararEdicaoMatriz('${id}', '${mo === '-'}')">📝 Alterar</button>
+        <button class="btn-primary" style="padding:4px 8px; font-size:11px;" onclick="prepararEdicaoMatriz('${id}', '${mo === '-'}')">📝 ALTERAR</button>
         <button class="${st === 'ATIVO' ? 'btn-danger' : 'btn-success'}" style="padding:4px 8px; font-size:11px; margin-left:4px;" onclick="alternarStatusMatriz('${id}')">
-          ${st === 'ATIVO' ? '🚫 Inativar' : '⚡ Ativar'}
+          ${st === 'ATIVO' ? '🚫 INATIVAR' : '⚡ ATIVAR'}
         </button>
       </td>`;
     tbody.appendChild(tr);
@@ -1094,14 +1159,14 @@ window.alternarStatusMatriz = function(id) {
   if(!item) return;
   
   const novoStatus = (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO' ? 'INATIVO' : 'ATIVO';
-  if(!confirm(`Deseja realmente alterar o status deste termo para ${novoStatus}?`)) return;
+  if(!confirm(`DESEJA REALMENTE ALTERAR O STATUS DESTE TERMO PARA ${novoStatus}?`)) return;
   
   const d = {
     ID_REGISTRO: id,
-    EQUIPAMENTO: item.EQUIPAMENTO || item.equipamento,
-    MODELO: item.MODELO || item.modelo || '',
-    FABRICANTE: item.FABRICANTE || item.fabricante || '',
-    ANVISA: item.ANVISA || item.anvisa || '',
+    EQUIPAMENTO: (item.EQUIPAMENTO || item.equipamento).toUpperCase(),
+    MODELO: (item.MODELO || item.modelo || '').toUpperCase(),
+    FABRICANTE: (item.FABRICANTE || item.fabricante || '').toUpperCase(),
+    ANVISA: (item.ANVISA || item.anvisa || '').toUpperCase(),
     STATUS: novoStatus
   };
   
@@ -1115,7 +1180,7 @@ function aplicarMascaraCpfUsuario() { let v = this.value.replace(/\D/g, '').subs
 function buscarCepUsuarioAutomatico() { 
   const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; 
   fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { 
-    if (!d.erro) { document.getElementById('formUserLogradouro').value = d.logradouro || ''; document.getElementById('formUserBairro').value = d.bairro || ''; document.getElementById('formUserCidade').value = d.localidade || 'SÃO PAULO'; document.getElementById('formUserUf').value = d.uf || 'SP'; } 
+    if (!d.erro) { document.getElementById('formUserLogradouro').value = (d.logradouro || '').toUpperCase(); document.getElementById('formUserBairro').value = (d.bairro || '').toUpperCase(); document.getElementById('formUserCidade').value = (d.localidade || 'SÃO PAULO').toUpperCase(); document.getElementById('formUserUf').value = (d.uf || 'SP').toUpperCase(); } 
   }); 
 }
 
@@ -1144,12 +1209,12 @@ function atualizarTabelaUsuariosLocal() {
     const cpfLimpo = (u.cpf && u.cpf.length > 5) ? u.cpf : '-';
     const dataAdmissaoTratada = u.admissao ? formatarDataBr(u.admissao) : '-';
     
-    tbody.innerHTML += `<tr><td><b>${u.nome || ''}</b></td><td>${u.login || '-'}</td><td>${cpfLimpo}</td><td>${dataAdmissaoTratada}</td><td>${u.perfil || 'Técnico'}</td><td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${u.status || 'ATIVO'}</span></td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoUsuarioPeloId('${u.id}')">📝</button></td></tr>`;
+    tbody.innerHTML += `<tr><td><b>${u.nome.toUpperCase()}</b></td><td>${u.login.toUpperCase()}</td><td>${cpfLimpo}</td><td>${dataAdmissaoTratada}</td><td>${u.perfil.toUpperCase()}</td><td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${(u.status || 'ATIVO').toUpperCase()}</span></td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoUsuarioPeloId('${u.id}')">📝</button></td></tr>`;
   });
 }
 
 function prepararEdicaoUsuarioPeloId(id) {
-  const u = appState.usuarios.find(user => String(user.id) === String(id)); if (!u) return alert('Não encontrado.');
+  const u = appState.usuarios.find(user => String(user.id) === String(id)); if (!u) return alert('NÃO ENCONTRADO.');
   appState.idUsuarioEmEdicao = u.id;
   document.getElementById('formUserNome').value = u.nome || '';
   document.getElementById('formUserLogin').value = u.login || '';
@@ -1173,14 +1238,14 @@ function prepararEdicaoUsuarioPeloId(id) {
 function limparFormularioUsuario() {
   appState.idUsuarioEmEdicao = null;
   document.getElementById('formUserNome').value = ''; document.getElementById('formUserLogin').value = ''; document.getElementById('formUserSenha').value = ''; document.getElementById('formUserCpf').value = ''; document.getElementById('formUserRg').value = ''; document.getElementById('formUserCnh').value = ''; document.getElementById('formUserTelefone').value = ''; document.getElementById('formUserCep').value = ''; document.getElementById('formUserLogradouro').value = ''; document.getElementById('formUserNumero').value = ''; document.getElementById('formUserBairro').value = ''; document.getElementById('formUserAdmissao').value = '';
-  document.getElementById('btnCancelarEdicaoUsuario').add('hidden');
+  document.getElementById('btnCancelarEdicaoUsuario').classList.add('hidden');
 }
 
-window.processarRetornoGoogleSheets = function() { alert('Colaborador cadastrado!'); limparFormularioUsuario(); sincronizarDadosPlanilha(); };
+window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO!'); limparFormularioUsuario(); sincronizarDadosPlanilha(); };
 function enviarUsuarioPlanilha() {
-  const nome = document.getElementById('formUserNome').value.trim(); const login = document.getElementById('formUserLogin').value.trim(); const senha = document.getElementById('formUserSenha').value;
-  if (!nome || !login || !senha) return alert('Campos obrigatórios!');
-  const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value, telefone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value, numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value, cidade: document.getElementById('formUserCidade').value, uf: document.getElementById('formUserUf').value, admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value };
+  const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
+  if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
+  const d = { id: appState.idUsuarioEmEdicao || 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: document.getElementById('formUserStatus').value, cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telefone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), admissao: document.getElementById('formUserAdmissao').value, motivoDesligamento: document.getElementById('formUserMotivo').value.toUpperCase() };
   const acao = appState.idUsuarioEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
   const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
