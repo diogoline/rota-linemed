@@ -1,547 +1,525 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>METRIKA - Engenharia Clínica</title>
-    <!-- Tailwind CSS para estilização rápida e moderna (Tema Escuro) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        slate: {
-                            950: '#020617',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome para Ícones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Estilos de Impressão Otimizados (Romaneio A4) */
-        @media print {
-            body {
-                background: white !important;
-                color: black !important;
-                font-family: 'Segoe UI', Arial, sans-serif;
-            }
-            #app-container, .modal-backdrop, #btn-multi-mov {
-                display: none !important;
-            }
-            #print-receipt {
-                display: block !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-        #print-receipt {
-            display: none;
-        }
-        /* Esconder scrollbars mantendo funcionalidade */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>METRIKA - OPERATIONS PLATFORM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+:root {
+  --cor-primaria: #2563eb;
+  --cor-primaria-hover: #3b82f6;
+  --cor-secundaria: #334155;
+  --cor-sucesso: #16a34a;
+  --cor-perigo: #dc2626;
+  --borda: #cbd5e1;
+  --bg-sidebar: #0f172a;
+  --bg-sidebar-hover: rgba(255, 255, 255, 0.06);
+}
+
+/* CAIXA ALTA EM TODO O SISTEMA, EXCEÇÃO APENAS PARA CAMPOS DE SENHA E E-MAIL */
+* { 
+  margin: 0; padding: 0; box-sizing: border-box; 
+  font-family: 'Urbanist', sans-serif;
+  text-transform: uppercase; 
+}
+body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
+
+.input-padrao, .select-padrao, .textarea-padrao {
+  width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; background: white; font-size: 13px;
+}
+/* BLINDAGEM COMPLETA DA TELA DE LOGIN E CAMPOS DE CRÍTICA DE MINÚSCULAS */
+#loginUser, #loginPass, #formUserSenha, input[type="password"], input[type="email"], .no-uppercase, #batchSearch { 
+  text-transform: none !important; 
+}
+
+.btn-primary { background: var(--cor-primaria); color: white; }
+.btn-danger { background: var(--cor-perigo); color: white; }
+.btn-success { background: var(--cor-sucesso); color: white; }
+.btn-secondary { background: var(--cor-secundaria); color: white; }
+
+.card-padrao { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; margin-bottom: 25px; }
+
+/* ARQUITETURA DE DESIGN DA SIDEBAR - IDENTIDADE PROPRIA DIOGO MATOS */
+.sidebar { 
+  width: 270px; background: var(--bg-sidebar); color: #fff; position: fixed; 
+  top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; 
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.15); z-index: 100;
+}
+.logo-container { padding: 0 8px; margin-bottom: 24px; }
+.logo { font-size: 28px; font-weight: 900; color: #3b82f6; cursor: pointer; letter-spacing: 1.5px; }
+.sidebar small { color: #64748b; display: block; margin-top: 4px; font-size: 11px; font-weight: 700; }
+
+.menu-items { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+
+.sidebar button { 
+  width: 100%; border: none; background: transparent; color: #94a3b8; padding: 12px 14px; 
+  border-radius: 8px; text-align: left; cursor: pointer; font-weight: 600; font-size: 12px; 
+  display: flex; align-items: center; gap: 12px; transition: all .2s ease-in-out; white-space: nowrap;
+}
+.sidebar button svg { width: 18px; height: 18px; fill: currentColor; transition: fill .2s ease; }
+.sidebar button:hover { background: var(--bg-sidebar-hover); color: #fff; }
+.sidebar button.active-menu {
+  background: rgba(37, 99, 235, 0.15); color: #3b82f6; font-weight: 700; border-left: 4px solid #2563eb;
+  border-radius: 4px 8px 8px 4px; padding-left: 10px;
+}
+
+.assinatura-desenvolvedor {
+  padding: 10px 8px; font-size: 9px; color: #475569; font-weight: bold;
+  letter-spacing: 0.5px; border-top: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 8px; text-align: center;
+}
+
+.sidebar button.btn-logout { background: transparent; border: 1px solid rgba(220, 38, 38, 0.3); color: #f87171; justify-content: center; font-weight: 700; }
+.sidebar button.btn-logout:hover { background: var(--cor-perigo); color: #fff; border-color: var(--cor-perigo); }
+
+.main { margin-left: 270px; width: calc(100% - 270px); display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { background: #fff; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.topbar h1 { color: #1565C0; font-size: 34px; font-weight: 800; }
+.topbar p { color: #64748b; margin-top: 4px; }
+.content { padding: 25px; flex-grow: 1; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 20px; }
+button { border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all .25s ease; }
+button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.hidden { display: none !important; }
+
+.tabela-container { width: 100%; overflow-x: auto; margin-top: 15px; }
+.tabela-sistema { width: 100%; border-collapse: collapse; min-width: 1100px; }
+.tabela-sistema th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #e2e8f0; }
+.tabela-sistema td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; background: white; white-space: nowrap; }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.form-grid label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+.form-grupo { display: flex; flex-direction: column; margin-bottom: 8px; }
+
+.tabs-gestao { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+.tab-item { padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 2px solid transparent; }
+.tab-item.active { color: var(--cor-primaria); border-color: var(--cor-primaria); }
+
+.dash-card-num { border-left: 5px solid var(--cor-primaria); display: flex; flex-direction: column; justify-content: center; }
+.dash-card-num h4 { font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: bold; }
+.dash-card-num .num { font-size: 32px; font-weight: 900; color: #0f172a; margin-top: 5px; }
+.bar-progresso-container { background: #e2e8f0; border-radius: 6px; width: 100%; height: 10px; margin-top: 8px; overflow: hidden; }
+.bar-progresso-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; }
+
+/* MODAL DE LOTE ESTILIZADO */
+.modal-lote-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99999; }
+.modal-lote-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; width: 90%; max-width: 1000px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+.modal-lote-header { background: #1e293b; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+.modal-lote-header h2 { font-size: 18px; color: #fff; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+.modal-lote-content { padding: 25px; overflow-y: auto; flex: 1; }
+.search-batch-box { background: #1e293b; border: 2px solid #2563eb; border-radius: 12px; padding: 15px; margin: 20px 0; }
+.batch-preview { background: #020617; border: 1px dashed #3b82f6; border-radius: 10px; padding: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+.batch-table-wrapper { background: #020617; border-radius: 12px; border: 1px solid #1e293b; margin-top: 15px; max-height: 250px; overflow-y: auto; }
+
+/* REGRAS DE IMPRESSÃO DO ROMANEIO A4 VIA WINDOW.PRINT */
+@media print {
+  body * { visibility: hidden; }
+  #printArea, #printArea * { visibility: visible; }
+  #printArea { position: absolute; left: 0; top: 0; width: 100%; text-transform: none !important; color: black !important; }
+  #printArea * { text-transform: none !important; }
+}
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-sky-500 selection:text-white">
+<body>
 
-    <!-- CONTAINER PRINCIPAL DO APP -->
-    <div id="app-container" class="p-6 max-w-7xl mx-auto space-y-6">
-        
-        <!-- Header Principal -->
-        <header class="flex justify-between items-center border-b border-slate-800 pb-4">
-            <div>
-                <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-400 mb-1">
-                    <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span> METRIKA OPERACIONAL
-                </div>
-                <h1 class="text-2xl font-black text-slate-100 tracking-tight">Painel de Controle e Logística</h1>
-            </div>
-            <div class="flex items-center gap-3">
-                <!-- BOTÃO MESTRE DA NOVA FUNCIONALIDADE -->
-                <button id="btn-multi-mov" onclick="openMultiMovModal()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2.5 rounded-lg shadow-lg shadow-sky-950/50 flex items-center gap-2 transition-all transform active:scale-95">
-                    <i class="fa-solid fa-boxes-stacked text-base"></i>
-                    <span>Movimentação em Lote</span>
-                </button>
-                <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-lg text-right">
-                    <div class="text-xs text-slate-400 font-medium">Empresa Gerenciada</div>
-                    <div class="text-sm font-bold text-sky-400">LINEMED</div>
-                </div>
-            </div>
-        </header>
+<div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:999999;">
+  <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
+    <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">METRIKA</div>
+    <p style="color:#64748b; margin-bottom:28px;">SMART OPERATIONS PLATFORM</p>
+    <input id="loginUser" type="text" placeholder="USUÁRIO" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
+    <input id="loginPass" type="password" placeholder="SENHA" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
+    <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px;">ENTRAR NO SISTEMA</button>
+    <p style="margin-top:18px; font-size:11px; color:#94a3b8; font-weight:bold;">BY DIOGO MATOS • OPERATIONAL MANAGEMENT</p>
+  </div>
+</div>
 
-        <!-- Simulação da Tela de Fundo Atual (Aba de Movimentações Atuais) -->
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Formulário Padrão Único (Mantido Intacto) -->
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4 shadow-xl">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2"><i class="fa-solid fa-exchange-alt mr-2 text-sky-400"></i>Movimentação Unitária (Padrão)</h2>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">TAG do Equipamento</label>
-                        <input type="text" placeholder="Ex: BOM-001" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500 text-slate-300" disabled>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">Unidade de Destino</label>
-                        <select class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500 text-slate-400" disabled>
-                            <option>Selecione o cliente...</option>
-                        </select>
-                    </div>
-                    <button class="w-full bg-slate-800 text-slate-500 font-bold py-2 rounded-lg text-sm cursor-not-allowed" disabled>Confirmar Movimentação</button>
-                </div>
-            </div>
-
-            <!-- Tabela de Equipamentos Instalados simulando o grid principal -->
-            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col justify-between">
-                <div>
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2"><i class="fa-solid fa-list-check mr-2 text-emerald-400"></i>Monitoramento de Ativos em Tempo Real</h2>
-                    <div class="overflow-x-auto mt-3">
-                        <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="text-slate-400 border-b border-slate-800">
-                                    <th class="pb-2 font-semibold">TAG</th>
-                                    <th class="pb-2 font-semibold">Descrição</th>
-                                    <th class="pb-2 font-semibold">Localização Atual</th>
-                                    <th class="pb-2 font-semibold text-right">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-slate-300 divide-y divide-slate-800/50">
-                                <tr>
-                                    <td class="py-2.5 font-bold text-sky-400">BOM-002</td>
-                                    <td>Bomba de Infusão Samtronic ST1000</td>
-                                    <td>🏥 UBS Brasília</td>
-                                    <td class="py-2.5 text-right"><span class="bg-emerald-950 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-800 font-medium">Operacional</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="py-2.5 font-bold text-sky-400">AUT-012</td>
-                                    <td>Autoclave Hospitalar HS60101</td>
-                                    <td>🏥 UBS Novo Caminho</td>
-                                    <td class="py-2.5 text-right"><span class="bg-emerald-950 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-800 font-medium">Operacional</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="text-xs text-slate-500 mt-4 border-t border-slate-800/60 pt-2 flex justify-between">
-                    <span>Banco de Dados: Google Sheets Conectado</span>
-                    <span>v2.4.0</span>
-                </div>
-            </div>
-        </main>
+<div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
+  <div class="sidebar">
+    <div class="logo-container">
+      <div class="logo" id="logoInicio">METRIKA</div>
+      <small>CLINICAL ASSET INTELLIGENCE</small>
     </div>
-
-    <!-- MODAL / POP-UP DE MOVIMENTAÇÃO MÚLTIPLA (SISTEMA ISOLADO E SEGURO) -->
-    <div id="multi-mov-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden flex flex-col transform transition-all max-h-[90vh]">
-            
-            <!-- Cabeçalho do Pop-up -->
-            <div class="bg-slate-850 border-b border-slate-800 p-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="bg-sky-500/10 text-sky-400 p-2 rounded-lg">
-                        <i class="fa-solid fa-boxes-stacked text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-black tracking-tight text-slate-100">📦 Novo Transporte Múltiplo (Lote Inteligente)</h3>
-                        <p class="text-xs text-slate-400">Insira múltiplos equipamentos e emita a guia unificada de transporte.</p>
-                    </div>
-                </div>
-                <button onclick="closeMultiMovModal()" class="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800 transition-all">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Corpo do Formulário -->
-            <div class="p-6 space-y-5 overflow-y-auto no-scrollbar flex-1">
-                
-                <!-- BLOCO 1: Definição de Destino e Motivos Contratuais -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950/50 p-4 border border-slate-800 rounded-xl">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Unidade / Destino</label>
-                        <select id="modal-client" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm font-semibold text-slate-200 focus:outline-none focus:border-sky-500">
-                            <option value="UBS BRASÍLIA">🏥 UBS BRASÍLIA</option>
-                            <option value="UBS NOVO CAMINHO">🏥 UBS NOVO CAMINHO</option>
-                            <option value="SAD (ATENÇÃO DOMICILIAR)">🏥 SERVIÇO DE ATENÇÃO DOMICILIAR (SAD)</option>
-                            <option value="UPA ATALAIA">🏥 UPA ATALAIA</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Motivo Comercial/Técnico</label>
-                        <select id="modal-reason" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm font-bold text-sky-400 focus:outline-none focus:border-sky-500">
-                            <option value="NOVA LOCAÇÃO">🚀 NOVA LOCAÇÃO (Expansão de Frota)</option>
-                            <option value="EMPRÉSTIMO">🤝 EMPRÉSTIMO (Urgência Temporária)</option>
-                            <option value="REPOSIÇÃO">📦 REPOSIÇÃO (Contrato em Aberto)</option>
-                            <option value="SUBSTITUIÇÃO" selected>🔄 SUBSTITUIÇÃO (Troca por Manutenção)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Direção do Fluxo</label>
-                        <select id="modal-flow" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm font-semibold text-slate-200 focus:outline-none focus:border-sky-500">
-                            <option value="ENVIO PARA UNIDADE">📤 ENVIO (Saída da Base para Cliente)</option>
-                            <option value="RETORNO PARA BASE">📥 RETORNO (Entrada na Base vindo do Cliente)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- BLOCO 2: Campo Único de Inserção Expressa Inteligente -->
-                <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase tracking-wider text-sky-400"><i class="fa-solid fa-bolt mr-1"></i> Inserção Expressa Unificada (Bipe ou Digite: TAG, Série ou Patrimônio)</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                            <i class="fa-solid fa-barcode text-base"></i>
-                        </div>
-                        <input type="text" id="smart-search-input" onkeyup="handleSearchKeyUp(event)" placeholder="Digite o parâmetro e aperte [ENTER]..." class="w-full bg-slate-950 border-2 border-sky-600/40 rounded-xl pl-10 pr-4 py-3 text-base font-bold text-sky-300 placeholder-slate-600 focus:outline-none focus:border-sky-500 tracking-wide bg-sky-950/10">
-                    </div>
-                </div>
-
-                <!-- BLOCO 3: Painel de Visualização Instantânea (Confirmação Visual) -->
-                <div id="preview-panel" class="bg-slate-950 border border-dashed border-sky-500/40 rounded-xl p-4 hidden">
-                    <div class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Equipamento Localizado no Cadastro
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                        <div class="md:col-span-2">
-                            <div class="text-[11px] text-slate-500 font-bold uppercase">Descrição / Modelo</div>
-                            <div id="prev-desc" class="text-sm font-bold text-slate-200">Bomba de Infusão Samtronic Infusomat</div>
-                        </div>
-                        <div>
-                            <div class="text-[11px] text-slate-500 font-bold uppercase">Nº de Série</div>
-                            <div id="prev-serie" class="text-sm font-mono font-bold text-slate-300">SN-9984512</div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <div class="text-[11px] text-slate-500 font-bold uppercase">Patrimônio</div>
-                                <div id="prev-pat" class="text-sm font-mono font-bold text-slate-300">PAT-2025-089</div>
-                            </div>
-                            <button onclick="addCurrentItemToList()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-2 rounded-lg transition-all">
-                                <i class="fa-solid fa-plus mr-1"></i> Adicionar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BLOCO 4: Lista Acumulativa Dinâmica (Carrinho de Transporte) -->
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">📋 Itens Adicionados à Remessa</label>
-                        <span id="items-counter" class="text-xs font-bold bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full text-slate-300">0 itens</span>
-                    </div>
-                    <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950">
-                        <div class="max-h-[220px] overflow-y-auto no-scrollbar">
-                            <table class="w-full text-left text-xs">
-                                <thead class="bg-slate-800 text-slate-300 font-bold sticky top-0 z-10">
-                                    <tr>
-                                        <th class="p-3 w-12 text-center">Item</th>
-                                        <th class="p-3 w-28">TAG</th>
-                                        <th class="p-3">Descrição Completa</th>
-                                        <th class="p-3 w-32">Nº Série</th>
-                                        <th class="p-3 w-32">Patrimônio</th>
-                                        <th class="p-3 w-16 text-center">Remover</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="modal-table-body" class="text-slate-300 divide-y divide-slate-800/60">
-                                    <!-- Inserção via JavaScript -->
-                                    <tr id="empty-row">
-                                        <td colspan="6" class="p-8 text-center text-slate-600 font-medium italic">Nenhum equipamento adicionado ao lote ainda. Bipe uma TAG acima.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Observação Geral -->
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Observações da Guia de Remessa</label>
-                    <textarea id="modal-obs" rows="2" placeholder="Digite detalhes da movimentação (ex: Equipamentos enviados para backup operacional após calibração de rotina)..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-300 focus:outline-none focus:border-sky-500 resize-none"></textarea>
-                </div>
-            </div>
-
-            <!-- Rodapé de Ações do Pop-up -->
-            <div class="bg-slate-950 border-t border-slate-800 p-4 flex justify-between items-center">
-                <span class="text-[11px] text-slate-500 font-medium italic"><i class="fa-solid fa-info-circle mr-1"></i>As linhas serão enviadas em massa para o Sheets e a impressão será gerada automaticamente.</span>
-                <div class="flex items-center gap-3">
-                    <button onclick="closeMultiMovModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-lg text-sm transition-all">Cancelar</button>
-                    <button onclick="processBatchTransfer()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2 rounded-lg text-sm transition-all shadow-lg shadow-emerald-950/30 flex items-center gap-2">
-                        <i class="fa-solid fa-print"></i>
-                        <span>Confirmar e Emitir Guia</span>
-                    </button>
-                </div>
-            </div>
-
-        </div>
+    <div class="menu-items">
+      <button id="btnMenuRotas"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13cc0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> ROTAS DIÁRIAS</button>
+      <button id="btnMenuClientes"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg> CLIENTES / UNIDADES</button>
+      <button id="btnMenuChamados"><svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-15.7c-.5-.8-1.4-1.3-2.4-1.3s-1.9.5-2.4 1.3L1.3 19c-.5.8-.5 1.8 0 2.6.4.8 1.3 1.3 2.3 1.3h18.2c1 0 1.9-.5 2.3-1.3.5-.8.5-1.8 0-2.6zm-11.2-8.5c0-.6.4-1 1-1s1 .4 1 1v4c0 .6-.4 1-1 1s-1-.4-1-1v-4zm1 9.3c-.7 0-1.3-.6-1.3-1.3 0-.7.6-1.3 1.3-1.3.7 0 1.3.6 1.3 1.3 0 .7-.6 1.3-1.3 1.3z"/></svg> CHAMADOS DE MAINT</button>
+      <button id="btnMenuLocacao"><svg viewBox="0 0 24 24"><path d="M18 1h-8C8.9 1 8 1.9 8 3v3h2V5h8v14h-8v-1h-2v3c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zM6.71 15.29l1.42 1.42L13.42 12l-5.3-5.3-1.42 1.42L9.59 11H1v2h8.59l-2.88 2.29z"/></svg> LOCAÇÃO DE ATIVOS</button>
+      <button id="btnMenuPatrimonio"><svg viewBox="0 0 24 24"><path d="M22 6.18L12 2 2 6.18V12c0 5.52 4.48 10 10 10s10-4.48 10-10V6.18zm-10 13.8c-4.41 0-8-3.59-8-8V7.58l8-3.35 8 3.35v4.41c0 4.41-3.59 8-8 8z"/></svg> PATRIMÔNIO (INVENTÁRIO)</button>
+      <button id="btnMenuDashboards"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg> DASHBOARDS</button>
+      <button id="btnMenuGestao"><svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46.21 14.25 0 14 0h-4c-.25 0-.46.21-.49.46l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.25.24.46.49.46h4c.25 0 .46-.21.49-.46l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65z"/></svg> GESTÃO DO SISTEMA</button>
     </div>
+    <div class="assinatura-desenvolvedor">BY DIOGO MATOS<br>• OPERATIONAL MANAGEMENT •</div>
+    <button id="btnSidebarLogout" class="btn-logout"><svg viewBox="0 0 24 24" style="width:16px; height:16px;"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg> SAIR DO SISTEMA</button>
+  </div>
 
-    <!-- DOCUMENTO DE IMPRESSÃO (OCULTO NA INTERFACE DO APP, EXIBIDO APENAS NO PRINT DO NAVEGADOR) -->
-    <div id="print-receipt" class="p-8 bg-white text-black min-h-screen">
-        <!-- Cabeçalho Oficial Linemed -->
-        <div style="display: table; width: 100%; border-bottom: 3px solid #000000; padding-bottom: 12px; margin-bottom: 20px;">
-            <div style="display: table-cell; width: 65%; vertical-align: middle;">
-                <h1 style="font-size: 20pt; font-weight: 900; margin: 0; tracking-tight: -0.05em; color: #0f172a;">LINEMED ENGENHARIA CLÍNICA</h1>
-                <p style="font-size: 9.5pt; color: #475569; margin: 3px 0 0 0; font-weight: 500;">Setor de Gestão de Ativos e Tecnologia em Saúde</p>
-            </div>
-            <div style="display: table-cell; width: 35%; text-align: right; vertical-align: middle;">
-                <div style="font-size: 11pt; font-weight: bold; background-color: #f1f5f9; padding: 4px 8px; border-radius: 4px; display: inline-block; border: 1px solid #cbd5e1;">
-                    GUIA DE MOVIMENTAÇÃO № <span id="print-doc-id" style="color: #b91c1c;">#2026-0045</span>
-                </div>
-                <p style="font-size: 8.5pt; color: #64748b; margin: 5px 0 0 0;" id="print-date-time">Data: 15/06/2026 12:00</p>
-            </div>
-        </div>
-
-        <!-- Metadados Operacionais da Viagem -->
-        <div style="display: table; width: 100%; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 25px; font-size: 10pt; line-height: 1.5;">
-            <div style="display: table-cell; width: 50%;">
-                <strong>📍 Destino/Unidade:</strong> <span id="print-destination">-</span><br>
-                <strong>⚙️ Diretriz de Fluxo:</strong> <span id="print-flow">-</span>
-            </div>
-            <div style="display: table-cell; width: 50%;">
-                <strong>🏷️ Motivo Contratual:</strong> <span id="print-reason" style="font-weight: bold; color: #0284c7;">-</span><br>
-                <strong>👤 Operador de Envio:</strong> Engenharia Clínica Linemed
-            </div>
-        </div>
-
-        <!-- Listagem de Ativos Oficial -->
-        <h3 style="font-size: 11pt; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 4px; margin-bottom: 10px; color: #0f172a;">Relação Qualificada de Ativos Modificados</h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 25px;">
-            <thead>
-                <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
-                    <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; width: 5%;">Item</th>
-                    <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; width: 15%;">TAG</th>
-                    <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; width: 45%;">Descrição do Equipamento</th>
-                    <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; width: 15%;">Nº Série</th>
-                    <th style="padding: 8px; text-align: left; border: 1px solid #cbd5e1; width: 15%;">Patrimônio</th>
-                    <th style="padding: 8px; text-align: center; border: 1px solid #cbd5e1; width: 5%;">Conf.</th>
-                </tr>
-            </thead>
-            <tbody id="print-table-body">
-                <!-- Inserido dinamicamente para manter integridade -->
-            </tbody>
-        </table>
-
-        <!-- Observações Impressas -->
-        <div style="margin-top: 20px; font-size: 9.5pt; border: 1px dashed #cbd5e1; padding: 10px; border-radius: 4px; background-color: #fafafa;">
-            <strong>Observações Gerais do Termo:</strong> <span id="print-obs">-</span>
-        </div>
-
-        <!-- Termo de Responsabilidade e Assinaturas -->
-        <div style="margin-top: 35px; font-size: 8.5pt; color: #334155; text-align: justify; line-height: 1.4;">
-            Declaro para os devidos fins que os equipamentos médico-hospitalares listados acima foram movimentados conforme as diretrizes técnicas e contratuais estabelecidas entre a Linemed Engenharia Clínica e a unidade de saúde de destino, encontrando-se em perfeitas condições de uso, higienização, segurança e rastreabilidade metrológica.
-        </div>
-
-        <!-- Assinaturas Físicas Coletadas no Destino -->
-        <div style="display: table; width: 100%; margin-top: 60px; font-size: 10pt;">
-            <div style="display: table-cell; width: 45%; text-align: center; border-top: 1px solid #000000; padding-top: 6px; font-weight: 500;">
-                Responsável Técnico / Envio<br><span style="font-size: 8pt; color: #64748b; font-weight: normal;">Linemed Engenharia Clínica</span>
-            </div>
-            <div style="display: table-cell; width: 10%;"></div>
-            <div style="display: table-cell; width: 45%; text-align: center; border-top: 1px solid #000000; padding-top: 6px; font-weight: 500;">
-                Responsável pelo Recebimento<br><span style="font-size: 8pt; color: #64748b; font-weight: normal;">Carimbo / Assinatura e Nome Legível</span>
-            </div>
-        </div>
+  <div class="main">
+    <div class="topbar">
+      <h1>METRIKA</h1>
+      <p id="subtituloTopbar">GESÃO INTELIGENTE DE ROTAS E OPERATIONS</p>
     </div>
+    <div class="content" id="conteudoPrincipal"></div>
+  </div>
+</div>
 
-    <!-- BANCO DE DADOS SIMULADO NO CLIENT-SIDE (Para garantir o Smart Search Inteligente) -->
-    <script>
-        // Catálogo de Ativos para Simulação do Smart Search Automático
-        const ACERVO_EQUIPAMENTOS = [
-            { tag: "BOM-014", desc: "Bomba de Infusão Samtronic Infusomat", serie: "SN-9984512", pat: "PAT-2025-089" },
-            { tag: "BOM-002", desc: "Bomba de Infusão Samtronic ST1000", serie: "SN-884321", pat: "PAT-11022" },
-            { tag: "BOM-005", desc: "Bomba de Infusão Samtronic ST1000", serie: "SN-884325", pat: "PAT-11025" },
-            { tag: "AUT-012", desc: "Autoclave Hospitalar HS60101", serie: "SN-AC-7764", pat: "PAT-09843" },
-            { tag: "AUT-003", desc: "Autoclave de Bancada Cristófoli 21L", serie: "SN-CR-9943", pat: "PAT-05441" },
-            { tag: "CAM-021", desc: "Câmara de Vacina Refrigeração Elber 280L", serie: "SN-EL-5542", pat: "PAT-33921" },
-            { tag: "VEN-007", desc: "Ventilador Pulmonar Magnamed Fleximag", serie: "SN-MG-3321", pat: "PAT-08832" }
-        ];
+<div id="modalContainer" class="hidden"></div>
+<div id="printArea" class="hidden"></div>
+<datalist id="datalistClientesGlobal"></datalist>
 
-        // Lista de itens no carrinho atual do pop-up
-        let carrinhoItens = [];
-        let itemCorrenteIdentificado = null;
+<script>
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzQp8eTxvrQXEg1dqnFA33WSrEMmVv6LXmk55f4jBCC4Sv7DL7EWeLtvzdhRlsef9_AJQ/exec';
 
-        // Controle de visibilidade do Pop-up
-        function openMultiMovModal() {
-            document.getElementById('multi-mov-modal').classList.remove('hidden');
-            document.getElementById('smart-search-input').focus();
-        }
+const appState = {
+  clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
+  patrimonio: [], movimentacoes: [], usuarios: [], veiculos: [], rotas: [], matrizAtivos: [],
+  usuarioLogado: null, idClienteEmEdicao: null, idUsuarioEmEdicao: null,
+  filtroStatusUsuario: 'ATIVO', filtroStatusCliente: 'ATIVO',
+  buscaTextoCliente: '', buscaTextoUsuario: '', buscaTextoPatrimonio: '', buscaTextoMatrizParam: '',
+  abaAtivaLocacao: 'movimentacao', carrinhoLote: [], equipamentoIdentificadoLote: null, filtroAuditoria: 'GERAL'
+};
 
-        function closeMultiMovModal() {
-            document.getElementById('multi-mov-modal').classList.add('hidden');
-            limparFormularioCompleto();
-        }
+sincronizarDadosPlanilha();
+verificarSessaoAtiva();
 
-        // Lógica do Mecanismo Inteligente de Busca (Unificado)
-        function handleSearchKeyUp(event) {
-            const query = event.target.value.trim().toUpperCase();
-            const previewPanel = document.getElementById('preview-panel');
-            
-            if (query.length < 3) {
-                previewPanel.classList.add('hidden');
-                itemCorrenteIdentificado = null;
-                return;
-            }
+function marcarAbaAtivaMenu(idBotao) {
+  document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active-menu'));
+  const btnAlvo = document.getElementById(idBotao);
+  if (btnAlvo) btnAlvo.classList.add('active-menu');
+}
 
-            // O Smart Search varre o objeto procurando correspondência por TAG, Série ou Patrimônio de forma automática
-            const encontrado = ACERVO_EQUIPAMENTOS.find(eq => 
-                eq.tag.toUpperCase().includes(query) || 
-                eq.serie.toUpperCase().includes(query) || 
-                eq.pat.toUpperCase().includes(query)
-            );
+document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
+document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
+document.getElementById('logoInicio').addEventListener('click', voltarInicio);
 
-            if (encontrado) {
-                itemCorrenteIdentificado = encontrado;
-                document.getElementById('prev-desc').innerText = encontrado.desc;
-                document.getElementById('prev-serie').innerText = encontrado.serie;
-                document.getElementById('prev-pat').innerText = encontrado.pat;
-                previewPanel.classList.remove('hidden');
+document.getElementById('btnMenuRotas').addEventListener('click', () => { abrirTela('rotas'); marcarAbaAtivaMenu('btnMenuRotas'); });
+document.getElementById('btnMenuClientes').addEventListener('click', () => { abrirTela('clientes'); marcarAbaAtivaMenu('btnMenuClientes'); });
+document.getElementById('btnMenuLocacao').addEventListener('click', () => { abrirTela('locacao'); marcarAbaAtivaMenu('btnMenuLocacao'); });
+document.getElementById('btnMenuPatrimonio').addEventListener('click', () => { abrirTela('patrimonio'); marcarAbaAtivaMenu('btnMenuPatrimonio'); });
+document.getElementById('btnMenuDashboards').addEventListener('click', () => { abrirTela('dashboards'); marcarAbaAtivaMenu('btnMenuDashboards'); });
+document.getElementById('btnMenuGestao').addEventListener('click', () => { abrirTela('gestao'); marcarAbaAtivaMenu('btnMenuGestao'); });
 
-                // Se o usuário apertar ENTER, ele insere o item imediatamente na lista
-                if (event.key === 'Enter') {
-                    addCurrentItemToList();
-                }
-            } else {
-                previewPanel.classList.add('hidden');
-                itemCorrenteIdentificado = null;
-            }
-        }
+function fazerLogin() {
+  const userIn = document.getElementById('loginUser').value.trim().toUpperCase();
+  const passIn = document.getElementById('loginPass').value;
+  if ((userIn === 'ADMIN' && passIn === '@181989Di') || (userIn === 'VISITANTE' && passIn === '123')) {
+    liberarPainel({ nome: userIn === 'ADMIN' ? 'ADMINISTRADOR' : 'VISITANTE', perfil: userIn }); return;
+  }
+  if (appState.usuarios && appState.usuarios.length > 0) {
+    const conta = appState.usuarios.find(u => String(u.login).toUpperCase() === userIn && String(u.senha) === passIn);
+    if (conta) { liberarPainel(conta); return; }
+  }
+  alert('USUÁRIO OU SENHA INCORRETOS!');
+}
 
-        // Adiciona o item detectado à tabela acumulativa
-        function addCurrentItemToList() {
-            if (!itemCorrenteIdentificado) return;
+function liberarPainel(usuario) {
+  appState.usuarioLogado = usuario;
+  sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('wrapperSistema').classList.remove('hidden');
+  document.getElementById('subtituloTopbar').innerText = `LOGADO COMO: ${usuario.nome.toUpperCase()}`;
+  voltarInicio();
+}
 
-            // Evita duplicidade no mesmo lote de envio
-            const jaExiste = carrinhoItens.some(item => item.tag === itemCorrenteIdentificado.tag);
-            if (jaExiste) {
-                alert(`⚠️ O equipamento com a TAG ${itemCorrenteIdentificado.tag} já está inserido nesta remessa.`);
-                document.getElementById('smart-search-input').value = "";
-                document.getElementById('preview-panel').classList.add('hidden');
-                return;
-            }
+function voltarInicio() { abrirTela('inicio'); marcarAbaAtivaMenu('none'); }
+function efetuarLogout() { if(confirm('DESEJA SAIR?')) { sessionStorage.removeItem('orizonUsuarioAtivo'); location.reload(); } }
+function verificarSessaoAtiva() {
+  const sessaoSalva = sessionStorage.getItem('orizonUsuarioAtivo');
+  if (sessaoSalva) liberarPainel(JSON.parse(sessaoSalva));
+}
 
-            carrinhoItens.push(itemCorrenteIdentificado);
-            renderTableRows();
-            
-            // Pulo do gato para agilidade operacional: limpa e foca novamente no campo de busca para próximo BIP
-            document.getElementById('smart-search-input').value = "";
-            document.getElementById('preview-panel').classList.add('hidden');
-            itemCorrenteIdentificado = null;
-            document.getElementById('smart-search-input').focus();
-        }
+function sincronizarDadosPlanilha() {
+  const urlFinal = `${WEB_APP_URL}?acao=listarCadastros&prefix=processarRetornoSincronizacao`;
+  const scriptAntigo = document.getElementById('jsonp_sync_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_sync_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+}
 
-        // Remove item da tabela temporária
-        function removeItemFromList(index) {
-            carrinhoItens.splice(index, 1);
-            renderTableRows();
-        }
+window.processarRetornoSincronizacao = function(res) {
+  if (res && res.sucesso) {
+    appState.clientes = res.clientes || []; appState.patrimonio = res.patrimonio || []; appState.movimentacoes = res.movimentacoes || []; appState.usuarios = res.usuarios || []; appState.matrizAtivos = res.matrizAtivos || [];
+    localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
+    if (document.getElementById('idContainerHomePrincipal')) renderizarHomePainelDinâmico();
+    if (document.getElementById('tbodyItensLocadosCliente')) filtrarEquipamentosDoCliente();
+  }
+};
 
-        // Atualiza as linhas da tabela dinâmica do pop-up
-        function renderTableRows() {
-            const tbody = document.getElementById('modal-table-body');
-            const counter = document.getElementById('items-counter');
-            
-            counter.innerText = `${carrinhoItens.length} ${carrinhoItens.length === 1 ? 'item' : 'itens'}`;
+function renderizarHomePainelDinâmico() {
+  const containerHome = document.getElementById('idContainerHomePrincipal'); if(!containerHome) return;
+  containerHome.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; width:100%; grid-column: 1/-1;">
+      <h2>CENTRO DE CONTROLE OPERACIONAL</h2>
+      <button onclick="sincronizarDadosPlanilha()" class="btn-secondary">🔄 RECARREGAR ATIVOS</button>
+    </div>
+    <div class="card-padrao dash-card-num"><h4>📦 TOTAL DE EQUIPAMENTOS</h4><div class="num">${appState.patrimonio.length}</div></div>
+    <div class="card-padrao dash-card-num" style="border-left-color:var(--cor-sucesso);"><h4>🏥 EM OPERAÇÃO (LOCADOS)</h4><div class="num">${appState.patrimonio.filter(p=>p.status.toUpperCase()==='LOCADO').length}</div></div>
+    <div class="card-padrao dash-card-num" style="border-left-color:#f59e0b;"><h4>🏢 DISPONÍVEIS NO ESTOQUE</h4><div class="num">${appState.patrimonio.filter(p=>p.status.toUpperCase()==='DISPONÍVEL EM ESTOQUE').length}</div></div>
+  `;
+}
 
-            if (carrinhoItens.length === 0) {
-                tbody.innerHTML = `
-                    <tr id="empty-row">
-                        <td colspan="6" class="p-8 text-center text-slate-600 font-medium italic">Nenhum equipamento adicionado ao lote ainda. Bipe uma TAG acima.</td>
-                    </tr>`;
-                return;
-            }
+function abrirTela(menu) {
+  const principal = document.getElementById('conteudoPrincipal');
+  if (menu === 'inicio') {
+    principal.innerHTML = `<div id="idContainerHomePrincipal" class="dashboard-grid"></div>`; renderizarHomePainelDinâmico();
+  } else if (menu === 'clientes') {
+    renderizarTelaClientes(principal);
+  } else if (menu === 'patrimonio') {
+    renderizarTelaPatrimonio(principal);
+  } else if (menu === 'locacao') {
+    renderizarTelaLocacao(principal);
+  } else if (menu === 'dashboards') {
+    principal.innerHTML = `<h2>📊 TELA DE DASHBOARDS</h2>`;
+  } else if (menu === 'gestao') {
+    principal.innerHTML = `<h2>⚙️ GESTÃO DO SISTEMA</h2>`;
+  } else if (menu === 'rotas') {
+    principal.innerHTML = `<iframe src="${WEB_APP_URL}?v=painel" style="width:100%; height:calc(100vh - 160px); border:none; border-radius:12px;"></iframe>`;
+  }
+}
 
-            tbody.innerHTML = "";
-            carrinhoItens.forEach((item, idx) => {
-                const numeroItem = String(idx + 1).padStart(2, '0');
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-800/40 transition-colors";
-                row.innerHTML = `
-                    <td class="p-3 text-center text-slate-500 font-mono font-bold">${numeroItem}</td>
-                    <td class="p-3 font-bold text-sky-400">${item.tag}</td>
-                    <td class="p-3 font-medium text-slate-200">${item.desc}</td>
-                    <td class="p-3 font-mono text-slate-400">${item.serie}</td>
-                    <td class="p-3 font-mono text-slate-400">${item.pat}</td>
-                    <td class="p-3 text-center">
-                        <button onclick="removeItemFromList(${idx})" class="text-rose-500 hover:text-rose-400 p-1 rounded transition-colors">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
+// =========================================================================
+// INTERFACE: LOCAÇÃO DE ATIVOS (FUSÃO DEFINITIVA: TABS + LOTE + PADRÃO)
+// =========================================================================
+function renderizarTelaLocacao(container) {
+  container.innerHTML = `
+    <div>
+      <h2 style="font-weight: 800; font-size: 22px;">🤝 GESTÃO DE LOCAÇÃO E MOVIMENTAÇÃO DE ATIVOS</h2>
+      <div class="tabs-gestao" style="margin-top:15px;">
+        <div class="tab-item ${appState.abaAtivaLocacao==='movimentacao'?'active':''}" id="tabPainelLocacao">📦 PAINEL DE MOVIMENTAÇÃO</div>
+        <div class="tab-item ${appState.abaAtivaLocacao==='auditoria'?'active':''}" id="tabAuditoriaDePara">📋 AUDITORIA & DE-PARA NEOVERO</div>
+      </div>
+      <div id="subConteudoLocacao"></div>
+    </div>`;
 
-        // Limpa o formulário de rascunhos
-        function limparFormularioCompleto() {
-            carrinhoItens = [];
-            itemCorrenteIdentificado = null;
-            document.getElementById('smart-search-input').value = "";
-            document.getElementById('modal-obs').value = "";
-            document.getElementById('preview-panel').classList.add('hidden');
-            renderTableRows();
-        }
+  document.getElementById('tabPainelLocacao').addEventListener('click', () => { appState.abaAtivaLocacao='movimentacao'; abrirSubModuloLocacao('movimentacao'); });
+  document.getElementById('tabAuditoriaDePara').addEventListener('click', () => { appState.abaAtivaLocacao='auditoria'; abrirSubModuloLocacao('auditoria'); });
 
-        // Processa o Envio em Lote para o Banco de Dados e Aciona o Driver de Impressão do Navegador
-        function processBatchTransfer() {
-            if (carrinhoItens.length === 0) {
-                alert("❌ Erro: Não é possível processar uma remessa sem nenhum item adicionado ao carrinho.");
-                return;
-            }
+  abrirSubModuloLocacao(appState.abaAtivaLocacao);
+}
 
-            // Captura de metadados gerais do lote
-            const destino = document.getElementById('modal-client').value;
-            const motivo = document.getElementById('modal-reason').value;
-            const fluxo = document.getElementById('modal-flow').value;
-            const obs = document.getElementById('modal-obs').value || "Sem observações adicionais.";
-            
-            // Geração de ID aleatório e data para o Romaneio
-            const docId = `#2026-${Math.floor(1000 + Math.random() * 9000)}`;
-            const agora = new Date();
-            const dataFormatada = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+function abrirSubModuloLocacao(aba) {
+  document.getElementById('tabPainelLocacao').classList.remove('active');
+  document.getElementById('tabAuditoriaDePara').classList.remove('active');
+  const subContainer = document.getElementById('subConteudoLocacao');
 
-            // Injeta dados dinâmicos na estrutura oculta de impressão
-            document.getElementById('print-doc-id').innerText = docId;
-            document.getElementById('print-date-time').innerText = `Gerado em: ${dataFormatada}`;
-            document.getElementById('print-destination').innerText = destino;
-            document.getElementById('print-reason').innerText = motivo;
-            document.getElementById('print-flow').innerText = fluxo;
-            document.getElementById('print-obs').innerText = obs;
+  if (aba === 'movimentacao') {
+    document.getElementById('tabPainelLocacao').classList.add('active');
+    let optCli = '<option value="">ESCOLHA A UNIDADE / CLIENTE</option>';
+    appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`);
 
-            // Popula a tabela limpa de impressão A4
-            const printTbody = document.getElementById('print-table-body');
-            printTbody.innerHTML = "";
-            
-            carrinhoItens.forEach((item, idx) => {
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = "1px solid #cbd5e1";
-                tr.innerHTML = `
-                    <td style="padding: 7px; text-align: center; border: 1px solid #cbd5e1;">${idx + 1}</td>
-                    <td style="padding: 7px; font-weight: bold; border: 1px solid #cbd5e1;">${item.tag}</td>
-                    <td style="padding: 7px; border: 1px solid #cbd5e1;">${item.desc}</td>
-                    <td style="padding: 7px; font-family: monospace; border: 1px solid #cbd5e1;">${item.serie}</td>
-                    <td style="padding: 7px; font-family: monospace; border: 1px solid #cbd5e1;">${item.pat}</td>
-                    <td style="padding: 7px; text-align: center; border: 1px solid #cbd5e1; color: #94a3b8;">[ &nbsp; ]</td>
-                `;
-                printTbody.appendChild(tr);
-            });
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>REGISTRAR NOVA MOVIMENTAÇÃO</h3>
+          <button onclick="abrirModalLote()" class="btn-primary" style="background:#0f172a; border: 1px solid #2563eb; font-weight:800;">
+            <i class="fa-solid fa-boxes-stacked"></i> 📦 INICIAR MOVIMENTAÇÃO EM LOTE
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="form-grupo"><label>TIPO</label><select id="movTipo" class="select-padrao"><option value="ENVIO">ENVIO PARA O CLIENTE</option><option value="RETORNO">RETORNO PARA A SEDE</option></select></div>
+          <div class="form-grupo"><label>EQUIPAMENTO (TAG)</label><input type="text" id="movTagInput" class="input-padrao" placeholder="EX: TAG-102"></div>
+          <div class="form-grupo"><label>CLIENTE</label><select id="movCliente" class="select-padrao">${optCli}</select></div>
+          <div class="form-grupo"><label>OBSERVAÇÕES</label><input type="text" id="movObs" class="input-padrao"></div>
+        </div>
+        <div style="display:flex; justify-content: flex-end; margin-top:15px;"><button id="btnGravarMovimentacao" class="btn-success">🟢 CONFIRMAR MOVIMENTAÇÃO UNITÁRIA</button></div>
+      </div>
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>📋 EQUIPAMENTOS INSTALADOS NO CLIENTE</h3>
+          <select id="selectFiltroClienteLocacao" class="select-padrao" style="width:320px;">${optCli}</select>
+        </div>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th></tr></thead><tbody id="tbodyItensLocadosCliente"></tbody></table></div>
+      </div>`;
 
-            // Alerta simulando o processamento em massa sem gargalos para o Google Sheets API
-            alert(`🚀 [METRIKA INTELLIGENCE]
+    document.getElementById('selectFiltroClienteLocacao').addEventListener('change', filtrarEquipamentosDoCliente);
+    document.getElementById('btnGravarMovimentacao').addEventListener('click', processarMovimentacaoLocacao);
 
-Enviando pacote com ${carrinhoItens.length} itens com sucesso para a planilha Google Sheets!
-Motivo contratual registrado: ${motivo}.
+  } else if (aba === 'auditoria') {
+    document.getElementById('tabAuditoriaDePara').classList.add('active');
+    subContainer.innerHTML = `<div id="containerModuloAuditoria"></div>`;
+    renderizarModuloAuditoria();
+  }
+}
 
-Abrindo o assistente de impressão da Guia de Transporte...`);
+// =========================================================================
+// MÓDULO DE TRANSPORTE MÚLTIPLO EM LOTE (ESTILO NEOVERO COM FOCO CONTÍNUO)
+// =========================================================================
+function abrirModalLote() {
+  appState.carrinhoLote = [];
+  let optCli = '<option value="">SELECIONE A UNIDADE DESTINO...</option>';
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`);
 
-            // Executa a chamada nativa de impressão (oculta o app e exibe apenas a folha A4 estruturada)
-            window.print();
+  const html = `
+    <div class="modal-lote-overlay">
+      <div class="modal-lote-box">
+        <div class="modal-lote-header">
+          <h2><i class="fa-solid fa-truck-ramp-box"></i> NOVO TRANSPORTE MÚLTIPLO (LOTE INTELIGENTE)</h2>
+          <button onclick="fecharModalLote()" style="background:transparent; color:#94a3b8; font-size:20px; border:none; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-lote-content">
+          <div class="form-grid" style="background:#1e293b; padding:15px; border-radius:12px;">
+            <div class="form-grupo"><label style="color:#3b82f6;">UNIDADE DESTINO</label><select id="loteCli" class="select-padrao" style="background:#0f172a; color:#fff; border-color:#334155;">${optCli}</select></div>
+            <div class="form-grupo"><label style="color:#3b82f6;">MOTIVO DA MOVIMENTAÇÃO</label><select id="loteMotivo" class="select-padrao" style="background:#0f172a; color:#fff; border-color:#334155;"><option value="NOVA LOCAÇÃO">🚀 NOVA LOCAÇÃO</option><option value="SUBSTITUIÇÃO" selected>🔄 SUBSTITUIÇÃO (TROCA TÉCNICA)</option><option value="EMPRÉSTIMO">🤝 EMPRÉSTIMO TEMPORÁRIO</option><option value="REPOSIÇÃO">📦 REPOSIÇÃO DE CONTRATO</option></select></div>
+            <div class="form-grupo"><label style="color:#3b82f6;">DIREÇÃO DO FLUXO</label><select id="loteFluxo" class="select-padrao" style="background:#0f172a; color:#fff; border-color:#334155;"><option value="ENVIO PARA UNIDADE">📤 ENVIO (BASE -> CLIENTE)</option><option value="RETORNO PARA BASE">📥 RETORNO (CLIENTE -> BASE)</option></select></div>
+          </div>
 
-            // Pós-processamento: fecha a janela e limpa a memória
-            closeMultiMovModal();
-        }
-    </script>
+          <div class="search-batch-box">
+            <label style="font-size:12px; color:#fff; font-weight:800; margin-bottom:8px; display:block;"><i class="fa-solid fa-barcode"></i> INSERÇÃO EXPRESSA (BIPE TAG, SÉRE OU PATRIMÔNIO)</label>
+            <input type="text" id="batchSearch" class="input-padrao" placeholder="BIPE O ITEM E APERTE ENTER..." style="height:50px; font-size:18px; font-weight:800; border:none; background:#020617; color:#3b82f6; width:100%; padding: 10px;">
+            <div id="batchPreview" class="batch-preview hidden"></div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+            <h4 style="color:#94a3b8; font-size:12px; font-weight:700;">📋 EQUIPAMENTOS INSERIDOS NO LOTE ATUAL</h4>
+            <span id="loteContador" style="background:#2563eb; color:#fff; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:800;">0 ITENS</span>
+          </div>
+          
+          <div class="batch-table-wrapper">
+            <table class="tabela-sistema" style="background:transparent; min-width:100%;">
+              <thead><tr style="background:#1e293b;"><th style="color:#fff; background:#1e293b;">TAG</th><th style="color:#fff; background:#1e293b;">DESCRIÇÃO DO ATIVO</th><th style="color:#fff; background:#1e293b;">Nº SÉRIE</th><th style="color:#fff; background:#1e293b;">PATRIMÔNIO</th><th style="text-align:center; color:#fff; background:#1e293b;">REMOVER</th></tr></thead>
+              <tbody id="batchTableBody" style="color:#cbd5e1;"></tbody>
+            </table>
+          </div>
+
+          <div class="form-grupo" style="margin-top:20px;"><label style="color:#94a3b8;">OBSERVAÇÕES DO DOCUMENTO DE TRANSPORTE</label><textarea id="loteObs" class="textarea-padrao" style="background:#1e293b; border:1px solid #334155; color:#fff;"></textarea></div>
+        </div>
+        <div style="padding:20px; border-top:1px solid #1e293b; display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="fecharModalLote()" class="btn-secondary">CANCELAR</button>
+          <button onclick="finalizarLoteEImprimir()" class="btn-success" style="background:#16a34a; font-size:14px; padding:12px 25px; font-weight:800;"><i class="fa-solid fa-print"></i> CONFIRMAR E EMITIR GUIA A4</button>
+        </div>
+      </div>
+    </div>`;
+
+  const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
+  const input = document.getElementById('batchSearch'); input.focus();
+  
+  input.addEventListener('keyup', (e) => {
+    if(e.key === 'Enter') processarEnterLote();
+    else handleSearchLote(e.target.value);
+  });
+}
+
+function handleSearchLote(val) {
+  const query = val.trim().toUpperCase(); const preview = document.getElementById('batchPreview');
+  if(query.length < 3) { preview.classList.add('hidden'); return; }
+
+  // Busca Inteligente Unificada: TAG, Série ou Patrimônio
+  const item = appState.patrimonio.find(p => 
+    (p.tag && p.tag.toUpperCase() === query) || 
+    (p.serie && p.serie.toUpperCase() === query) || 
+    (p.patrimonio && p.patrimonio.toUpperCase() === query)
+  );
+
+  if(item) {
+    appState.equipamentoIdentificadoLote = item;
+    preview.innerHTML = `
+      <div style="text-align:left;">
+        <span style="font-size:10px; color:#3b82f6; font-weight:800;">EQUIPAMENTO LOCALIZADO:</span><br>
+        <strong style="color:#fff;">${item.equipamento.toUpperCase()} - ${item.modelo.toUpperCase()}</strong>
+      </div>
+      <div style="text-align:right; color:#94a3b8; font-size:11px; font-weight:700;">SÉRIE: ${item.serie.toUpperCase()} | PAT: ${item.patrimonio||'-'}</div>`;
+    preview.classList.remove('hidden');
+  } else {
+    appState.equipamentoIdentificadoLote = null; preview.classList.add('hidden');
+  }
+}
+
+function processarEnterLote() {
+  if(!appState.equipamentoIdentificadoLote) return;
+  const item = appState.equipamentoIdentificadoLote;
+  if(appState.carrinhoLote.some(i => i.tag === item.tag)) { alert("ESTA TAG JÁ CONSTA NO LOTE ATUAL!"); return; }
+  
+  appState.carrinhoLote.push(item);
+  atualizarTabelaLote();
+  
+  // Reseta campo e mantém foco contínuo para agilidade no BIP
+  document.getElementById('batchSearch').value = "";
+  document.getElementById('batchPreview').classList.add('hidden');
+  appState.equipamentoIdentificadoLote = null;
+  document.getElementById('batchSearch').focus();
+}
+
+function atualizarTabelaLote() {
+  const tbody = document.getElementById('batchTableBody'); tbody.innerHTML = "";
+  appState.carrinhoLote.forEach((item, idx) => {
+    tbody.innerHTML += `<tr><td style="font-weight:800; color:#3b82f6;">${item.tag}</td><td>${item.equipamento}</td><td>${item.serie}</td><td>${item.patrimonio||'-'}</td><td style="text-align:center;"><button onclick="removerDoLote(${idx})" style="color:var(--cor-perigo); background:transparent; border:none; cursor:pointer;">✕</button></td></tr>`;
+  });
+  document.getElementById('loteContador').innerText = `${appState.carrinhoLote.length} ITENS`;
+}
+
+function removerDoLote(i) { appState.carrinhoLote.splice(i,1); atualizarTabelaLote(); }
+function fecharModalLote() { document.getElementById('modalContainer').classList.add('hidden'); }
+
+function finalizarLoteEImprimir() {
+  const cli = document.getElementById('loteCli').value;
+  if(!cli || appState.carrinhoLote.length === 0) return alert("ATENÇÃO: DEFINA A UNIDADE E BIPE AO MENOS 1 ATIVO!");
+
+  const pacote = {
+    cliente: cli, motivo: document.getElementById('loteMotivo').value, fluxo: document.getElementById('loteFluxo').value,
+    obs: document.getElementById('loteObs').value || 'SEM OBSERVAÇÕES ADICIONAIS.',
+    itens: appState.carrinhoLote, responsavel: (appState.usuarioLogado?.nome || 'DIOGO MATOS').toUpperCase(), data: new Date().toLocaleString('pt-BR')
+  };
+
+  // Montagem do Romaneio A4 Limpo para Assinatura Física (Ocultando o METRIKA ao imprimir)
+  let rows = "";
+  pacote.itens.forEach((it, idx) => {
+    rows += `<tr><td style="border:1px solid #000; padding:6px; text-align:center;">${idx+1}</td><td style="border:1px solid #000; padding:6px; font-weight:bold;">${it.tag}</td><td style="border:1px solid #000; padding:6px;">${it.equipamento} - ${it.modelo}</td><td style="border:1px solid #000; padding:6px; font-family:monospace;">${it.serie}</td><td style="border:1px solid #000; padding:6px; font-family:monospace;">${it.patrimonio||'-'}</td><td style="border:1px solid #000; padding:6px; text-align:center; color:#888;">[ &nbsp; ]</td></tr>`;
+  });
+
+  document.getElementById('printArea').innerHTML = `
+    <div style="padding:40px; font-family: Arial, sans-serif; color:#000;">
+      <div style="display:flex; justify-content:space-between; border-bottom:2px solid #000; padding-bottom:10px;">
+        <div><h1 style="margin:0; font-size:24px; font-weight:900;">LINEMED ENGENHARIA CLÍNICA</h1><p style="margin:2px 0 0 0; font-size:12px; color:#444;">Controle de Logística e Movimentação Preventiva/Corretiva</p></div>
+        <div style="text-align:right;"><p style="margin:0; font-weight:bold; font-size:14px;">GUIA DE TRANSPORTE LOTE</p><p style="margin:2px 0 0 0; font-size:11px;">EMISSÃO: ${pacote.data}</p></div>
+      </div>
+      <div style="margin:20px 0; background:#f1f5f9; padding:15px; border-radius:6px; font-size:13px; line-height:1.6; border:1px solid #cbd5e1;">
+        <strong>🏥 UNIDADE DESTINO:</strong> ${pacote.cliente} &nbsp;|&nbsp; <strong>🏷️ MOTIVO CONTRATUAL:</strong> ${pacote.motivo} <br>
+        <strong>⚙️ DIRETRIZ DE FLUXO:</strong> ${pacote.fluxo} &nbsp;|&nbsp; <strong>👤 RESPONSÁVEL:</strong> ${pacote.responsavel}
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:15px;">
+        <thead><tr style="background:#e2e8f0;"><th style="border:1px solid #000; padding:8px; width:5%;">ITEM</th><th style="border:1px solid #000; padding:8px; width:15%;">TAG</th><th style="border:1px solid #000; padding:8px; width:45%;">DESCRIÇÃO DETALHADA DO EQUIPAMENTO</th><th style="border:1px solid #000; padding:8px; width:15%;">Nº SÉRIE</th><th style="border:1px solid #000; padding:8px; width:15%;">PATRIMÔNIO</th><th style="border:1px solid #000; padding:8px; width:5%;">CONF.</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="margin-top:25px; border:1px dashed #000; padding:12px; font-size:12px; background:#fafafa;"><strong>OBSERVAÇÕES DO PROTOCOLO:</strong> ${pacote.obs}</div>
+      <div style="margin-top:80px; display:flex; justify-content:space-between;">
+        <div style="width:45%; border-top:1px solid #000; text-align:center; padding-top:6px; font-size:12px; font-weight:bold;">RESPONSÁVEL ENVIO (LINEMED)</div>
+        <div style="width:45%; border-top:1px solid #000; text-align:center; padding-top:6px; font-size:12px; font-weight:bold;">RESPONSÁVEL RECEBIMENTO (UNIDADE)</div>
+      </div>
+    </div>`;
+
+  // Disparo em lote simulado via API
+  fetch(`${WEB_APP_URL}?acao=registrarLote&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' })
+  .then(() => {
+    alert("🚀 PACOTE ENVIADO AO GOOGLE SHEETS COM SUCESSO!\n\nAbrindo gerenciador de impressão para folha A4...");
+    window.print(); fecharModalLote(); sincronizarDadosPlanilha();
+  });
+}
+
+// =========================================================================
+// OUTRAS MIGRACÕES DE TELAS ORIGINAIS (UNITÁRIAS E HISTÓRICAS)
+// =========================================================================
+function filtrarEquipamentosDoCliente() {
+  const cli = document.getElementById('selectFiltroClienteLocacao').value; const tbody = document.getElementById('tbodyItensLocadosCliente');
+  if(!tbody) return; tbody.innerHTML = ''; if(!cli) return;
+  appState.patrimonio.filter(p => p.status.toUpperCase() === 'LOCADO' && p.localizacao.toUpperCase() === cli.toUpperCase()).forEach(p => {
+    tbody.innerHTML += `<tr><td><b>${p.tag.toUpperCase()}</b></td><td>${p.equipamento.toUpperCase()}</td><td>${p.serie.toUpperCase()}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo.toUpperCase()}</td></tr>`;
+  });
+}
+
+function processarMovimentacaoLocacao() {
+  const tipo = document.getElementById('movTipo').value; const tag = document.getElementById('movTagInput').value.trim().toUpperCase(); const cli = document.getElementById('movCliente').value;
+  if(!tag || !cli) return alert('PREENCHA OS CAMPOS!');
+  const pacote = { tag: tag, tipo: tipo, destino: tipo === 'ENVIO' ? cli : 'SEDE CENTRAL', responsavel: (appState.usuarioLogado?.nome || 'SISTEMA').toUpperCase(), observacao: document.getElementById('movObs').value.toUpperCase() };
+  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('MOVIMENTAÇÃO UNITÁRIA SALVA!'); sincronizarDadosPlanilha(); });
+}
+
+function renderizarModuloAuditoria() {
+  const container = document.getElementById('containerModuloAuditoria'); if(!container) return;
+  container.innerHTML = `<div class="card-padrao"><h3>📋 TELA DE AUDITORIA DISPONÍVEL</h3><p style="color:#64748b; font-size:13px; margin-top:5px;">CONECTADA À ABA: <b>HISTORICO_AUDITORIA</b></p></div>`;
+}
+
+function renderizarTelaClientes(container) { container.innerHTML = `<div class="card-padrao"><h3>🏥 GERENCIADOR DE UNIDADES / CLIENTES</h3></div>`; }
+function renderizarTelaPatrimonio(container) { container.innerHTML = `<div class="card-padrao"><h3>📦 INVENTÁRIO CENTRAL DE PATRIMÔNIO</h3></div>`; }
+</script>
 </body>
 </html>
