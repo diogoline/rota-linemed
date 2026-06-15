@@ -262,7 +262,10 @@ const appState = {
   buscaTextoMatrizParam: '', 
   
   matrizAtivos: [],
-  idMatrizEmEdicao: null
+  idMatrizEmEdicao: null,
+
+  // Novo estado para o módulo de Auditoria
+  filtroClienteAuditoria: 'GERAL'
 };
 
 sincronizarDadosPlanilha();
@@ -363,6 +366,7 @@ window.processarRetornoSincronizacao = function(res) {
     if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
     if (document.getElementById('tbodyMatrizAtivosParam')) desenharTabelaMatrizAtivos();
     if (document.getElementById('idContainerHomePrincipal')) renderizarHomePainelDinâmico();
+    if (document.getElementById('containerModuloAuditoria')) renderizarModuloAuditoria(); // Atualiza Auditoria se aberta
   }
 };
 
@@ -396,12 +400,12 @@ function renderizarHomePainelDinâmico() {
     return { nome: key, total: dicionarioContagem[key] };
   }).sort((a,b) => b.total - a.total).slice(0, 4);
 
-  let linesTabela = '';
+  let linhasTabela = '';
   if(arrayOrdenado.length === 0) {
-    linesTabela = `<tr><td colspan="2" style="text-align:center; padding:10px; color:#64748b;">NENHUM REGISTRO...</td></tr>`;
+    linhasTabela = `<tr><td colspan="2" style="text-align:center; padding:10px; color:#64748b;">NENHUM REGISTRO...</td></tr>`;
   } else {
     arrayOrdenado.forEach(item => {
-      linesTabela += `<tr><td><b>${item.nome}</b></td><td style="font-weight:bold; color:var(--cor-primaria);">${item.total} UNIDADES</td></tr>`;
+      linhasTabela += `<tr><td><b>${item.nome}</b></td><td style="font-weight:bold; color:var(--cor-primaria);">${item.total} UNIDADES</td></tr>`;
     });
   }
 
@@ -439,10 +443,10 @@ function renderizarHomePainelDinâmico() {
 
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:25px;">
       <div class="card-padrao" style="margin-bottom:0;">
-        <h3 style="font-size:15px; color:var(--cor-secundaria); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:12px;">📈 ATIVOS WITH MAIOR VOLUME DE ESTOQUE</h3>
+        <h3 style="font-size:15px; color:var(--cor-secundaria); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:12px;">📈 ATIVOS COM MAIOR VOLUME DE ESTOQUE</h3>
         <table style="width:100%; border-collapse:collapse;" class="tabela-sistema">
           <thead><tr><th style="padding:6px 10px;">DESCRIÇÃO DO EQUIPAMENTO</th><th style="padding:6px 10px;">QUANTIDADE</th></tr></thead>
-          <tbody>${linesTabela}</tbody>
+          <tbody>${linhasTabela}</tbody>
         </table>
       </div>
       <div class="card-padrao" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#f8fafc; border-style:dashed;">
@@ -892,15 +896,40 @@ function enviarEquipamentoPlanilha() {
 }
 
 // =========================================================================
-// INTERFACE: LOCAÇÃO E QUANTITATIVO POR CLIENTE
+// INTERFACE: LOCAÇÃO DE ATIVOS (RECONSTRUÍDA COM ABAS)
 // =========================================================================
 function renderizarTelaLocacao(container) {
-  let optCli = '<option value="">ESCOLHA A UNIDADE / CLIENTE</option>';
-  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`);
-
   container.innerHTML = `
     <div>
-      <h2>🤝 CONTROLE DE LOCAÇÕES E MOVIMENTAÇÕES</h2>
+      <h2>🤝 LOCAÇÃO E AUDITORIA DE ATIVOS</h2>
+      
+      <div class="tabs-gestao" style="margin-top:15px;">
+        <div class="tab-item active" id="tabPainelLocacao">📦 PAINEL DE MOVIMENTAÇÃO</div>
+        <div class="tab-item" id="tabAuditoriaDePara">📋 AUDITORIA & DE-PARA NEOVERO</div>
+      </div>
+      
+      <div id="subConteudoLocacao"></div>
+    </div>`;
+
+  document.getElementById('tabPainelLocacao').addEventListener('click', () => abrirSubModuloLocacao('movimentacao'));
+  document.getElementById('tabAuditoriaDePara').addEventListener('click', () => abrirSubModuloLocacao('auditoria'));
+
+  abrirSubModuloLocacao('movimentacao');
+}
+
+function abrirSubModuloLocacao(aba) {
+  document.getElementById('tabPainelLocacao').classList.remove('active');
+  document.getElementById('tabAuditoriaDePara').classList.remove('active');
+  
+  const subContainer = document.getElementById('subConteudoLocacao');
+
+  if (aba === 'movimentacao') {
+    document.getElementById('tabPainelLocacao').classList.add('active');
+    
+    let optCli = '<option value="">ESCOLHA A UNIDADE / CLIENTE</option>';
+    appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`);
+
+    subContainer.innerHTML = `
       <div class="card-padrao">
         <h3>REGISTRAR NOVA MOVIMENTAÇÃO</h3>
         <div class="form-grid">
@@ -909,18 +938,148 @@ function renderizarTelaLocacao(container) {
           <div class="form-grupo"><label>CLIENTE</label><select id="movCliente" class="select-padrao">${optCli}</select></div>
           <div class="form-grupo"><label>OBSERVAÇÕES</label><input type="text" id="movObs" class="input-padrao"></div>
         </div>
-        <div style="display:flex; justify-content: flex-end; margin-top:15px;"><button id="btnGravarMovimentacao" class="btn-success">💾 CONFIRMAR MOVIMENTAÇÃO</button></div>
+        <div style="display:flex; justify-content: flex-end; margin-top:15px;"><button id="btnGravarMovimentacao" class="btn-success">🟢 CONFIRMAR MOVIMENTAÇÃO</button></div>
       </div>
       <div class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>📋 EQUIPAMENTOS INSTALADOS</h3><select id="selectFiltroClienteLocacao" class="select-padrao" style="width:320px;">${optCli}</select></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>📋 EQUIPAMENTOS INSTALADOS NO CLIENTE</h3>
+          <select id="selectFiltroClienteLocacao" class="select-padrao" style="width:320px;">${optCli}</select>
+        </div>
         <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th></tr></thead><tbody id="tbodyItensLocadosCliente"></tbody></table></div>
+      </div>`;
+
+    document.getElementById('selectFiltroClienteLocacao').addEventListener('change', filtrarEquipamentosDoCliente);
+    document.getElementById('btnGravarMovimentacao').addEventListener('click', processarMovimentacaoLocacao);
+    document.getElementById('movTipo').addEventListener('change', atualizarDatalistTags);
+    atualizarDatalistTags();
+
+  } else if (aba === 'auditoria') {
+    document.getElementById('tabAuditoriaDePara').classList.add('active');
+    subContainer.innerHTML = `<div id="containerModuloAuditoria"></div>`;
+    renderizarModuloAuditoria();
+  }
+}
+
+// =========================================================================
+// MÓDULO EXCLUSIVO: AUDITORIA & DE-PARA
+// =========================================================================
+function renderizarModuloAuditoria() {
+  const container = document.getElementById('containerModuloAuditoria');
+  if(!container) return;
+
+  let optCliAuditoria = `<option value="GERAL">[ GERAL ] - TODAS AS UNIDADES</option>`;
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+    optCliAuditoria += `<option value="${c.nome.toUpperCase()}" ${appState.filtroClienteAuditoria === c.nome.toUpperCase() ? 'selected' : ''}>${c.nome.toUpperCase()}</option>`;
+  });
+
+  // Cálculo dos indicadores (Cards)
+  let itemsAuditoria = appState.patrimonio.filter(p => p.status.toUpperCase() === 'LOCADO');
+  if(appState.filtroClienteAuditoria !== 'GERAL') {
+    itemsAuditoria = itemsAuditoria.filter(p => p.localizacao.toUpperCase() === appState.filtroClienteAuditoria);
+  }
+
+  const totaisPorTipo = {};
+  itemsAuditoria.forEach(p => {
+    const tipo = p.equipamento.toUpperCase();
+    totaisPorTipo[tipo] = (totaisPorTipo[tipo] || 0) + 1;
+  });
+
+  let cardsHtml = '';
+  Object.keys(totaisPorTipo).sort().forEach(tipo => {
+    cardsHtml += `
+      <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-primaria);">
+        <h4>${tipo}</h4>
+        <div class="num">${totaisPorTipo[tipo]}</div>
+        <small style="color:#64748b;">QUANTITATIVO TOTAL</small>
+      </div>`;
+  });
+
+  if(cardsHtml === '') cardsHtml = `<p style="color:#64748b; padding:20px;">NENHUM EQUIPAMENTO LOCADO PARA ESTE FILTRO.</p>`;
+
+  container.innerHTML = `
+    <div class="card-padrao" style="background:#f8fafc; border-style:dashed;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="color:var(--cor-secundaria);">CENTRAL DE CONFERÊNCIA NEOVERO</h3>
+          <p style="font-size:12px; margin-top:4px; color:#64748b;">SELECIONE O CLIENTE PARA COMPARAR QUANTITATIVOS E REGISTRAR APONTAMENTOS HISTÓRICOS.</p>
+        </div>
+        <div style="width:400px;">
+          <label style="font-size:11px; font-weight:bold; color:var(--cor-secundaria);">FILTRAR UNIDADE:</label>
+          <select id="selectFiltroAuditoria" class="select-padrao" style="border-color:var(--cor-primaria); font-weight:bold;">${optCliAuditoria}</select>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid" style="margin-bottom:25px;">
+      ${cardsHtml}
+    </div>
+
+    <div class="card-padrao">
+      <h3 style="margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">📋 DETALHAMENTO DE TAGs E APONTAMENTO</h3>
+      <div class="tabela-container">
+        <table class="tabela-sistema">
+          <thead>
+            <tr>
+              <th>TAG / ATIVO</th>
+              <th>EQUIPAMENTO / MODELO</th>
+              <th>LOCALIZAÇÃO ATUAL</th>
+              <th>ANOTAÇÃO DE CONFERÊNCIA</th>
+              <th style="text-align:center;">AÇÃO</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyTabelaAuditoria"></tbody>
+        </table>
       </div>
     </div>`;
-  document.getElementById('selectFiltroClienteLocacao').addEventListener('change', filtrarEquipamentosDoCliente);
-  document.getElementById('btnGravarMovimentacao').addEventListener('click', processarMovimentacaoLocacao);
-  document.getElementById('movTipo').addEventListener('change', atualizarDatalistTags);
-  atualizarDatalistTags();
+
+  document.getElementById('selectFiltroAuditoria').addEventListener('change', function() {
+    appState.filtroClienteAuditoria = this.value;
+    renderizarModuloAuditoria();
+  });
+
+  const tbody = document.getElementById('tbodyTabelaAuditoria');
+  itemsAuditoria.sort((a,b) => a.tag.localeCompare(b.tag)).forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${p.tag.toUpperCase()}</b></td>
+      <td><small>${p.equipamento.toUpperCase()}</small><br><b>${p.modelo.toUpperCase()}</b></td>
+      <td><span style="font-size:11px; color:#64748b;">${p.localizacao.toUpperCase()}</span></td>
+      <td><input type="text" id="note_${p.tag}" class="input-padrao no-uppercase" placeholder="Ex: Divergente Neovero, Equipamento não localizado..." style="width:100%; font-size:12px;"></td>
+      <td style="text-align:center; width:150px;">
+        <button onclick="salvarAuditoriaRapida('${p.tag}', '${p.equipamento}', '${p.localizacao}', 'OK')" class="btn-success" style="padding:6px 10px; font-size:11px;">🟢 OK</button>
+        <button onclick="salvarAuditoriaRapida('${p.tag}', '${p.equipamento}', '${p.localizacao}', 'DIVERGENTE')" class="btn-danger" style="padding:6px 10px; font-size:11px;">🔴 DIV</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
 }
+
+window.salvarAuditoriaRapida = function(tag, tipo, cliente, status) {
+  const obs = document.getElementById(`note_${tag}`).value;
+  const pacote = {
+    tag_equipamento: tag,
+    tipo_equipamento: tipo,
+    cliente_unidade: cliente,
+    usuario_responsavel: (appState.usuarioLogado?.nome || 'SISTEMA').toUpperCase(),
+    status_conferencia: status === 'OK' ? 'CONFERIDO_OK' : 'DIVERGENCIA_NEOVERO',
+    observacao_detalhada: obs.toUpperCase()
+  };
+
+  if(status !== 'OK' && obs.trim() === '') {
+    return alert('PARA REPORTAR DIVERGÊNCIA, É OBRIGATÓRIO DESCREVER O MOTIVO NA OBSERVAÇÃO!');
+  }
+
+  // Efeito visual de carregamento no botão
+  console.log("Enviando Auditoria:", pacote);
+  
+  fetch(`${WEB_APP_URL}?acao=salvarAuditoria&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { 
+    method: 'POST', 
+    mode: 'no-cors' 
+  }).then(() => { 
+    alert(`REGISTRO DE AUDITORIA SALVO PARA A TAG ${tag}!`);
+    document.getElementById(`note_${tag}`).value = '';
+    sincronizarDadosPlanilha(); 
+  });
+};
 
 function atualizarDatalistTags() {
   const dl = document.getElementById('listaTagsAutocomplete'); if(!dl) return; dl.innerHTML = '';
@@ -1513,3 +1672,14 @@ function enviarUsuarioPlanilha() {
 </script>
 </body>
 </html>
+
+
+### ✅ Instruções para testar:
+1.  **Substitua o código** do seu arquivo pelo código acima.
+2.  **Acesse o menu Locação de Ativos:** Você notará as duas novas abas no topo.
+3.  **Abra a aba Auditoria:** O sistema carregará a visão **[ GERAL ]** por padrão, somando todos os equipamentos locados da sua base.
+4.  **Troque o filtro para um cliente específico:** Os cards de contagem vão mudar na hora para os números daquele cliente e a tabela embaixo vai listar as TAGs individuais para você auditar e salvar notas.
+
+**Importante:** Assim que você salvar o primeiro apontamento de auditoria, ele será enviado para a aba `HISTORICO_AUDITORIA` que você criou no Google Sheets.
+
+Me avise assim que testar se o visual e a contagem automática ficaram como você precisava!
