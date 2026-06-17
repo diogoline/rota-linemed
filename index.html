@@ -16,7 +16,6 @@
   --bg-sidebar-hover: rgba(255, 255, 255, 0.06);
 }
 
-/* CAIXA ALTA EM TODO O SISTEMA, EXCEÇÃO APENAS PARA CAMPOS DE SENHA E E-MAIL */
 * { 
   margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; 
   text-transform: uppercase; 
@@ -26,7 +25,6 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .input-padrao, .select-padrao, .textarea-padrao {
   width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; background: white; font-size: 13px;
 }
-/* BLINDAGEM COMPLETA DA TELA DE LOGIN E CAMPOS DE CRÍTICA DE MINÚSCULAS */
 #loginUser, #loginPass, #formUserSenha, input[type="password"], input[type="email"], .no-uppercase { 
   text-transform: none !important; 
 }
@@ -38,7 +36,6 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 
 .card-padrao { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; margin-bottom: 25px; }
 
-/* ARQUITETURA DE DESIGN DA SIDEBAR - IDENTIDADE PROPRIA DIOGO MATOS */
 .sidebar { 
   width: 270px; 
   background: var(--bg-sidebar); 
@@ -51,79 +48,31 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
   box-shadow: 4px 0 10px rgba(0, 0, 0, 0.15);
   z-index: 100;
 }
-.logo-container {
-  padding: 0 8px;
-  margin-bottom: 24px;
-}
+.logo-container { padding: 0 8px; margin-bottom: 24px; }
 .logo { font-size: 28px; font-weight: 900; color: #3b82f6; cursor: pointer; letter-spacing: 1.5px; }
 .sidebar small { color: #64748b; display: block; margin-top: 4px; font-size: 11px; font-weight: 700; }
 
-.menu-items { 
-  flex-grow: 1; 
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.menu-items { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
 
 .sidebar button { 
-  width: 100%; 
-  border: none; 
-  background: transparent; 
-  color: #94a3b8; 
-  padding: 12px 14px; 
-  border-radius: 8px; 
-  text-align: left; 
-  cursor: pointer; 
-  font-weight: 600; 
-  font-size: 12px; 
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all .2s ease-in-out; 
-  white-space: nowrap;
+  width: 100%; border: none; background: transparent; color: #94a3b8; padding: 12px 14px; 
+  border-radius: 8px; text-align: left; cursor: pointer; font-weight: 600; font-size: 12px; 
+  display: flex; align-items: center; gap: 12px; transition: all .2s ease-in-out; white-space: nowrap;
 }
-.sidebar button svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-  transition: fill .2s ease;
-}
-.sidebar button:hover { 
-  background: var(--bg-sidebar-hover); 
-  color: #fff;
-}
+.sidebar button svg { width: 18px; height: 18px; fill: currentColor; }
+.sidebar button:hover { background: var(--bg-sidebar-hover); color: #fff; }
 .sidebar button.active-menu {
-  background: rgba(37, 99, 235, 0.15);
-  color: #3b82f6;
-  font-weight: 700;
-  border-left: 4px solid #2563eb;
-  border-radius: 4px 8px 8px 4px;
-  padding-left: 10px;
+  background: rgba(37, 99, 235, 0.15); color: #3b82f6; font-weight: 700;
+  border-left: 4px solid #2563eb; border-radius: 4px 8px 8px 4px; padding-left: 10px;
 }
 
 .assinatura-desenvolvedor {
-  padding: 10px 8px;
-  font-size: 9px;
-  color: #475569;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  margin-bottom: 8px;
-  text-align: center;
+  padding: 10px 8px; font-size: 9px; color: #475569; font-weight: bold;
+  letter-spacing: 0.5px; border-top: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 8px; text-align: center;
 }
 
-.sidebar button.btn-logout { 
-  background: transparent; 
-  border: 1px solid rgba(220, 38, 38, 0.3); 
-  color: #f87171;
-  justify-content: center;
-  font-weight: 700;
-}
-.sidebar button.btn-logout:hover { 
-  background: var(--cor-perigo); 
-  color: #fff;
-  border-color: var(--cor-perigo);
-}
+.sidebar button.btn-logout { background: transparent; border: 1px solid rgba(220, 38, 38, 0.3); color: #f87171; justify-content: center; font-weight: 700; }
+.sidebar button.btn-logout:hover { background: var(--cor-perigo); color: #fff; border-color: var(--cor-perigo); }
 
 .main { margin-left: 270px; width: calc(100% - 270px); display: flex; flex-direction: column; min-height: 100vh; }
 .topbar { background: #fff; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
@@ -161,7 +110,6 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .modal-close { background: none; font-size: 20px; color: #64748b; padding: 0; }
 .modal-close:hover { color: var(--cor-perigo); transform: none; }
 
-/* COMPONENTES DA NOVA TELA INICIAL COMPACTA */
 .card-atalho-home { background: #fff; padding: 18px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: all .2s ease; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
 .card-atalho-home:hover { border-color: var(--cor-primaria); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(37,99,235,0.08); }
 .card-atalho-home h4 { font-size: 13px; color: #1e293b; font-weight: 700; }
@@ -214,7 +162,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
       </button>
       <button id="btnMenuGestao">
         <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46.21 14.25 0 14 0h-4c-.25 0-.46.21-.49.46l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.25.24.46.49.46h4c.25 0 .46-.21.49-.46l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
-        GEGÃO DO SISTEMA
+        GESTÃO DO SISTEMA
       </button>
     </div>
     
@@ -265,7 +213,6 @@ const appState = {
   idMatrizEmEdicao: null,
   filtroClienteAuditoria: 'GERAL',
 
-  // Configurações Globais sincronizadas da nuvem
   configuracoes: {
     prefixoTag: 'LMD',
     digitosTag: 4,
@@ -479,7 +426,7 @@ function renderizarHomePainelDinâmico() {
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuPatrimonio').click()">
         <h4>📦 INVENTÁRIO DE ATIVOS</h4>
-        <p class="no-uppercase">Consulte números de série, marcas e modelos.</p>
+        <p class="no-uppercase">Consulte numbers de série, marcas e modelos.</p>
       </div>
     </div>`;
 }
@@ -788,14 +735,13 @@ function enviarClientePlanilha() {
 }
 
 // =========================================================================
-// INTERFACE: INVENTÁRIO INTELLIGENT (CALIBRADO COM 14 COLUNAS A-N + SETORES)
+// INTERFACE: INVENTÁRIO (CALIBRADO COM 14 COLUNAS A-N + SETORES)
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
   const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').map(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase()))].filter(Boolean).sort();
   let optEquip = '<option value="">SELECIONE O TIPO DE EQUIPAMENTO...</option>';
   tiposUnicos.forEach(t => optEquip += `<option value="${t}">${t}</option>`);
 
-  // Montagem dinâmica dos Clientes Ativos para o Dropdown dinâmico
   let optClientesBase = '<option value="">SELECIONE O CLIENTE DONO...</option>';
   appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
     optClientesBase += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`;
@@ -867,7 +813,7 @@ function renderizarTelaPatrimonio(container) {
         </div>
 
         <div style="margin-bottom:14px;"><div class="form-grupo"><label>ACESSÓRIOS INCLUSOS</label><input type="text" id="formEquipAcessorios" class="input-padrao" placeholder="EX: 01 CABO DE FORÇA, 01 SENSOR ADULTO"></div></div>
-        <div style="margin-bottom:14px;"><div class="form-grupo"><label>OBSERVAÇÕES DO ATIVO</label><input type="text" id="formEquipObservacao" class="input-padrao" placeholder="EX: EQUIPAMENTO EM EXCELENTE ESTADO"></div></div>
+        <div style="margin-bottom:14px;"><div class="form-grupo"><label>OBSERVAÇÕES DO ATIVO</label><input type="text" id="formEquipObservation" class="input-padrao" placeholder="EX: EQUIPAMENTO EM EXCELENTE ESTADO"></div></div>
 
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
           <button id="btnFecharFormEquipamento" class="btn-secondary">CANCELAR</button><button id="btnSalvarEquipamentoPlanilha" class="btn-success">💾 SALVAR ATIVO</button>
@@ -941,7 +887,7 @@ function renderizarTelaPatrimonio(container) {
     selectModelo.innerHTML = '<option value="">SELECIONE O MODELO...</option>'; inputFabricante.value = '';
     if(!equipSel) { selectModelo.disabled = true; return; }
     
-    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
+    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
       const m = item.MODELO || item.modelo;
       if (m && m.trim() !== '') selectModelo.innerHTML += `<option value="${m.toUpperCase()}">${m.toUpperCase()}</option>`; 
     });
@@ -951,7 +897,7 @@ function renderizarTelaPatrimonio(container) {
   document.getElementById('formEquipModelo').addEventListener('change', function() {
     const modSel = this.value; const equipSel = document.getElementById('formEquipNome').value; const inputFabricante = document.getElementById('formEquipFabricante');
     if(!modSel) { inputFabricante.value = ''; return; }
-    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.MODELO || item.modelo).toUpperCase() === modSel);
+    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.MODELO || item.modelo).toUpperCase() === modSel);
     if(corr) {
       const f = corr.FABRICANTE || corr.fabricante;
       inputFabricante.value = f ? f.toUpperCase() : '';
@@ -1063,7 +1009,7 @@ function enviarEquipamentoPlanilha() {
     donoExterno: sit !== 'PROPRIO' ? document.getElementById('formEquipDonoExternoInput').value.toUpperCase() : '',
     familia: document.getElementById('formEquipFamilia').value,
     acessorios: document.getElementById('formEquipAcessorios').value.toUpperCase(),
-    observacao: document.getElementById('formEquipObservacao').value.toUpperCase()
+    observacao: document.getElementById('formEquipObservation').value.toUpperCase()
   };
   
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=PATRIMONIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoEquipamentoSheets`;
@@ -1156,7 +1102,7 @@ function renderizarModuloAuditoria() {
         <div style="width:400px;"><select id="selectFiltroAuditoria" class="select-padrao">${optCliAuditoria}</select></div>
       </div>
     </div>
-    <div class="dashboard-grid" style="margin-bottom:25px;">${cardsHtml || '<p style="padding:15px;">SEM ITENS LOCADOS NESTE FILTRO</p>'}</div>
+    <div class="dashboard-grid" style="margin-bottom:25px;">${cardsHtml || '<p style="padding:15px;">SEM ITENS LOCADOS NESTE FILTRO</p'}</div>
     <div class="card-padrao">
       <div class="tabela-container">
         <table class="tabela-sistema">
@@ -1205,7 +1151,7 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (COLABORADORES E MATRIZ CORRIGIDOS 100%)
+// INTERFACE: MÓDULO GESTÃO
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -1235,12 +1181,37 @@ function abrirSubMóduloGestao(aba) {
     subContainer.innerHTML = `
       <div class="card-padrao">
         <h3 id="tituloFormUsuario">FICHA DO COLABORADOR</h3>
-        <div class="form-grid" style="margin-top:15px;">
+        
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin:15px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🔑 DADOS DE ACESSO</h4>
+        <div class="form-grid">
           <div class="form-grupo"><label>NOME COMPLETO *</label><input type="text" id="formUserNome" class="input-padrao"></div>
           <div class="form-grupo"><label>USUÁRIO / LOGIN *</label><input type="text" id="formUserLogin" class="input-padrao"></div>
           <div class="form-grupo"><label>SENHA DE ACESSO *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
           <div class="form-grupo"><label>PERFIL</label><select id="formUserPerfil" class="select-padrao"><option value="Técnico">TÉCNICO</option><option value="Gestor">GESTOR</option><option value="Admin">ADMIN</option></select></div>
         </div>
+
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🪪 DOCUMENTAÇÃO ADICIONAL</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
+          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
+          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="NÚMERO DE REGISTRO"></div>
+          <div class="form-grupo"><label>TELEFONE / CELULAR</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
+        </div>
+
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">📍 ENDEREÇO RESIDENCIAL</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formUserNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formUserBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>CIDADE</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
+        </div>
+        
+        <input type="hidden" id="formUserStatus" value="ATIVO">
+        <input type="hidden" id="formUserAdmissao" value="">
+        <input type="hidden" id="formUserMotivo" value="">
+
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;"><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button></div>
       </div>
       <div class="card-padrao">
@@ -1315,7 +1286,7 @@ window.abrirModalDescricao = function(id = null) {
 };
 
 window.abrirModalModeloVinculo = function() {
-  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.EQUIPAMENTO || item.equipamento || '').toUpperCase()))].filter(Boolean).sort();
+  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
   let options = '<option value="">SELECIONE A DESCRIÇÃO...</option>';
   descricoesUnicas.forEach(d => options += `<option value="${d}">${d}</option>`);
   const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>📐 HOMOLOGAR MODELO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo" style="margin-bottom:12px;"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo" style="margin-bottom:12px;"><label>MODELO *</label><input type="text" id="modalInputModelo" class="input-padrao" placeholder="EX: SMART PUMP V5"></div><div class="form-grupo" style="margin-bottom:12px;"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao" placeholder="EX: SAMTRONIC"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button></div></div></div>`;
@@ -1390,9 +1361,28 @@ window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
-  const d = { id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO', cpf: '', rg: '', cnh: '', telephone: '', cep: '', logradouro: '', numero: '', bairro: '', cidade: '', uf: '', admissao: '', motivoDesligamento: '' };
   
-  // Tipo corrigido para USUARIO em perfeita simetria com a gaveta do PONTE.GS
+  const d = { 
+    id: 'usr_' + Date.now(), 
+    nome: nome, 
+    login: login, 
+    senha: senha, 
+    perfil: document.getElementById('formUserPerfil').value, 
+    status: 'ATIVO', 
+    cpf: document.getElementById('formUserCpf').value, 
+    rg: document.getElementById('formUserRg').value, 
+    cnh: document.getElementById('formUserCnh').value.toUpperCase(), 
+    telephone: document.getElementById('formUserTelefone').value, 
+    cep: document.getElementById('formUserCep').value, 
+    logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), 
+    numero: document.getElementById('formUserNumero').value, 
+    bairro: document.getElementById('formUserBairro').value.toUpperCase(), 
+    cidade: document.getElementById('formUserCidade').value.toUpperCase(), 
+    uf: document.getElementById('formUserUf').value.toUpperCase(), 
+    admissao: '', 
+    motivoDesligamento: '' 
+  };
+  
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
   const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
