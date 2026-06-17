@@ -904,7 +904,6 @@ function renderizarTelaPatrimonio(container) {
       </div>
     </div>`;
 
-  // Monitoramento Reativo da Situação para chaveamento de campos
   document.getElementById('formEquipSituacao').addEventListener('change', gerenciarCamposSituacaoAtivo);
 
   document.getElementById('inputBuscaTextoPatrimonio').value = appState.buscaTextoPatrimonio;
@@ -913,9 +912,8 @@ function renderizarTelaPatrimonio(container) {
   document.getElementById('btnAbrirFormEquipamento').addEventListener('click', function() { 
     document.getElementById('cardFormEquipamento').classList.remove('hidden'); 
     document.getElementById('formEquipSituacao').value = 'PROPRIO';
-    gerenciarCamposSituacaoAtivo(); // Inicia com as travas da Empresa Raiz
+    gerenciarCamposSituacaoAtivo();
 
-    // Cálculo sequencial automático e travado de TAG (Coluna A)
     let prefixo = (appState.configuracoes.prefixoTag || 'LMD').toUpperCase();
     let digitos = parseInt(appState.configuracoes.digitosTag || 4);
     let maiorNumero = 0;
@@ -943,7 +941,7 @@ function renderizarTelaPatrimonio(container) {
     selectModelo.innerHTML = '<option value="">SELECIONE O MODELO...</option>'; inputFabricante.value = '';
     if(!equipSel) { selectModelo.disabled = true; return; }
     
-    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.equipment || item.equipamento).toUpperCase() === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
+    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
       const m = item.MODELO || item.modelo;
       if (m && m.trim() !== '') selectModelo.innerHTML += `<option value="${m.toUpperCase()}">${m.toUpperCase()}</option>`; 
     });
@@ -953,7 +951,7 @@ function renderizarTelaPatrimonio(container) {
   document.getElementById('formEquipModelo').addEventListener('change', function() {
     const modSel = this.value; const equipSel = document.getElementById('formEquipNome').value; const inputFabricante = document.getElementById('formEquipFabricante');
     if(!modSel) { inputFabricante.value = ''; return; }
-    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.equipment || item.equipamento).toUpperCase() === equipSel && (item.MODELO || item.modelo).toUpperCase() === modSel);
+    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.MODELO || item.modelo).toUpperCase() === modSel);
     if(corr) {
       const f = corr.FABRICANTE || corr.fabricante;
       inputFabricante.value = f ? f.toUpperCase() : '';
@@ -963,7 +961,6 @@ function renderizarTelaPatrimonio(container) {
   atualizarTabelaPatrimonioLocal();
 }
 
-// Engenharia Visual: Faz o campo Cliente Brotar ou Sumir reativamente
 function gerenciarCamposSituacaoAtivo() {
   const sit = document.getElementById('formEquipSituacao').value;
   const grupoDonoExt = document.getElementById('grupoEquipDonoExterno');
@@ -972,9 +969,8 @@ function gerenciarCamposSituacaoAtivo() {
 
   if (sit === 'PROPRIO') {
     grupoDonoExt.style.display = 'none';
-    grupoLocalizacao.style.display = 'none'; // Oculta campo cliente dono externo
+    grupoLocalizacao.style.display = 'none';
     
-    // Aloca os setores parametrizados da Empresa Raiz de forma limpa
     let htmlSelect = '<select id="formEquipSetorSelect" class="select-padrao">';
     let setores = (appState.configuracoes.setoresRaiz || 'ESTOQUE CENTRAL').split(',');
     setores.forEach(s => {
@@ -982,14 +978,10 @@ function gerenciarCamposSituacaoAtivo() {
     });
     htmlSelect += '</select>';
     wrapperSetor.innerHTML = htmlSelect;
-
   } else {
-    // É Cliente, Alugado ou Emprestado -> Faz o campo Cliente brotar na tela!
     grupoLocalizacao.style.display = 'flex';
     grupoDonoExt.style.display = (sit === 'ALUGADO' || sit === 'EMPRESTADO') ? 'flex' : 'none';
-    
-    // Transforma o campo Setor em um campo de texto livre com "SETOR PADRÃO" mutável
-    wrapperSetor.innerHTML = `<input type="text" id="formEquipSetorInput" class="input-padrao" value="SETOR PADRÃO" placeholder="DIGITE O SETOR DA UNIDADE...">`;
+    wrapperSetor.innerHTML = `<input type="text" id="formEquipSetorInput" class="input-padrao" value="SETOR PADRÃO" placeholder="DIGITE O SETOR...">`;
   }
 }
 
@@ -1004,10 +996,8 @@ function atualizarTabelaPatrimonioLocal() {
   filtrados.sort((a,b) => (a.equipamento || '').localeCompare(b.equipamento || ''));
   filtrados.forEach(p => {
     let tr = document.createElement('tr');
-    
     let stVal = (p.status || 'DISPONÍVEL EM ESTOQUE').toUpperCase();
     let bg = stVal === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
-    
     let sitLabel = p.situacao === 'PROPRIO' ? 'PRÓPRIO' : (p.situacao || 'PRÓPRIO');
     let labelDono = p.donoExterno ? ` (${p.donoExterno})` : '';
     
@@ -1032,7 +1022,7 @@ function limparFormularioEquipamento() {
   abrirTela('patrimonio');
 }
 
-window.processarRetornoEquipamentoSheets = function() { alert('ATIVO CADASTRADO COM SUCESSO NAS 14 COLUNAS!'); limparFormularioEquipamento(); sincronizarDadosPlanilha(); };
+window.processarRetornoEquipamentoSheets = function() { alert('ATIVO CADASTRADO COM SUCESSO!'); limparFormularioEquipamento(); sincronizarDadosPlanilha(); };
 function enviarEquipamentoPlanilha() {
   const sit = document.getElementById('formEquipSituacao').value;
   const tag = document.getElementById('formEquipTag').value.trim().toUpperCase(); 
@@ -1043,7 +1033,6 @@ function enviarEquipamentoPlanilha() {
   
   if(!tag || !equip || !mod || !ser) return alert('PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS (*)!');
 
-  // Lógica de Inteligência Operacional de Alocação Inicial Automatizada
   let localizacaoFinal = "";
   let setorFinal = "";
   let statusFinal = "";
@@ -1056,7 +1045,7 @@ function enviarEquipamentoPlanilha() {
     localizacaoFinal = document.getElementById('formEquipLocalizacao').value;
     setorFinal = document.getElementById('formEquipSetorInput').value.trim().toUpperCase();
     statusFinal = "LOCADO";
-    if(!localizacaoFinal) return alert('POR FAVOR, SELECIONE O CLIENTE DONO/DESTINO DO EQUIPAMENTO!');
+    if(!localizacaoFinal) return alert('POR FAVOR, SELECIONE O CLIENTE DONO/DESTINO!');
     if(!setorFinal) setorFinal = "SETOR PADRÃO";
   }
   
@@ -1069,7 +1058,7 @@ function enviarEquipamentoPlanilha() {
     fabricante: fab, 
     status: statusFinal, 
     localizacao: localizacaoFinal,
-    setor: setorFinal, // Gravado na Coluna I física
+    setor: setorFinal, 
     situacao: sit,
     donoExterno: sit !== 'PROPRIO' ? document.getElementById('formEquipDonoExternoInput').value.toUpperCase() : '',
     familia: document.getElementById('formEquipFamilia').value,
@@ -1216,7 +1205,7 @@ function processarMovimentacaoLocacao() {
 }
 
 // =========================================================================
-// INTERFACE: MÓDULO GESTÃO (ATUALIZADA COM EMPRESA RAIZ)
+// INTERFACE: MÓDULO GESTÃO (COLABORADORES E MATRIZ CORRIGIDOS 100%)
 // =========================================================================
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -1252,11 +1241,10 @@ function abrirSubMóduloGestao(aba) {
           <div class="form-grupo"><label>SENHA DE ACESSO *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
           <div class="form-grupo"><label>PERFIL</label><select id="formUserPerfil" class="select-padrao"><option value="Técnico">TÉCNICO</option><option value="Gestor">GESTOR</option><option value="Admin">ADMIN</option></select></div>
         </div>
-        <input type="hidden" id="formUserCpf" value=""><input type="hidden" id="formUserRg" value=""><input type="hidden" id="formUserCnh" value=""><input type="hidden" id="formUserTelefone" value=""><input type="hidden" id="formUserCep" value=""><input type="hidden" id="formUserLogradouro" value=""><input type="hidden" id="formUserNumero" value=""><input type="hidden" id="formUserBairro" value=""><input type="hidden" id="formUserCidade" value=""><input type="hidden" id="formUserUf" value=""><input type="hidden" id="formUserAdmissao" value=""><select id="formUserStatus" class="hidden"><option value="ATIVO">ATIVO</option></select><input type="hidden" id="formUserMotivo" value="">
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;"><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button></div>
       </div>
       <div class="card-padrao">
-        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="listaUsuariosTbody"></tbody></table></div>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th></tr></thead><tbody id="listaUsuariosTbody"></tbody></table></div>
       </div>`;
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
     atualizarTabelaUsuariosLocal();
@@ -1268,7 +1256,7 @@ function abrirSubMóduloGestao(aba) {
         <button onclick="abrirModalDescricao()" class="btn-success">➕ CADASTRAR DESCRIÇÃO GERAL</button>
         <button onclick="abrirModalModeloVinculo()" class="btn-primary">➕ HOMOLOGAR MODELO/MARCA</button>
       </div>
-      <div class="card-padrao"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO / DESCRIÇÃO</th><th>MODELO DE FÁBRICA</th><th>FABRICANTE OFICIAL</th><th>ANVISA</th><th>STATUS</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div></div>`;
+      <div class="card-padrao"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO / DESCRIÇÃO</th><th>MODELO DE FÁBRICA</th><th>FABRICANTE OFICIAL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div></div>`;
     desenharTabelaMatrizAtivos();
 
   } else {
@@ -1315,19 +1303,19 @@ function abrirSubMóduloGestao(aba) {
 }
 
 // =========================================================================
-// FUNÇÕES SUPORTE E MATRIZ_ATIVOS (MÓDULO DE INTELIGÊNCIA)
+// FUNÇÕES SUPORTE E MATRIZ_ATIVOS (MÓDULO DE INTELIGÊNCIA VINCULADO)
 // =========================================================================
 function normalizarTermoMatriz(str) { if (!str) return ''; return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, '').trim(); }
 function calcularDistanciaLevenshtein(a, b) { const matriz = []; for (let i = 0; i <= b.length; i++) matriz[i] = [i]; for (let j = 0; j <= a.length; j++) matriz[0][j] = j; for (let i = 1; i <= b.length; i++) { for (let j = 1; j <= a.length; j++) { if (b.charAt(i - 1) === a.charAt(j - 1)) { matriz[i][j] = matriz[i - 1][j - 1]; } else { matriz[i][j] = Math.min(matriz[i - 1][j - 1] + 1, Math.min(matriz[i][j - 1] + 1, matriz[i - 1][j] + 1)); } } } return matriz[b.length][a.length]; }
 
 window.abrirModalDescricao = function(id = null) {
-  appState.idMatrizEmEdicao = id; let valorExistente = "";
+  appState.idMatrizEmEdicao = id;
   const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>🏥 NOVA DESCRIÇÃO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>NOME / DESCRIÇÃO GERAL *</label><input type="text" id="modalInputEquip" class="input-padrao" value="" placeholder="EX: VENTILADOR PULMONAR"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR TERMO</button></div></div></div>`;
   const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
 };
 
 window.abrirModalModeloVinculo = function() {
-  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.EQUIPAMENTO || item.equipment || item.equipamento).toUpperCase()))].filter(Boolean).sort();
+  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.EQUIPAMENTO || item.equipamento || '').toUpperCase()))].filter(Boolean).sort();
   let options = '<option value="">SELECIONE A DESCRIÇÃO...</option>';
   descricoesUnicas.forEach(d => options += `<option value="${d}">${d}</option>`);
   const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>📐 HOMOLOGAR MODELO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo" style="margin-bottom:12px;"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo" style="margin-bottom:12px;"><label>MODELO *</label><input type="text" id="modalInputModelo" class="input-padrao" placeholder="EX: SMART PUMP V5"></div><div class="form-grupo" style="margin-bottom:12px;"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao" placeholder="EX: SAMTRONIC"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button></div></div></div>`;
@@ -1352,10 +1340,40 @@ window.salvarModalVinculo = function() {
   const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 };
 
+window.alternarStatusMatriz = function(id) {
+  const item = appState.matrizAtivos.find(x => String(x.ID_REGISTRO) === String(id)); if(!item) return;
+  const novoStatus = (item.STATUS || 'ATIVO').toUpperCase() === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+  if(!confirm(`ALTERAR STATUS PARA ${novoStatus}?`)) return;
+  const d = { ID_REGISTRO: id, EQUIPAMENTO: item.EQUIPAMENTO, MODELO: item.MODELO, FABRICANTE: item.FABRICANTE, ANVISA: '-', STATUS: novoStatus };
+  const urlFinal = `${WEB_APP_URL}?acao=editarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+};
+
 window.desenharTabelaMatrizAtivos = function() {
   const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return; tbody.innerHTML = '';
+  if(!appState.matrizAtivos || appState.matrizAtivos.length === 0) return;
+  
   appState.matrizAtivos.forEach(item => {
-    tbody.innerHTML += `<tr><td><b>${(item.EQUIPAMENTO || item.equipment || '').toUpperCase()}</b></td><td>${(item.MODELO || '').toUpperCase()}</td><td>${(item.FABRICANTE || '').toUpperCase()}</td><td>-</td><td>${(item.STATUS || 'ATIVO').toUpperCase()}</td></tr>`;
+    const id = item.ID_REGISTRO;
+    const eq = (item.EQUIPAMENTO || '').toUpperCase();
+    const mo = (item.MODELO || '-').toUpperCase();
+    const fa = (item.FABRICANTE || '-').toUpperCase();
+    const st = (item.STATUS || 'ATIVO').toUpperCase();
+    const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
+    const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
+    
+    let tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${eq}</b></td>
+      <td>${mo}</td>
+      <td>${fa}</td>
+      <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
+      <td style="text-align:center;">
+        <button class="${st === 'ATIVO' ? 'btn-danger' : 'btn-success'}" style="padding:4px 8px; font-size:11px;" onclick="alternarStatusMatriz('${id}')">
+          ${st === 'ATIVO' ? '🚫 INATIVAR' : '⚡ ATIVAR'}
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
   });
 };
 
@@ -1364,17 +1382,20 @@ function formatarDataBr(dataUs) { if(!dataUs) return '-'; const partes = String(
 function atualizarTabelaUsuariosLocal() {
   const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
   appState.usuarios.forEach((u) => {
-    tbody.innerHTML += `<tr><td><b>${u.nome.toUpperCase()}</b></td><td>${u.login.toUpperCase()}</td><td>${u.perfil.toUpperCase()}</td><td>${u.status.toUpperCase()}</td><td style="text-align:center;">-</td></tr>`;
+    tbody.innerHTML += `<tr><td><b>${u.nome.toUpperCase()}</b></td><td>${u.login.toUpperCase()}</td><td>${u.perfil.toUpperCase()}</td><td>${u.status.toUpperCase()}</td></tr>`;
   });
 }
 
-window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO!'); abrirTela('gestao'); sincronizarDadosPlanilha(); };
+window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); abrirTela('gestao'); sincronizarDadosPlanilha(); };
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
   const d = { id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO', cpf: '', rg: '', cnh: '', telephone: '', cep: '', logradouro: '', numero: '', bairro: '', cidade: '', uf: '', admissao: '', motivoDesligamento: '' };
+  
+  // Tipo corrigido para USUARIO em perfeita simetria com a gaveta do PONTE.GS
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
-  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+  const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 </script>
 </body>
