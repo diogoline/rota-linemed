@@ -267,7 +267,7 @@ const appState = {
   // Novo estado para o módulo de Auditoria
   filtroClienteAuditoria: 'GERAL',
 
-  // Configurações Globais padrão de Fábrica da Linemed (Administrável em Parâmetros Gerais)
+  // Configurações Globais padrão e parametrizáveis (Comercial/Genérica)
   configuracoes: {
     prefixoTag: 'LMD',
     digitosTag: 4
@@ -788,7 +788,7 @@ function enviarClientePlanilha() {
 }
 
 // =========================================================================
-// INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL (ATUALIZADA - INTELIGENTE)
+// INTERFACE: INVENTÁRIO / PATRIMÔNIO CENTRAL (ATUALIZADA GLOBAL UNIVERSAL)
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
   const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').map(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase()))].filter(Boolean).sort();
@@ -809,7 +809,7 @@ function renderizarTelaPatrimonio(container) {
           <div class="form-grupo">
             <label>SITUAÇÃO DO ATIVO *</label>
             <select id="formEquipSituacao" class="select-padrao">
-              <option value="PROPRIO">PRÓPRIO (LINEMED)</option>
+              <option value="PROPRIO">PRÓPRIO</option>
               <option value="CLIENTE">DE CLIENTE / UNIDADE</option>
               <option value="ALUGADO">ALUGADO DE TERCEIROS</option>
               <option value="EMPRESTADO">EMPRESTADO DE PARCEIROS</option>
@@ -817,7 +817,7 @@ function renderizarTelaPatrimonio(container) {
           </div>
           <div class="form-grupo">
             <label>TAG / CÓDIGO IDENTIFICADOR *</label>
-            <input type="text" id="formEquipTag" class="input-padrao" placeholder="GERANDO AUTOMÁTICO...">
+            <input type="text" id="formEquipTag" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria);" placeholder="GERANDO AUTOMÁTICO...">
           </div>
           <div class="form-grupo" id="grupoEquipDonoExterno" style="display:none;">
             <label>PROPRIETÁRIO / LOCADOR *</label>
@@ -825,18 +825,31 @@ function renderizarTelaPatrimonio(container) {
           </div>
         </div>
 
-        <div class="form-grid">
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="form-grupo">
+            <label>FAMÍLIA DO EQUIPAMENTO *</label>
+            <select id="formEquipFamilia" class="select-padrao">
+              <option value="MEDICO">MÉDICO</option>
+              <option value="ODONTOLOGICO">ODONTOLÓGICO</option>
+              <option value="LABORATORIAL">LABORATORIAL</option>
+              <option value="REFRIGERACAO">REFRIGERAÇÃO</option>
+              <option value="ADMINISTRATIVO">ADMINISTRATIVO</option>
+              <option value="INFRAESTRUTURA">INFRAESTRUTURA</option>
+            </select>
+          </div>
           <div class="form-grupo"><label>TIPO DE EQUIPAMENTO *</label><select id="formEquipNome" class="select-padrao">${optEquip}</select></div>
           <div class="form-grupo"><label>MODELO DO ATIVO *</label><select id="formEquipModelo" class="select-padrao" disabled><option value="">AGUARDANDO TIPO DE EQUIPAMENTO...</option></select></div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:14px;">
           <div class="form-grupo"><label>FABRICANTE VINCULADO</label><input type="text" id="formEquipFabricante" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria);" placeholder="SERÁ PREENCHIDO PELO MODELO..."></div>
           <div class="form-grupo"><label>Nº DE SÉRIE *</label><input type="text" id="formEquipSerie" class="input-padrao" placeholder="EX: SN983742"></div>
           <div class="form-grupo"><label>Nº DE PATRIMÔNIO</label><input type="text" id="formEquipPatrimonio" class="input-padrao" placeholder="EX: PAT-0449"></div>
-          <div class="form-grupo">
-            <label>STATUS INICIAL</label>
-            <select id="formEquipStatus" class="select-padrao" disabled style="background:#f1f5f9;"><option value="DISPONÍVEL EM ESTOQUE">DISPONÍVEL EM ESTOQUE</option></select>
-          </div>
         </div>
-        <p style="margin-top: 10px; font-size: 11px; color: #64748b;">⚠️ QUER ADICIONAR NOVAS COMBINAÇÕES COMERCIAIS? HOMOLOGUE A LINHA EM <b>GEGÃO DO SISTEMA > ITENS DE INVENTÁRIO</b>.</p>
+
+        <div style="margin-bottom:14px;"><div class="form-grupo"><label>ACESSÓRIOS INCLUSOS</label><input type="text" id="formEquipAcessorios" class="input-padrao" placeholder="EX: 01 CABO DE FORÇA, 01 SENSOR ADULTO"></div></div>
+        <div style="margin-bottom:14px;"><div class="form-grupo"><label>OBSERVAÇÕES DO ATIVO</label><input type="text" id="formEquipObservacao" class="input-padrao" placeholder="EX: EQUIPAMENTO EM EXCELENTE ESTADO, REVISADO"></div></div>
+
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
           <button id="btnFecharFormEquipamento" class="btn-secondary">CANCELAR</button><button id="btnSalvarEquipamentoPlanilha" class="btn-success">💾 SALVAR ATIVO</button>
         </div>
@@ -852,7 +865,7 @@ function renderizarTelaPatrimonio(container) {
         </div>
         <div class="tabela-container">
           <table class="tabela-sistema">
-            <thead><tr><th>TAG</th><th>SITUAÇÃO</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th><th>STATUS OPERACIONAL</th><th>LOCALIZAÇÃO</th></tr></thead>
+            <thead><tr><th>TAG</th><th>SITUAÇÃO</th><th>FAMÍLIA</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th><th>STATUS OPERACIONAL</th></tr></thead>
             <tbody id="listaPatrimonioTbody"></tbody>
           </table>
         </div>
@@ -861,55 +874,40 @@ function renderizarTelaPatrimonio(container) {
 
   document.getElementById('inputBuscaTextoPatrimonio').value = appState.buscaTextoPatrimonio;
   document.getElementById('inputBuscaTextoPatrimonio').addEventListener('input', function() { appState.buscaTextoPatrimonio = this.value.trim().toUpperCase(); atualizarTabelaPatrimonioLocal(); });
-  document.getElementById('btnAbrirFormEquipamento').addEventListener('click', function() { document.getElementById('cardFormEquipamento').classList.remove('hidden'); document.getElementById('formEquipSituacao').dispatchEvent(new Event('change')); });
+  document.getElementById('btnAbrirFormEquipamento').addEventListener('click', function() { 
+    document.getElementById('cardFormEquipamento').classList.remove('hidden'); 
+    
+    // Cálculo de TAG Dinâmica Universal e Blindada para qualquer Novo Cadastro
+    let prefixo = (appState.configuracoes.prefixoTag || 'LMD').toUpperCase();
+    let digitos = parseInt(appState.configuracoes.digitosTag || 4);
+    let maiorNumero = 0;
+    
+    appState.patrimonio.forEach(p => {
+      if(p.tag && p.tag.toUpperCase().startsWith(prefixo)) {
+        let extraido = p.tag.replace(/[^0-9]/g, '');
+        if(extraido) {
+          let num = parseInt(extraido);
+          if(num > maiorNumero) maiorNumero = num;
+        }
+      }
+    });
+    
+    let proximoNum = maiorNumero + 1;
+    let numFormatado = String(proximoNum).padStart(digitos, '0');
+    document.getElementById('formEquipTag').value = `${prefixo}-${numFormatado}`;
+  });
+  
   document.getElementById('btnFecharFormEquipamento').addEventListener('click', limparFormularioEquipamento);
   document.getElementById('btnSalvarEquipamentoPlanilha').addEventListener('click', enviarEquipamentoPlanilha);
 
-  // Lógica de Escuta Condicional do Formulário Blindado
-  const seletorSituacao = document.getElementById('formEquipSituacao');
-  seletorSituacao.addEventListener('change', function() {
+  // Monitoramento condicional simplificado para exibir fornecedores de aluguel/empréstimo
+  document.getElementById('formEquipSituacao').addEventListener('change', function() {
     const v = this.value;
-    const campoTag = document.getElementById('formEquipTag');
     const grupoExt = document.getElementById('grupoEquipDonoExterno');
-    
-    if(v === 'PROPRIO') {
-      campoTag.readOnly = true;
-      campoTag.style.background = '#f1f5f9';
-      campoTag.style.fontWeight = 'bold';
-      campoTag.style.color = 'var(--cor-primaria)';
-      grupoExt.style.display = 'none';
-      
-      // Cálculo Automático Instantâneo sem Erros baseados nos Parâmetros do appState
-      let prefixo = (appState.configuracoes.prefixoTag || 'LMD').toUpperCase();
-      let digitos = parseInt(appState.configuracoes.digitosTag || 4);
-      let maiorNumero = 0;
-      
-      appState.patrimonio.forEach(p => {
-        if(p.tag && p.tag.toUpperCase().startsWith(prefixo)) {
-          let extraido = p.tag.replace(/[^0-9]/g, '');
-          if(extraido) {
-            let num = parseInt(extraido);
-            if(num > maiorNumero) maiorNumero = num;
-          }
-        }
-      });
-      
-      let proximoNum = maiorNumero + 1;
-      let numFormatado = String(proximoNum).padStart(digitos, '0');
-      campoTag.value = `${prefixo}-${numFormatado}`;
+    if(v === 'ALUGADO' || v === 'EMPRESTADO') {
+      grupoExt.style.display = 'flex';
     } else {
-      campoTag.readOnly = false;
-      campoTag.style.background = '#fff';
-      campoTag.style.fontWeight = 'normal';
-      campoTag.style.color = '#1e293b';
-      campoTag.value = '';
-      campoTag.placeholder = 'DIGITE OU BIPE A TAG';
-      
-      if(v === 'ALUGADO' || v === 'EMPRESTADO') {
-        grupoExt.style.display = 'flex';
-      } else {
-        grupoExt.style.display = 'none';
-      }
+      grupoExt.style.display = 'none';
     }
   });
 
@@ -950,9 +948,10 @@ function atualizarTabelaPatrimonioLocal() {
   filtrados.forEach(p => {
     let tr = document.createElement('tr');
     let bg = p.status.toUpperCase() === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
-    let sitLabel = p.situacao || 'PRÓPRIO';
+    let sitLabel = p.situacao === 'PROPRIO' ? 'PRÓPRIO' : (p.situacao || 'PRÓPRIO');
     let labelDono = p.donoExterno ? ` (${p.donoExterno})` : '';
-    tr.innerHTML = `<td><b>${p.tag.toUpperCase()}</b></td><td><small>${sitLabel}${labelDono}</small></td><td>${p.equipamento.toUpperCase()}</td><td>${p.serie.toUpperCase()}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo.toUpperCase()}</td><td>${p.fabricante.toUpperCase()}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${p.status.toUpperCase()}</span></td><td><b>${(p.localizacao || 'SEDE CENTRAL').toUpperCase()}</b></td>`;
+    let famLabel = p.familia || 'MÉDICO';
+    tr.innerHTML = `<td><b>${p.tag.toUpperCase()}</b></td><td><small>${sitLabel}${labelDono}</small></td><td><small>${famLabel}</small></td><td>${p.equipamento.toUpperCase()}</td><td>${p.serie.toUpperCase()}</td><td>${p.patrimonio || '-'}</td><td>${p.modelo.toUpperCase()}</td><td>${p.fabricante.toUpperCase()}</td><td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${p.status.toUpperCase()}</span></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -976,7 +975,10 @@ function enviarEquipamentoPlanilha() {
     status: 'DISPONÍVEL EM ESTOQUE', 
     localizacao: 'SEDE CENTRAL',
     situacao: document.getElementById('formEquipSituacao').value,
-    donoExterno: document.getElementById('formEquipDonoExterno').value.toUpperCase()
+    donoExterno: document.getElementById('formEquipDonoExterno').value.toUpperCase(),
+    familia: document.getElementById('formEquipFamilia').value,
+    acessorios: document.getElementById('formEquipAcessorios').value.toUpperCase(),
+    observacao: document.getElementById('formEquipObservacao').value.toUpperCase()
   };
   
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=PATRIMONIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoEquipamentoSheets`;
@@ -1156,8 +1158,6 @@ window.salvarAuditoriaRapida = function(tag, tipo, cliente, status) {
     return alert('PARA REPORTAR DIVERGÊNCIA, É OBRIGATÓRIO DESCREVER O MOTIVO NA OBSERVAÇÃO!');
   }
 
-  console.log("Enviando Auditoria:", pacote);
-  
   fetch(`${WEB_APP_URL}?acao=salvarAuditoria&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { 
     method: 'POST', 
     mode: 'no-cors' 
@@ -1367,7 +1367,6 @@ function abrirSubMóduloGestao(aba) {
         desenharTabelaMatrizAtivos();
       });
 
-      // Conexão e amarração segura do Clique de sincronização direta na Tabela
       document.getElementById('btnSincronizarMatrizDireto').addEventListener('click', function() {
         const tbody = document.getElementById('tbodyMatrizAtivosParam');
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">ATUALIZANDO MATRIZ COM GOOGLE SHEETS...</td></tr>`;
@@ -1384,15 +1383,15 @@ function abrirSubMóduloGestao(aba) {
         <h3 style="color: var(--cor-secundaria); margin-bottom: 15px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px;">🛠️ PARÂMETROS GERAIS DO SISTEMA</h3>
         <div class="form-grid" style="max-width: 600px;">
           <div class="form-grupo">
-            <label>PREFIXO PADRÃO DAS TAGs (LINEMED) *</label>
+            <label>PREFIXO GLOBAL DAS TAGs (CONTROLE CENTRAL) *</label>
             <input type="text" id="cfgPrefixoTag" class="input-padrao" value="${appState.configuracoes.prefixoTag}" style="font-weight: bold; color: var(--cor-primaria);">
           </div>
           <div class="form-grupo">
             <label>NÚMERO DE DÍGITOS DA SEQUÊNCIA *</label>
             <select id="cfgDigitosTag" class="select-padrao">
-              <option value="3" ${appState.configuracoes.digitosTag == 3 ? 'selected' : ''}>3 DÍGITOS (EX: LMD-001)</option>
-              <option value="4" ${appState.configuracoes.digitosTag == 4 ? 'selected' : ''}>4 DÍGITOS (EX: LMD-0001)</option>
-              <option value="5" ${appState.configuracoes.digitosTag == 5 ? 'selected' : ''}>5 DÍGITOS (EX: LMD-00001)</option>
+              <option value="3" ${appState.configuracoes.digitosTag == 3 ? 'selected' : ''}>3 DÍGITOS (EX: EQP-001)</option>
+              <option value="4" ${appState.configuracoes.digitosTag == 4 ? 'selected' : ''}>4 DÍGITOS (EX: EQP-0001)</option>
+              <option value="5" ${appState.configuracoes.digitosTag == 5 ? 'selected' : ''}>5 DÍGITOS (EX: EQP-00001)</option>
             </select>
           </div>
         </div>
@@ -1409,11 +1408,10 @@ function abrirSubMóduloGestao(aba) {
       appState.configuracoes.prefixoTag = pref;
       appState.configuracoes.digitosTag = parseInt(dig);
       
-      // Envia os novos parâmetros administrativos de volta para a persistência da nuvem
       fetch(`${WEB_APP_URL}?acao=salvarConfiguracoes&dados=${encodeURIComponent(JSON.stringify(appState.configuracoes))}`, {
         method: 'POST', mode: 'no-cors'
       }).then(() => {
-        alert('CONFIGURAÇÕES SALVAS COM SUCESSO!');
+        alert('CONFIGURAÇÕES OPERACIONAIS SALVAS!');
         sincronizarDadosPlanilha();
       });
     });
@@ -1643,7 +1641,7 @@ window.alternarStatusMatriz = function(id) {
 
 function executarEnvioMatriz(pacote, acaoForcada = null) {
   const acao = acaoForcada || (appState.idMatrizEmEdicao ? 'editarCadastro' : 'salvarCadastro');
-  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(pacote))}&prefix=fecharModalProcesso`;
+  const urlFinal = `${WEB_APP_URL}?acao=${action || acao}&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(pacote))}&prefix=fecharModalProcesso`;
   
   const scriptAntigo = document.getElementById('jsonp_matriz_script');
   if(scriptAntigo) scriptAntigo.remove();
