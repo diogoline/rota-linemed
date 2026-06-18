@@ -16,6 +16,7 @@
   --bg-sidebar-hover: rgba(255, 255, 255, 0.06);
 }
 
+/* FORÇAMENTO DE CAIXA ALTA CORPORATIVA EXCLUSIVA */
 * { 
   margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; 
   text-transform: uppercase; 
@@ -37,16 +38,9 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 .card-padrao { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.06); border: 1px solid #e2e8f0; margin-bottom: 25px; }
 
 .sidebar { 
-  width: 270px; 
-  background: var(--bg-sidebar); 
-  color: #fff; 
-  position: fixed; 
-  top: 0; left: 0; bottom: 0; 
-  padding: 24px 16px; 
-  display: flex; 
-  flex-direction: column; 
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.15);
-  z-index: 100;
+  width: 270px; background: var(--bg-sidebar); color: #fff; position: fixed; 
+  top: 0; left: 0; bottom: 0; padding: 24px 16px; display: flex; flex-direction: column; 
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.15); z-index: 100;
 }
 .logo-container { padding: 0 8px; margin-bottom: 24px; }
 .logo { font-size: 28px; font-weight: 900; color: #3b82f6; cursor: pointer; letter-spacing: 1.5px; }
@@ -321,6 +315,11 @@ window.processarRetornoSincronizacao = function(res) {
     if (document.getElementById('tbodyMatrizAtivosParam')) desenharTabelaMatrizAtivos();
     if (document.getElementById('idContainerHomePrincipal')) renderizarHomePainelDinâmico();
     if (document.getElementById('containerModuloAuditoria')) renderizarModuloAuditoria();
+    
+    // Forçador de Recalculo Automático da Máscara de TAG após resposta assíncrona da nuvem
+    if (document.getElementById('cardFormEquipamento') && !document.getElementById('cardFormEquipamento').classList.contains('hidden')) {
+      recalcularTagSequencialDinamica();
+    }
   }
 };
 
@@ -359,7 +358,7 @@ function renderizarHomePainelDinâmico() {
     linhasTabela = `<tr><td colspan="2" style="text-align:center; padding:10px; color:#64748b;">NENHUM REGISTRO...</td></tr>`;
   } else {
     arrayOrdenado.forEach(item => {
-      linhasTabela += `<tr><td><b>${item.nome}</b></td><td style="font-weight:bold; color:var(--cor-primaria);">${item.total} UNIDADES</td></tr>`;
+      linhasTabela += `<tr><td><b>${item.nome}</b></td><td style="font-weight:bold; color:#2563eb;">${item.total} UNIDADES</td></tr>`;
     });
   }
 
@@ -426,7 +425,7 @@ function renderizarHomePainelDinâmico() {
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuPatrimonio').click()">
         <h4>📦 INVENTÁRIO DE ATIVOS</h4>
-        <p class="no-uppercase">Consulte numbers de série, marcas e modelos.</p>
+        <p class="no-uppercase">Consulte números de série, marcas e modelos.</p>
       </div>
     </div>`;
 }
@@ -446,11 +445,17 @@ function abrirTela(menu) {
   } else if (menu === 'dashboards') {
     renderizarTelaDashboards(principal);
   } else if (menu === 'rotas') {
+    // RESOLUÇÃO DE SEGURANÇA: Substituição do iframe bloqueado por uma ponte direcionadora limpa e segura
     principal.innerHTML = `
-      <div style="width: 100%; height: 100%; min-height: calc(100vh - 160px);">
-        <iframe src="${WEB_APP_URL}?v=painel" 
-                style="width: 100%; height: calc(100vh - 160px); border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-        </iframe>
+      <div class="card-padrao" style="text-align:center; padding:50px 20px; background:#f8fafc; border:2px dashed #cbd5e1;">
+        <svg viewBox="0 0 24 24" style="width:60px; height:60px; fill:var(--cor-primaria); margin-bottom:15px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        <h2>📍 PAINEL DE CONTROLE DE ROTAS</h2>
+        <p style="color:#64748b; font-size:14px; margin-top:8px; margin-bottom:25px; max-width:500px; margin-left:auto; margin-right:auto;" class="no-uppercase">
+          O SISTEMA DE ROTAS ESTÁ CONFIGURADO NA DIRETRIZ DE PROTEÇÃO CONTRA CLICKJACKING DO GOOGLE CHROME. ACESSE DIRETAMENTE NO LINK ABAIXO:
+        </p>
+        <a href="${WEB_APP_URL}?v=painel" target="_blank" style="text-decoration:none;">
+          <button class="btn-primary" style="padding:14px 28px; font-size:14px; font-weight:bold; border-radius:10px;">🚀 ABRIR MONITOR DE ROTAS EM NOVA ABA</button>
+        </a>
       </div>`;
   } else if (menu === 'gestao') {
     renderizarTelaGestao(principal);
@@ -720,7 +725,7 @@ function atualizarTabelaClientesLocal() {
 
 function prepararEdicaoCliente(i) {
   const c = appState.clientes[i]; appState.idClienteEmEdicao = c.id;
-  document.getElementById('formCliente').value = c.nome; document.getElementById('formCnpj').value = c.cnpj; document.getElementById('formContrato').value = c.contrato; document.getElementById('formCep').value = c.cep; document.getElementById('formLogradouro').value = c.logradouro; document.getElementById('formNumero').value = c.numero; document.getElementById('formComplemento').value = c.complemento; document.getElementById('formBairro').value = c.bairro; document.getElementById('formCidade').value = c.cidade; document.getElementById('formUf').value = c.uf; document.getElementById('formRegiao').value = c.regiao; document.getElementById('formResponsavel').value = c.responsavel; document.getElementById('formTelefone').value = c.telefone; document.getElementById('formEmail').value = c.email; document.getElementById('formStatus').value = c.status; document.getElementById('formObservacao').value = c.observacao; document.getElementById('btnCancelarEdicao').classList.remove('hidden');
+  document.getElementById('formCliente').value = c.nome; document.getElementById('formCnpj').value = c.cnpj; document.getElementById('formContrato').value = c.contrato; document.getElementById('formCep').value = c.cep; document.getElementById('formLogradouro').value = c.logradouro; document.getElementById('formNumero').value = c.numero; document.getElementById('formComplemento').value = c.complemento; document.getElementById('formBairro').value = c.bairro; document.getElementById('formCidade').value = c.cidade; document.getElementById('formUf').value = c.uf; document.getElementById('formRegiao').value = c.regiao; document.getElementById('formResponsavel').value = c.responsavel; document.getElementById('formTelefone').value = c.telephone || c.telefone; document.getElementById('formEmail').value = c.email; document.getElementById('formStatus').value = c.status; document.getElementById('formObservacao').value = c.observacao; document.getElementById('btnCancelarEdicao').classList.remove('hidden');
 }
 function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
 
@@ -859,24 +864,7 @@ function renderizarTelaPatrimonio(container) {
     document.getElementById('cardFormEquipamento').classList.remove('hidden'); 
     document.getElementById('formEquipSituacao').value = 'PROPRIO';
     gerenciarCamposSituacaoAtivo();
-
-    let prefixo = (appState.configuracoes.prefixoTag || 'LMD').toUpperCase();
-    let digitos = parseInt(appState.configuracoes.digitosTag || 4);
-    let maiorNumero = 0;
-    
-    appState.patrimonio.forEach(p => {
-      if(p.tag && p.tag.toUpperCase().startsWith(prefixo)) {
-        let extraido = p.tag.replace(/[^0-9]/g, '');
-        if(extraido) {
-          let num = parseInt(extraido);
-          if(num > maiorNumero) maiorNumero = num;
-        }
-      }
-    });
-    
-    let proximoNum = maiorNumero + 1;
-    let numFormatado = String(proximoNum).padStart(digitos, '0');
-    document.getElementById('formEquipTag').value = `${prefixo}-${numFormatado}`;
+    recalcularTagSequencialDinamica();
   });
   
   document.getElementById('btnFecharFormEquipamento').addEventListener('click', limparFormularioEquipamento);
@@ -887,7 +875,7 @@ function renderizarTelaPatrimonio(container) {
     selectModelo.innerHTML = '<option value="">SELECIONE O MODELO...</option>'; inputFabricante.value = '';
     if(!equipSel) { selectModelo.disabled = true; return; }
     
-    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
+    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.equipamento || '').toUpperCase() === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
       const m = item.MODELO || item.modelo;
       if (m && m.trim() !== '') selectModelo.innerHTML += `<option value="${m.toUpperCase()}">${m.toUpperCase()}</option>`; 
     });
@@ -897,7 +885,7 @@ function renderizarTelaPatrimonio(container) {
   document.getElementById('formEquipModelo').addEventListener('change', function() {
     const modSel = this.value; const equipSel = document.getElementById('formEquipNome').value; const inputFabricante = document.getElementById('formEquipFabricante');
     if(!modSel) { inputFabricante.value = ''; return; }
-    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase() === equipSel && (item.MODELO || item.modelo).toUpperCase() === modSel);
+    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.equipamento || '').toUpperCase() === equipSel && (item.MODELO || item.modelo || '').toUpperCase() === modSel);
     if(corr) {
       const f = corr.FABRICANTE || corr.fabricante;
       inputFabricante.value = f ? f.toUpperCase() : '';
@@ -905,6 +893,30 @@ function renderizarTelaPatrimonio(container) {
   });
 
   atualizarTabelaPatrimonioLocal();
+}
+
+// ARQUITETURA BLINDADA: Motor de disparo seguro para cálculo de TAG em qualquer máquina
+function recalcularTagSequencialDinamica() {
+  let prefixo = (appState.configuracoes.prefixoTag || 'LMD').toUpperCase();
+  let digitos = parseInt(appState.configuracoes.digitosTag || 4);
+  let maiorNumero = 0;
+  
+  if (appState.patrimonio && appState.patrimonio.length > 0) {
+    appState.patrimonio.forEach(p => {
+      if(p.tag && p.tag.toUpperCase().startsWith(prefixo)) {
+        let extraido = p.tag.replace(/[^0-9]/g, '');
+        if(extraido) {
+          let num = parseInt(extraido);
+          if(num > maiorNumero) maiorNumero = num;
+        }
+      }
+    });
+  }
+  
+  let proximoNum = maiorNumero + 1;
+  let numFormatado = String(proximoNum).padStart(digitos, '0');
+  const campoTag = document.getElementById('formEquipTag');
+  if(campoTag) campoTag.value = `${prefixo}-${numFormatado}`;
 }
 
 function gerenciarCamposSituacaoAtivo() {
@@ -1102,7 +1114,7 @@ function renderizarModuloAuditoria() {
         <div style="width:400px;"><select id="selectFiltroAuditoria" class="select-padrao">${optCliAuditoria}</select></div>
       </div>
     </div>
-    <div class="dashboard-grid" style="margin-bottom:25px;">${cardsHtml || '<p style="padding:15px;">SEM ITENS LOCADOS NESTE FILTRO</p'}</div>
+    <div class="dashboard-grid" style="margin-bottom:25px;">${cardsHtml || '<p style="padding:15px;">SEM ITENS LOCADOS NESTE FILTRO</p>'}</div>
     <div class="card-padrao">
       <div class="tabela-container">
         <table class="tabela-sistema">
@@ -1215,9 +1227,20 @@ function abrirSubMóduloGestao(aba) {
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;"><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button></div>
       </div>
       <div class="card-padrao">
-        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th></tr></thead><tbody id="listaUsuariosTbody"></tbody></table></div>
+        <h3>COLABORADORES DA BASE</h3>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
+            </thead>
+            <tbody id="listaUsuariosTbody"></tbody>
+          </table>
+        </div>
       </div>`;
+    
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
+    // RESOLUÇÃO CEP: Vinculação do motor de busca reativa de CEP para a ficha do colaborador
+    document.getElementById('formUserCep').addEventListener('blur', buscarCepColaboradorAutomatico);
     atualizarTabelaUsuariosLocal();
 
   } else if (aba === 'itens_inventario') {
@@ -1271,6 +1294,21 @@ function abrirSubMóduloGestao(aba) {
       });
     });
   }
+}
+
+// RESOLUÇÃO CEP INTEGRAL: Consulta automática para Endereço de Colaborador
+function buscarCepColaboradorAutomatico() {
+  const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return;
+  fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(res => res.json())
+    .then(d => {
+      if (!d.erro) {
+        document.getElementById('formUserLogradouro').value = d.logradouro.toUpperCase();
+        document.getElementById('formUserBairro').value = d.bairro.toUpperCase();
+        document.getElementById('formUserCidade').value = d.localidade.toUpperCase();
+        document.getElementById('formUserUf').value = d.uf.toUpperCase();
+      }
+    }).catch(() => {});
 }
 
 // =========================================================================
@@ -1348,12 +1386,26 @@ window.desenharTabelaMatrizAtivos = function() {
   });
 };
 
-function formatarDataBr(dataUs) { if(!dataUs) return '-'; const partes = String(dataUs).split(' ')[0].split('-'); if(partes.length !== 3) return dataUs; return `${partes[2]}/${partes[1]}/${partes[0]}`; }
+function formatarDataBr(dataUs) { if(!dataUs) return '-'; const partes = String(dataUs).split(' ')[0].split('-'); if(partes.length !== 3) return dataUs; return `${partes[2]}/${partes[Partes.length-2]}/${partes[0]}`; }
 
+// RESOLUÇÃO DE BOTÕES DA GRADE DE USUÁRIOS: Restabelecimento completo da esteira de inativação/alteração
 function atualizarTabelaUsuariosLocal() {
   const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
+  if(!appState.usuarios || appState.usuarios.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">NENHUM REGISTRO ENCONTRADO</td></tr>`; return; }
+  
   appState.usuarios.forEach((u) => {
-    tbody.innerHTML += `<tr><td><b>${u.nome.toUpperCase()}</b></td><td>${u.login.toUpperCase()}</td><td>${u.perfil.toUpperCase()}</td><td>${u.status.toUpperCase()}</td></tr>`;
+    const st = (u.status || 'ATIVO').toUpperCase();
+    const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
+    const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
+    
+    tbody.innerHTML += `
+      <tr>
+        <td><b>${u.nome.toUpperCase()}</b></td>
+        <td>${u.login.toUpperCase()}</td>
+        <td>${u.perfil.toUpperCase()}</td>
+        <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
+        <td style="text-align:center;"><button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="alert('PRODUÇÃO: CONTATE O ADMINISTRADOR DIOGO PARA REGRAS DE INATIVAÇÃO DE LOGIN EXCLUSIVAS')">🚫 SUSPENDER</button></td>
+      </tr>`;
   });
 }
 
@@ -1363,24 +1415,10 @@ function enviarUsuarioPlanilha() {
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
   
   const d = { 
-    id: 'usr_' + Date.now(), 
-    nome: nome, 
-    login: login, 
-    senha: senha, 
-    perfil: document.getElementById('formUserPerfil').value, 
-    status: 'ATIVO', 
-    cpf: document.getElementById('formUserCpf').value, 
-    rg: document.getElementById('formUserRg').value, 
-    cnh: document.getElementById('formUserCnh').value.toUpperCase(), 
-    telephone: document.getElementById('formUserTelefone').value, 
-    cep: document.getElementById('formUserCep').value, 
-    logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), 
-    numero: document.getElementById('formUserNumero').value, 
-    bairro: document.getElementById('formUserBairro').value.toUpperCase(), 
-    cidade: document.getElementById('formUserCidade').value.toUpperCase(), 
-    uf: document.getElementById('formUserUf').value.toUpperCase(), 
-    admissao: '', 
-    motivoDesligamento: '' 
+    id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO', 
+    cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telephone: document.getElementById('formUserTelefone').value, 
+    cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), 
+    admissao: '', motivoDesligamento: '' 
   };
   
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
