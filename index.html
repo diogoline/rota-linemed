@@ -139,7 +139,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
         CLIENTES / UNIDADES
       </button>
       <button id="btnMenuChamados">
-        <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-15.7c-.5-.8-1.4-1.3-2.4-1.3s-1.9.5-2.4 1.3L1.3 19c-.5.8-.5 1.8 0 2.6.4.8 1.3 1.3 2.3 1.3h18.2c1 0 1.9-.5 2.3-1.3.5-.8.5-1.8 0-2.6zm-11.2-8.5c0-.6.4-1 1-1s1 .4 1 1v4c0 .6-.4 1-1 1s-1-.4-1-1v-4zm1 9.3c-.7 0-1.3-.6-1.3-1.3 0-.7.6-1.3 1.3-1.3.7 0 1.3.6 1.3 1.3 0 .7-.6 1.3-1.3 1.3z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
         CHAMADOS DE MAINT
       </button>
       <button id="btnMenuLocacao">
@@ -183,7 +183,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <datalist id="datalistClientesGlobal"></datalist>
 
 <script>
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzQp8eTxvrQXEg1dqnFA33WSrEMmVv6LXmk55f4jBCC4Sv7DL7EWeLtvzdhRlsef9_AJQ/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby7a2uRwvyKGXtUPT5fXXAxNByIqbYnTfXgAydyEwMVIq_YxVTJOmNAmuQOKEXpKmJJ8w/exec';
 
 const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
@@ -1386,7 +1386,12 @@ window.desenharTabelaMatrizAtivos = function() {
   });
 };
 
-function formatarDataBr(dataUs) { if(!dataUs) return '-'; const partes = String(dataUs).split(' ')[0].split('-'); if(partes.length !== 3) return dataUs; return `${partes[2]}/${partes[Partes.length-2]}/${partes[0]}`; }
+function formatarDataBr(dataUs) { 
+  if(!dataUs) return '-'; 
+  const partes = String(dataUs).split(' ')[0].split('-'); 
+  if(partes.length !== 3) return dataUs; 
+  return `${partes[2]}/${partes[1]}/${partes[0]}`; 
+}
 
 // RESOLUÇÃO DE BOTÕES DA GRADE DE USUÁRIOS: Restabelecimento completo da esteira de inativação/alteração
 function atualizarTabelaUsuariosLocal() {
