@@ -296,6 +296,7 @@ window.processarRetornoSincronizacao = function(res) {
     appState.usuarios = res.usuarios || [];
     appState.veiculos = res.veiculos || []; 
     appState.matrizAtivos = res.matrizAtivos || [];
+    appState.rotas = res.rotas || [];
     if(res.configuracoes) appState.configuracoes = res.configuracoes;
     
     localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
@@ -315,8 +316,8 @@ window.processarRetornoSincronizacao = function(res) {
     if (document.getElementById('tbodyMatrizAtivosParam')) desenharTabelaMatrizAtivos();
     if (document.getElementById('idContainerHomePrincipal')) renderizarHomePainelDinâmico();
     if (document.getElementById('containerModuloAuditoria')) renderizarModuloAuditoria();
+    if (document.getElementById('tbodyRotasOperacionais')) atualizarTabelaRotasNativa();
     
-    // Forçador de Recalculo Automático da Máscara de TAG após resposta assíncrona da nuvem
     if (document.getElementById('cardFormEquipamento') && !document.getElementById('cardFormEquipamento').classList.contains('hidden')) {
       recalcularTagSequencialDinamica();
     }
@@ -445,23 +446,61 @@ function abrirTela(menu) {
   } else if (menu === 'dashboards') {
     renderizarTelaDashboards(principal);
   } else if (menu === 'rotas') {
-    // RESOLUÇÃO DE SEGURANÇA: Substituição do iframe bloqueado por uma ponte direcionadora limpa e segura
     principal.innerHTML = `
-      <div class="card-padrao" style="text-align:center; padding:50px 20px; background:#f8fafc; border:2px dashed #cbd5e1;">
-        <svg viewBox="0 0 24 24" style="width:60px; height:60px; fill:var(--cor-primaria); margin-bottom:15px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-        <h2>📍 PAINEL DE CONTROLE DE ROTAS</h2>
-        <p style="color:#64748b; font-size:14px; margin-top:8px; margin-bottom:25px; max-width:500px; margin-left:auto; margin-right:auto;" class="no-uppercase">
-          O SISTEMA DE ROTAS ESTÁ CONFIGURADO NA DIRETRIZ DE PROTEÇÃO CONTRA CLICKJACKING DO GOOGLE CHROME. ACESSE DIRETAMENTE NO LINK ABAIXO:
-        </p>
-        <a href="${WEB_APP_URL}?v=painel" target="_blank" style="text-decoration:none;">
-          <button class="btn-primary" style="padding:14px 28px; font-size:14px; font-weight:bold; border-radius:10px;">🚀 ABRIR MONITOR DE ROTAS EM NOVA ABA</button>
-        </a>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2>📍 MONITOR DE ROTAS OPERACIONAIS</h2>
+        <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="font-size:12px;">🔄 SINCRO AGORA</button>
+      </div>
+      <div class="card-padrao">
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr>
+                <th>TÉCNICO RESPONSÁVEL</th>
+                <th>VEÍCULO ALOCADO</th>
+                <th>CLIENTE / DESTINO</th>
+                <th>PERÍODO / DATA</th>
+                <th>STATUS OPERACIONAL</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyRotasOperacionais">
+              <tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">CARREGANDO FLUXOS DE ROTAS...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>`;
+    atualizarTabelaRotasNativa();
   } else if (menu === 'gestao') {
     renderizarTelaGestao(principal);
   } else {
     principal.innerHTML = `<h2>🚧 MÓDULO ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">TELA EM DESENVOLVIMENTO.</p>`;
   }
+}
+
+function atualizarTabelaRotasNativa() {
+  const tbody = document.getElementById('tbodyRotasOperacionais');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  
+  if(!appState.rotas || appState.rotas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">NENHUMA ROTA REGISTRADA OU ATIVA NO MOMENTO.</td></tr>`;
+    return;
+  }
+  
+  appState.rotas.forEach(r => {
+    let tr = document.createElement('tr');
+    let st = (r.status || r.STATUS || 'EM ANDAMENTO').toUpperCase();
+    let bg = st === 'CONCLUIDO' || st === 'CONCLUÍDO' ? '#dcfce7; color:#16a34a;' : '#fef3c7; color:#d97706;';
+    
+    tr.innerHTML = `
+      <td><b>${(r.tecnico || r.tecnico_responsavel || 'NÃO ATRIBUÍDO').toUpperCase()}</b></td>
+      <td>${(r.veiculo || r.veiculo_alocado || '-').toUpperCase()}</td>
+      <td><b>${(r.cliente || r.cliente_destino || '-').toUpperCase()}</b></td>
+      <td>${r.data || r.periodo || '-'}</td>
+      <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${st}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function renderInitializeHome() { renderizarHomePainelDinâmico(); }
@@ -743,7 +782,7 @@ function enviarClientePlanilha() {
 // INTERFACE: INVENTÁRIO (CALIBRADO COM 14 COLUNAS A-N + SETORES)
 // =========================================================================
 function renderizarTelaPatrimonio(container) {
-  const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').map(item => (item.EQUIPAMENTO || item.equipamento).toUpperCase()))].filter(Boolean).sort();
+  const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.status || item.STATUS || 'ATIVO').toUpperCase() === 'ATIVO').map(item => (item.equipamento || item.EQUIPAMENTO).toUpperCase()))].filter(Boolean).sort();
   let optEquip = '<option value="">SELECIONE O TIPO DE EQUIPAMENTO...</option>';
   tiposUnicos.forEach(t => optEquip += `<option value="${t}">${t}</option>`);
 
@@ -875,8 +914,8 @@ function renderizarTelaPatrimonio(container) {
     selectModelo.innerHTML = '<option value="">SELECIONE O MODELO...</option>'; inputFabricante.value = '';
     if(!equipSel) { selectModelo.disabled = true; return; }
     
-    appState.matrizAtivos.filter(item => (item.EQUIPAMENTO || item.equipamento || '').toUpperCase() === equipSel && (item.STATUS || item.status || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
-      const m = item.MODELO || item.modelo;
+    appState.matrizAtivos.filter(item => (item.equipamento || item.EQUIPAMENTO || '').toUpperCase() === equipSel && (item.status || item.STATUS || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
+      const m = item.modelo || item.MODELO;
       if (m && m.trim() !== '') selectModelo.innerHTML += `<option value="${m.toUpperCase()}">${m.toUpperCase()}</option>`; 
     });
     selectModelo.disabled = false;
@@ -885,9 +924,9 @@ function renderizarTelaPatrimonio(container) {
   document.getElementById('formEquipModelo').addEventListener('change', function() {
     const modSel = this.value; const equipSel = document.getElementById('formEquipNome').value; const inputFabricante = document.getElementById('formEquipFabricante');
     if(!modSel) { inputFabricante.value = ''; return; }
-    const corr = appState.matrizAtivos.find(item => (item.EQUIPAMENTO || item.equipamento || '').toUpperCase() === equipSel && (item.MODELO || item.modelo || '').toUpperCase() === modSel);
+    const corr = appState.matrizAtivos.find(item => (item.equipamento || item.EQUIPAMENTO || '').toUpperCase() === equipSel && (item.modelo || item.MODELO || '').toUpperCase() === modSel);
     if(corr) {
-      const f = corr.FABRICANTE || corr.fabricante;
+      const f = corr.fabricante || corr.FABRICANTE;
       inputFabricante.value = f ? f.toUpperCase() : '';
     }
   });
@@ -895,7 +934,6 @@ function renderizarTelaPatrimonio(container) {
   atualizarTabelaPatrimonioLocal();
 }
 
-// ARQUITETURA BLINDADA: Motor de disparo seguro para cálculo de TAG em qualquer máquina
 function recalcularTagSequencialDinamica() {
   let prefixo = (appState.configuracoes.prefixoTag || 'LMD').toUpperCase();
   let digitos = parseInt(appState.configuracoes.digitosTag || 4);
@@ -921,12 +959,12 @@ function recalcularTagSequencialDinamica() {
 
 function gerenciarCamposSituacaoAtivo() {
   const sit = document.getElementById('formEquipSituacao').value;
-  const grupoDonoExt = document.getElementById('grupoEquipDonoExterno');
+  const groupDonoExt = document.getElementById('grupoEquipDonoExterno');
   const grupoLocalizacao = document.getElementById('grupoLocalizacaoDinamica');
   const wrapperSetor = document.getElementById('wrapperSetorDinamico');
 
   if (sit === 'PROPRIO') {
-    grupoDonoExt.style.display = 'none';
+    groupDonoExt.style.display = 'none';
     grupoLocalizacao.style.display = 'none';
     
     let htmlSelect = '<select id="formEquipSetorSelect" class="select-padrao">';
@@ -938,7 +976,7 @@ function gerenciarCamposSituacaoAtivo() {
     wrapperSetor.innerHTML = htmlSelect;
   } else {
     grupoLocalizacao.style.display = 'flex';
-    grupoDonoExt.style.display = (sit === 'ALUGADO' || sit === 'EMPRESTADO') ? 'flex' : 'none';
+    groupDonoExt.style.display = (sit === 'ALUGADO' || sit === 'EMPRESTADO') ? 'flex' : 'none';
     wrapperSetor.innerHTML = `<input type="text" id="formEquipSetorInput" class="input-padrao" value="SETOR PADRÃO" placeholder="DIGITE O SETOR...">`;
   }
 }
@@ -1239,7 +1277,6 @@ function abrirSubMóduloGestao(aba) {
       </div>`;
     
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
-    // RESOLUÇÃO CEP: Vinculação do motor de busca reativa de CEP para a ficha do colaborador
     document.getElementById('formUserCep').addEventListener('blur', buscarCepColaboradorAutomatico);
     atualizarTabelaUsuariosLocal();
 
@@ -1296,7 +1333,6 @@ function abrirSubMóduloGestao(aba) {
   }
 }
 
-// RESOLUÇÃO CEP INTEGRAL: Consulta automática para Endereço de Colaborador
 function buscarCepColaboradorAutomatico() {
   const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return;
   fetch(`https://viacep.com.br/ws/${cep}/json/`)
@@ -1324,7 +1360,7 @@ window.abrirModalDescricao = function(id = null) {
 };
 
 window.abrirModalModeloVinculo = function() {
-  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
+  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.equipamento || item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
   let options = '<option value="">SELECIONE A DESCRIÇÃO...</option>';
   descricoesUnicas.forEach(d => options += `<option value="${d}">${d}</option>`);
   const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>📐 HOMOLOGAR MODELO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo" style="margin-bottom:12px;"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo" style="margin-bottom:12px;"><label>MODELO *</label><input type="text" id="modalInputModelo" class="input-padrao" placeholder="EX: SMART PUMP V5"></div><div class="form-grupo" style="margin-bottom:12px;"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao" placeholder="EX: SAMTRONIC"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button></div></div></div>`;
@@ -1336,7 +1372,7 @@ window.fecharModalProcesso = function() { fecharModal(); sincronizarDadosPlanilh
 
 window.salvarModalDescricao = function() {
   const equipInput = document.getElementById('modalInputEquip').value.trim().toUpperCase(); if(!equipInput) return alert('INSIRA A DESCRIÇÃO!');
-  const d = { ID_REGISTRO: 'mat_' + Date.now(), EQUIPAMENTO: equipInput, MODELO: '-', FABRICANTE: '-', ANVISA: '-', STATUS: 'ATIVO' };
+  const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equipInput, EQUIPAMENTO: equipInput, modelo: '-', MODELO: '-', fabricante: '-', FABRICANTE: '-', anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
   const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 };
@@ -1344,16 +1380,17 @@ window.salvarModalDescricao = function() {
 window.salvarModalVinculo = function() {
   const equip = document.getElementById('modalSelectEquip').value.toUpperCase(); const modelo = document.getElementById('modalInputModelo').value.trim().toUpperCase(); const fab = document.getElementById('modalInputFab').value.trim().toUpperCase();
   if(!equip || !modelo || !fab) return alert('PREENCHA OS OBRIGATÓRIOS!');
-  const d = { ID_REGISTRO: 'mat_' + Date.now(), EQUIPAMENTO: equip, MODELO: modelo, FABRICANTE: fab, ANVISA: '-', STATUS: 'ATIVO' };
+  const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equip, EQUIPAMENTO: equip, modelo: modelo, MODELO: modelo, fabricante: fab, FABRICANTE: fab, anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
   const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 };
 
 window.alternarStatusMatriz = function(id) {
-  const item = appState.matrizAtivos.find(x => String(x.ID_REGISTRO) === String(id)); if(!item) return;
-  const novoStatus = (item.STATUS || 'ATIVO').toUpperCase() === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+  const item = appState.matrizAtivos.find(x => String(x.id_registro || x.ID_REGISTRO) === String(id)); if(!item) return;
+  const currentSt = (item.status || item.STATUS || 'ATIVO').toUpperCase();
+  const novoStatus = currentSt === 'ATIVO' ? 'INATIVO' : 'ATIVO';
   if(!confirm(`ALTERAR STATUS PARA ${novoStatus}?`)) return;
-  const d = { ID_REGISTRO: id, EQUIPAMENTO: item.EQUIPAMENTO, MODELO: item.MODELO, FABRICANTE: item.FABRICANTE, ANVISA: '-', STATUS: novoStatus };
+  const d = { id_registro: id, ID_REGISTRO: id, equipamento: item.equipamento || item.EQUIPAMENTO, EQUIPAMENTO: item.equipamento || item.EQUIPAMENTO, modelo: item.modelo || item.MODELO, MODELO: item.modelo || item.MODELO, fabricante: item.fabricante || item.FABRICANTE, FABRICANTE: item.fabricante || item.FABRICANTE, anvisa: '-', ANVISA: '-', status: novoStatus, STATUS: novoStatus };
   const urlFinal = `${WEB_APP_URL}?acao=editarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
   const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 };
@@ -1363,11 +1400,11 @@ window.desenharTabelaMatrizAtivos = function() {
   if(!appState.matrizAtivos || appState.matrizAtivos.length === 0) return;
   
   appState.matrizAtivos.forEach(item => {
-    const id = item.ID_REGISTRO;
-    const eq = (item.EQUIPAMENTO || '').toUpperCase();
-    const mo = (item.MODELO || '-').toUpperCase();
-    const fa = (item.FABRICANTE || '-').toUpperCase();
-    const st = (item.STATUS || 'ATIVO').toUpperCase();
+    const id = item.id_registro || item.ID_REGISTRO;
+    const eq = (item.equipamento || item.EQUIPAMENTO || '').toUpperCase();
+    const mo = (item.modelo || item.MODELO || '-').toUpperCase();
+    const fa = (item.fabricante || item.FABRICANTE || '-').toUpperCase();
+    const st = (item.status || item.STATUS || 'ATIVO').toUpperCase();
     const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
     const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
     
@@ -1393,7 +1430,6 @@ function formatarDataBr(dataUs) {
   return `${partes[2]}/${partes[1]}/${partes[0]}`; 
 }
 
-// RESOLUÇÃO DE BOTÕES DA GRADE DE USUÁRIOS: Restabelecimento completo da esteira de inativação/alteração
 function atualizarTabelaUsuariosLocal() {
   const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
   if(!appState.usuarios || appState.usuarios.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">NENHUM REGISTRO ENCONTRADO</td></tr>`; return; }
