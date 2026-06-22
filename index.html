@@ -111,11 +111,11 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .card-atalho-home p { font-size: 11px; color: #64748b; }
 
 /* REGRAS EXCLUSIVAS DO CONSTRUTOR DE ROTAS DIÁRIAS */
-.container-parada { border: 2px dashed #cbd5e1; padding: 18px; border-radius: 12px; margin-bottom: 20px; background: #f8fafc; position: relative; }
-.container-parada.prioridade-alta { border-color: var(--cor-alerta); background: #fefce8; }
-.sub-tabela-os { width: 100%; margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--borda); }
-.sub-tabela-os th { background: #edf2f7; font-size: 11px; padding: 8px; color: #475569; }
-.sub-tabela-os td { padding: 6px; background: white; }
+.container-parada { border: 1px dashed #cbd5e1; padding: 18px; border-radius: 12px; margin-bottom: 20px; background: #fff; position: relative; }
+.container-parada.prioridade-alta { border-color: var(--cor-perigo); background: #fff5f5; }
+.sub-tabela-os { width: 100%; margin-top: 15px; border-collapse: collapse; border: 1px solid var(--borda); }
+.sub-tabela-os th { background: #f8fafc; font-size: 11px; padding: 10px; color: #475569; border-bottom: 2px solid #e2e8f0; text-align: left; }
+.sub-tabela-os td { padding: 8px; background: white; border-bottom: 1px solid #e2e8f0; }
 </style>
 </head>
 <body>
@@ -365,12 +365,12 @@ function renderizarHomePainelDinâmico() {
     return { nome: key, total: dicionarioContagem[key] };
   }).sort((a,b) => b.total - a.total).slice(0, 4);
 
-  let linhasTabela = '';
+  let linesTabela = '';
   if(arrayOrdenado.length === 0) {
-    linhasTabela = `<tr><td colspan="2" style="text-align:center; padding:10px; color:#64748b;">NENHUM REGISTRO...</td></tr>`;
+    linesTabela = `<tr><td colspan="2" style="text-align:center; padding:10px; color:#64748b;">NENHUM REGISTRO...</td></tr>`;
   } else {
     arrayOrdenado.forEach(item => {
-      linhasTabela += `<tr><td><b>${item.nome}</b></td><td style="font-weight:bold; color:#2563eb;">${item.total} UNIDADES</td></tr>`;
+      linesTabela += `<tr><td><b>${item.nome}</b></td><td style="font-weight:bold; color:#2563eb;">${item.total} UNIDADES</td></tr>`;
     });
   }
 
@@ -411,7 +411,7 @@ function renderizarHomePainelDinâmico() {
         <h3 style="font-size:15px; color:var(--cor-secundaria); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:12px;">📈 ATIVOS COM MAIOR VOLUME DE ESTOQUE</h3>
         <table style="width:100%; border-collapse:collapse;" class="tabela-sistema">
           <thead><tr><th style="padding:6px 10px;">DESCRIÇÃO DO EQUIPAMENTO</th><th style="padding:6px 10px;">QUANTIDADE</th></tr></thead>
-          <tbody>${linhasTabela}</tbody>
+          <tbody>${linesTabela}</tbody>
         </table>
       </div>
       <div class="card-padrao" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#f8fafc; border-style:dashed;">
@@ -558,14 +558,14 @@ function adicionarCardParadaMetrika(optionsClientes) {
   div.id = `parada_${contadorParadas}`;
   
   div.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <span style="font-weight:bold; color:var(--cor-secundaria)">📍 PARADA OPERACIONAL N° ${contadorParadas}</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <span style="font-weight:bold; color:var(--cor-secundaria); font-size:13px;">📍 PARADA OPERACIONAL N° ${contadorParadas}</span>
       <div style="display:flex; gap:15px; align-items:center;">
-        <label style="font-size:11px; font-weight:bold; cursor:pointer; color:var(--cor-secundaria);"><input type="checkbox" onchange="document.getElementById('parada_${contadorParadas}').classList.toggle('prioridade-alta', this.checked)"> ⭐ PRIORIDADE CRÍTICA</label>
+        <label style="font-size:11px; font-weight:bold; cursor:pointer; color:var(--cor-perigo);"><input type="checkbox" onchange="document.getElementById('parada_${contadorParadas}').classList.toggle('prioridade-alta', this.checked)"> ⭐ PRIORIDADE CRÍTICA</label>
         <button class="btn-danger" style="padding:4px 10px; font-size:11px;" onclick="document.getElementById('parada_${contadorParadas}').remove()">REMOVER</button>
       </div>
     </div>
-    <div class="form-grupo">
+    <div class="form-grupo" style="margin-bottom:15px;">
       <label>CLIENTE / UNIDADE DESTINO *</label>
       <select class="select-padrao" id="cli_parada_${contadorParadas}">${optionsClientes}</select>
     </div>
@@ -573,16 +573,17 @@ function adicionarCardParadaMetrika(optionsClientes) {
     <table class="sub-tabela-os">
       <thead>
         <tr>
-          <th>N° O.S. / PROTOCOLO</th>
-          <th>TAG IDENTIFICADORA</th>
-          <th>N° DE SÉRIE DO ATIVO</th>
-          <th>EQUIPAMENTO / MODELO DA BASE</th>
-          <th>DESTINO DOS ATIVOS</th>
+          <th style="width: 12%;">N° O.S. / PROTOCOLO</th>
+          <th style="width: 12%;">TAG ATIVO</th>
+          <th style="width: 15%;">N° DE SÉRIE</th>
+          <th style="width: 25%;">EQUIPAMENTO / MODELO</th>
+          <th style="width: 23%;">OCORRÊNCIA / RELATO TÉCNICO</th>
+          <th style="width: 13%;">LOGÍSTICA</th>
         </tr>
       </thead>
       <tbody id="tbody_os_${contadorParadas}"></tbody>
     </table>
-    <button class="btn-secondary" style="margin-top:10px; padding:6px 12px; font-size:11px;" onclick="adicionarLinhaOSMetrika(${contadorParadas})">➕ VINCULAR NOVA O.S.</button>
+    <button class="btn-secondary" style="margin-top:12px; padding:6px 12px; font-size:11px;" onclick="adicionarLinhaOSMetrika(${contadorParadas})">➕ VINCULAR NOVA O.S.</button>
   `;
   container.appendChild(div);
   adicionarLinhaOSMetrika(contadorParadas);
@@ -596,15 +597,16 @@ function adicionarLinhaOSMetrika(idParada) {
   const tr = document.createElement('tr');
   tr.id = `linha_os_${contadorOS}`;
   tr.innerHTML = `
-    <td><input type="text" class="input-padrao" placeholder="EX: 4500" style="padding:6px;"></td>
-    <td><input type="text" class="input-padrao" placeholder="DIGITE A TAG..." onchange="buscaAtivoPorFiltro(${contadorOS}, 'tag')" id="tag_os_${contadorOS}"></td>
-    <td><input type="text" class="input-padrao" placeholder="OU N° SÉRIE..." onchange="buscaAtivoPorFiltro(${contadorOS}, 'serie')" id="ser_os_${contadorOS}"></td>
-    <td><input type="text" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria);" id="desc_os_${contadorOS}" placeholder="AUTO-BUSCA..."></td>
+    <td><input type="text" class="input-padrao" placeholder="N° O.S." style="padding:6px;"></td>
+    <td><input type="text" class="input-padrao" placeholder="TAG" onchange="buscaAtivoPorFiltro(${contadorOS}, 'tag')" id="tag_os_${contadorOS}" style="padding:6px;"></td>
+    <td><input type="text" class="input-padrao" placeholder="SÉRIE" onchange="buscaAtivoPorFiltro(${contadorOS}, 'serie')" id="ser_os_${contadorOS}" style="padding:6px;"></td>
+    <td><input type="text" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria); padding:6px;" id="desc_os_${contadorOS}" placeholder="AUTO-BUSCA..."></td>
+    <td><input type="text" class="input-padrao no-uppercase" placeholder="EX: CÂMARA ACUMULANDO ÁGUA" id="ocorrencia_os_${contadorOS}" style="padding:6px;"></td>
     <td>
-      <select class="select-padrao" style="padding:5px;">
-        <option value="BASE CLIENTE">PERMANECE NA UNIDADE</option>
-        <option value="LINEMED">RECOLHER PARA LINEMED</option>
-        <option value="BASE ELBER">ENTREGAR BASE ELBER</option>
+      <select class="select-padrao" style="padding:5px; font-size:11px;">
+        <option value="BASE CLIENTE">FICA NA UNIDADE</option>
+        <option value="LINEMED">RECOLHER SEDE</option>
+        <option value="BASE ELBER">BASE ELBER</option>
       </select>
     </td>
   `;
@@ -624,7 +626,7 @@ function buscaAtivoPorFiltro(idLinha, tipoCampo) {
     document.getElementById(`desc_os_${idLinha}`).value = `${ativo.equipamento} | ${ativo.modelo}`.toUpperCase();
     document.getElementById(`desc_os_${idLinha}`).style.color = 'var(--cor-sucesso)';
   } else {
-    document.getElementById(`desc_os_${idLinha}`).value = "ATIVO NÃO LOCALIZADO NO INVENTÁRIO";
+    document.getElementById(`desc_os_${idLinha}`).value = "NÃO LOCALIZADO NO INVENTÁRIO";
     document.getElementById(`desc_os_${idLinha}`).style.color = 'var(--cor-perigo)';
   }
 }
@@ -880,7 +882,7 @@ function verificarDocumentoEReceita() {
   const doc = this.value.trim(); if (!doc) return;
   const isCnpj = document.getElementById('formTipoPessoa').value === 'JURIDICA';
   const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
-  if (dup) { alert(isCnpj ? 'CNPJ JÁ CADASTRADO!' : 'CPF JÁ CADASTRADO!'); this.value = ''; return; }
+  if (dup) { alert(isCnpj ? 'CNPJ JÁ CADASTRADO!' : 'CPF JÁ CADAADO!'); this.value = ''; return; }
   const clean = doc.replace(/\D/g, '');
   if (isCnpj && clean.length === 14) {
     fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
@@ -1334,12 +1336,6 @@ function renderizarModuloAuditoria() {
     tbody.appendChild(tr);
   });
 }
-
-window.salvarAuditoriaRapida = function(tag, tipo, cliente, status) {
-  const obs = document.getElementById(`note_${tag}`).value;
-  const pacote = { tag_equipamento: tag, tipo_equipamento: tipo, cliente_unidade: cliente, usuario_responsavel: (appState.usuarioLogado?.nome || 'SISTEMA').toUpperCase(), status_conferencia: 'CONFERIDO_OK', observacao_detalhada: obs.toUpperCase() };
-  fetch(`${WEB_APP_URL}?acao=salvarAuditoria&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('AUDITORIA SALVA!'); sincronizarDadosPlanilha(); });
-};
 
 function atualizarDatalistTags() {
   const dl = document.getElementById('listaTagsAutocomplete'); if(!dl) return; dl.innerHTML = '';
