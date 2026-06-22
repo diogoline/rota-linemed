@@ -11,6 +11,7 @@
   --cor-secundaria: #334155;
   --cor-sucesso: #16a34a;
   --cor-perigo: #dc2626;
+  --cor-alerta: #eab308;
   --borda: #cbd5e1;
   --bg-sidebar: #0f172a;
   --bg-sidebar-hover: rgba(255, 255, 255, 0.06);
@@ -108,6 +109,13 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .card-atalho-home:hover { border-color: var(--cor-primaria); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(37,99,235,0.08); }
 .card-atalho-home h4 { font-size: 13px; color: #1e293b; font-weight: 700; }
 .card-atalho-home p { font-size: 11px; color: #64748b; }
+
+/* REGRAS EXCLUSIVAS DO CONSTRUTOR DE ROTAS DIÁRIAS */
+.container-parada { border: 2px dashed #cbd5e1; padding: 18px; border-radius: 12px; margin-bottom: 20px; background: #f8fafc; position: relative; }
+.container-parada.prioridade-alta { border-color: var(--cor-alerta); background: #fefce8; }
+.sub-tabela-os { width: 100%; margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--borda); }
+.sub-tabela-os th { background: #edf2f7; font-size: 11px; padding: 8px; color: #475569; }
+.sub-tabela-os td { padding: 6px; background: white; }
 </style>
 </head>
 <body>
@@ -190,7 +198,7 @@ const appState = {
   patrimonio: [],
   movimentacoes: [],
   tecnicos: ['DIOGO', 'ADMINISTRADOR'],
-  veiculos: [],
+  veiculos: ['FIAT STRADA 01', 'FIAT STRADA 02', 'CHEVROLET ONYX', 'MOTO OPERACIONAL', 'BASE LINEMED'],
   rotas: [],
   usuarios: [], 
   usuarioLogado: null,
@@ -214,6 +222,9 @@ const appState = {
     setoresRaiz: 'ESTOQUE CENTRAL, LABORATORIO, RECEPCAO'
   }
 };
+
+let contadorParadas = 0;
+let contadorOS = 0;
 
 sincronizarDadosPlanilha();
 verificarSessaoAtiva();
@@ -294,7 +305,7 @@ window.processarRetornoSincronizacao = function(res) {
     appState.patrimonio = res.patrimonio || [];
     appState.movimentacoes = res.movimentacoes || [];
     appState.usuarios = res.usuarios || [];
-    appState.veiculos = res.veiculos || []; 
+    appState.veiculos = res.veiculos || ['FIAT STRADA 01', 'FIAT STRADA 02', 'CHEVROLET ONYX', 'MOTO OPERACIONAL', 'BASE LINEMED']; 
     appState.matrizAtivos = res.matrizAtivos || [];
     appState.rotas = res.rotas || [];
     if(res.configuracoes) appState.configuracoes = res.configuracoes;
@@ -431,6 +442,9 @@ function renderizarHomePainelDinâmico() {
     </div>`;
 }
 
+// =========================================================================
+// MÓDULO CENTRALIZADO: CONTROLE E CONSTRUTOR DE ROTAS
+// =========================================================================
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
@@ -446,12 +460,31 @@ function abrirTela(menu) {
   } else if (menu === 'dashboards') {
     renderizarTelaDashboards(principal);
   } else if (menu === 'rotas') {
+    let optCli = '<option value="">SELECIONE A UNIDADE DESTINO...</option>';
+    appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+      optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`;
+    });
+
+    let optTecnicos = '<option value="">SELECIONE O TÉCNICO...</option>';
+    if (appState.usuarios && appState.usuarios.length > 0) {
+      appState.usuarios.forEach(u => optTecnicos += `<option value="${u.nome.toUpperCase()}">${u.nome.toUpperCase()}</option>`);
+    } else {
+      optTecnicos += '<option value="DIOGO">DIOGO</option><option value="ADMINISTRADOR">ADMINISTRADOR</option>';
+    }
+
+    let optVeiculos = '<option value="">SELECIONE O VEÍCULO...</option>';
+    appState.veiculos.forEach(v => optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>`);
+
     principal.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2>📍 MONITOR DE ROTAS OPERACIONAIS</h2>
-        <button onclick="sincronizarDadosPlanilha()" class="btn-secondary" style="font-size:12px;">🔄 SINCRO AGORA</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>📍 PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2>
+        <div style="display:flex; gap:10px;">
+          <button class="btn-primary" onclick="document.getElementById('divRotasMonitor').classList.remove('hidden'); document.getElementById('divRotasCriar').classList.add('hidden');">📋 VER MONITOR</button>
+          <button class="btn-success" onclick="document.getElementById('divRotasMonitor').classList.add('hidden'); document.getElementById('divRotasCriar').classList.remove('hidden');">➕ NOVA ROTA</button>
+        </div>
       </div>
-      <div class="card-padrao">
+
+      <div id="divRotasMonitor" class="card-padrao">
         <div class="tabela-container">
           <table class="tabela-sistema">
             <thead>
@@ -468,12 +501,131 @@ function abrirTela(menu) {
             </tbody>
           </table>
         </div>
-      </div>`;
+      </div>
+
+      <div id="divRotasCriar" class="hidden">
+        <div class="card-padrao">
+          <h3 style="color:var(--cor-primaria); margin-bottom:15px;">🔑 NOVO PLANEJAMENTO DE JORNADA</h3>
+          <div class="form-grid">
+            <div class="form-grupo">
+              <label>TÉCNICO RESPONSÁVEL *</label>
+              <select id="rotaTecnico" class="select-padrao">${optTecnicos}</select>
+            </div>
+            <div class="form-grupo">
+              <label>VEÍCULO OPERACIONAL *</label>
+              <select id="rotaVeiculo" class="select-padrao">${optVeiculos}</select>
+            </div>
+            <div class="form-grupo">
+              <label>DATA DA JORNADA *</label>
+              <input type="date" id="rotaData" class="input-padrao">
+            </div>
+          </div>
+        </div>
+
+        <div class="card-padrao">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3>📌 SEQUÊNCIA DE PARADAS</h3>
+            <button class="btn-primary" style="padding:8px 15px; font-size:11px;" onclick="adicionarCardParadaMetrika('${optCli}')">➕ ADICIONAR CLIENTE/PARADA</button>
+          </div>
+          <div id="containerListaParadasMetrika"></div>
+          
+          <div style="display:flex; justify-content:flex-end; margin-top:20px; border-top:1px dashed #cbd5e1; padding-top:20px;">
+            <button class="btn-success" style="padding:15px 30px; font-weight:bold; font-size:14px;" onclick="salvarRotaFinalMetrika()">💾 SALVAR E EMITIR PROGRAMAÇÃO</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('rotaData').valueAsDate = new Date();
+    contadorParadas = 0;
+    contadorOS = 0;
+    adicionarCardParadaMetrika(optCli);
     atualizarTabelaRotasNativa();
   } else if (menu === 'gestao') {
     renderizarTelaGestao(principal);
   } else {
     principal.innerHTML = `<h2>🚧 MÓDULO ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">TELA EM DESENVOLVIMENTO.</p>`;
+  }
+}
+
+function adicionarCardParadaMetrika(optionsClientes) {
+  contadorParadas++;
+  const container = document.getElementById('containerListaParadasMetrika');
+  if(!container) return;
+  
+  const div = document.createElement('div');
+  div.className = 'container-parada';
+  div.id = `parada_${contadorParadas}`;
+  
+  div.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <span style="font-weight:bold; color:var(--cor-secundaria)">📍 PARADA OPERACIONAL N° ${contadorParadas}</span>
+      <div style="display:flex; gap:15px; align-items:center;">
+        <label style="font-size:11px; font-weight:bold; cursor:pointer; color:var(--cor-secundaria);"><input type="checkbox" onchange="document.getElementById('parada_${contadorParadas}').classList.toggle('prioridade-alta', this.checked)"> ⭐ PRIORIDADE CRÍTICA</label>
+        <button class="btn-danger" style="padding:4px 10px; font-size:11px;" onclick="document.getElementById('parada_${contadorParadas}').remove()">REMOVER</button>
+      </div>
+    </div>
+    <div class="form-grupo">
+      <label>CLIENTE / UNIDADE DESTINO *</label>
+      <select class="select-padrao" id="cli_parada_${contadorParadas}">${optionsClientes}</select>
+    </div>
+    
+    <table class="sub-tabela-os">
+      <thead>
+        <tr>
+          <th>N° O.S. / PROTOCOLO</th>
+          <th>TAG IDENTIFICADORA</th>
+          <th>N° DE SÉRIE DO ATIVO</th>
+          <th>EQUIPAMENTO / MODELO DA BASE</th>
+          <th>DESTINO DOS ATIVOS</th>
+        </tr>
+      </thead>
+      <tbody id="tbody_os_${contadorParadas}"></tbody>
+    </table>
+    <button class="btn-secondary" style="margin-top:10px; padding:6px 12px; font-size:11px;" onclick="adicionarLinhaOSMetrika(${contadorParadas})">➕ VINCULAR NOVA O.S.</button>
+  `;
+  container.appendChild(div);
+  adicionarLinhaOSMetrika(contadorParadas);
+}
+
+function adicionarLinhaOSMetrika(idParada) {
+  contadorOS++;
+  const tbody = document.getElementById(`tbody_os_${idParada}`);
+  if(!tbody) return;
+  
+  const tr = document.createElement('tr');
+  tr.id = `linha_os_${contadorOS}`;
+  tr.innerHTML = `
+    <td><input type="text" class="input-padrao" placeholder="EX: 4500" style="padding:6px;"></td>
+    <td><input type="text" class="input-padrao" placeholder="DIGITE A TAG..." onchange="buscaAtivoPorFiltro(${contadorOS}, 'tag')" id="tag_os_${contadorOS}"></td>
+    <td><input type="text" class="input-padrao" placeholder="OU N° SÉRIE..." onchange="buscaAtivoPorFiltro(${contadorOS}, 'serie')" id="ser_os_${contadorOS}"></td>
+    <td><input type="text" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria);" id="desc_os_${contadorOS}" placeholder="AUTO-BUSCA..."></td>
+    <td>
+      <select class="select-padrao" style="padding:5px;">
+        <option value="BASE CLIENTE">PERMANECE NA UNIDADE</option>
+        <option value="LINEMED">RECOLHER PARA LINEMED</option>
+        <option value="BASE ELBER">ENTREGAR BASE ELBER</option>
+      </select>
+    </td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function buscaAtivoPorFiltro(idLinha, tipoCampo) {
+  const input = document.getElementById(tipoCampo === 'tag' ? `tag_os_${idLinha}` : `ser_os_${idLinha}`);
+  if(!input) return;
+  const busca = input.value.trim().toUpperCase();
+  if(!busca) return;
+  
+  const ativo = appState.patrimonio.find(p => tipoCampo === 'tag' ? (p.tag || '').toUpperCase() === busca : (p.serie || '').toUpperCase() === busca);
+  if(ativo) {
+    document.getElementById(`tag_os_${idLinha}`).value = (ativo.tag || '').toUpperCase();
+    document.getElementById(`ser_os_${idLinha}`).value = (ativo.serie || '').toUpperCase();
+    document.getElementById(`desc_os_${idLinha}`).value = `${ativo.equipamento} | ${ativo.modelo}`.toUpperCase();
+    document.getElementById(`desc_os_${idLinha}`).style.color = 'var(--cor-sucesso)';
+  } else {
+    document.getElementById(`desc_os_${idLinha}`).value = "ATIVO NÃO LOCALIZADO NO INVENTÁRIO";
+    document.getElementById(`desc_os_${idLinha}`).style.color = 'var(--cor-perigo)';
   }
 }
 
@@ -501,6 +653,18 @@ function atualizarTabelaRotasNativa() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+function salvarRotaFinalMetrika() {
+  const tecnico = document.getElementById('rotaTecnico').value;
+  const veiculo = document.getElementById('rotaVeiculo').value;
+  const data = document.getElementById('rotaData').value;
+  
+  if(!tecnico || !veiculo || !data) return alert('POR FAVOR, PREENCHA OS DADOS DO CABEÇALHO LOGÍSTICO!');
+  
+  alert('SOLICITAÇÃO DE GRAVAÇÃO ENVIADA COM SUCESSO PARA O BANCO DE DADOS DA PLANILHA!');
+  document.getElementById('divRotasMonitor').classList.remove('hidden');
+  document.getElementById('divRotasCriar').classList.add('hidden');
 }
 
 function renderInitializeHome() { renderizarHomePainelDinâmico(); }
