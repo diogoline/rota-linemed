@@ -26,6 +26,11 @@ body { background: #f4f7fb; color: #1e293b; display: flex; min-height: 100vh; }
 
 .input-padrao, .select-padrao, .textarea-padrao {
   width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; background: white; font-size: 13px;
+  outline: none !important; transition: border-color 0.2s;
+}
+.input-padrao:focus, .select-padrao:focus {
+  border-color: var(--cor-primaria) !important;
+  box-shadow: none !important;
 }
 #loginUser, #loginPass, #formUserSenha, input[type="password"], input[type="email"], .no-uppercase { 
   text-transform: none !important; 
@@ -111,7 +116,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .card-atalho-home p { font-size: 11px; color: #64748b; }
 
 /* REGRAS EXCLUSIVAS DO CONSTRUTOR DE ROTAS DIÁRIAS */
-.container-parada { border: 1px dashed #cbd5e1; padding: 18px; border-radius: 12px; margin-bottom: 20px; background: #fff; position: relative; }
+.container-parada { border: 1px solid var(--borda); padding: 18px; border-radius: 12px; margin-bottom: 20px; background: #fff; position: relative; }
 .container-parada.prioridade-alta { border-color: var(--cor-perigo); background: #fff5f5; }
 .sub-tabela-os { width: 100%; margin-top: 15px; border-collapse: collapse; border: 1px solid var(--borda); }
 .sub-tabela-os th { background: #f8fafc; font-size: 11px; padding: 10px; color: #475569; border-bottom: 2px solid #e2e8f0; text-align: left; }
@@ -163,7 +168,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
         DASHBOARDS
       </button>
       <button id="btnMenuGestao">
-        <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46.21 14.25 0 14 0h-4c-.25 0-.46.21-.49.46l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.25.24.46.49.46h4c.25 0 .46-.21.49-.46l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46.21 14.25 0 14 0h-4c-.25 0-.46.21-.49.46l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73(M12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
         GESTÃO DO SISTEMA
       </button>
     </div>
@@ -559,10 +564,10 @@ function adicionarCardParadaMetrika(optionsClientes) {
   
   div.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <span style="font-weight:bold; color:var(--cor-secundaria); font-size:13px;">📍 PARADA OPERACIONAL N° ${contadorParadas}</span>
+      <span style="font-weight:bold; color:var(--cor-secundaria); font-size:13px;" id="txt_num_parada_${contadorParadas}">📍 PARADA OPERACIONAL N° ${contadorParadas}</span>
       <div style="display:flex; gap:15px; align-items:center;">
         <label style="font-size:11px; font-weight:bold; cursor:pointer; color:var(--cor-perigo);"><input type="checkbox" onchange="document.getElementById('parada_${contadorParadas}').classList.toggle('prioridade-alta', this.checked)"> ⭐ PRIORIDADE CRÍTICA</label>
-        <button class="btn-danger" style="padding:4px 10px; font-size:11px;" onclick="document.getElementById('parada_${contadorParadas}').remove()">REMOVER</button>
+        <button class="btn-danger" style="padding:4px 10px; font-size:11px;" onclick="removerCardParadaMetrika(${contadorParadas})">REMOVER</button>
       </div>
     </div>
     <div class="form-grupo" style="margin-bottom:15px;">
@@ -587,6 +592,16 @@ function adicionarCardParadaMetrika(optionsClientes) {
   `;
   container.appendChild(div);
   adicionarLinhaOSMetrika(contadorParadas);
+}
+
+function removerCardParadaMetrika(idParada) {
+  document.getElementById(`parada_${idParada}`).remove();
+  // Reconta os títulos para manter a ordem numérica impecável
+  const paradasRestantes = document.querySelectorAll('.container-parada');
+  paradasRestantes.forEach((p, idx) => {
+    const spanNum = p.querySelector('[id^="txt_num_parada_"]');
+    if(spanNum) spanNum.innerText = `📍 PARADA OPERACIONAL N° ${idx + 1}`;
+  });
 }
 
 function adicionarLinhaOSMetrika(idParada) {
@@ -882,7 +897,7 @@ function verificarDocumentoEReceita() {
   const doc = this.value.trim(); if (!doc) return;
   const isCnpj = document.getElementById('formTipoPessoa').value === 'JURIDICA';
   const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
-  if (dup) { alert(isCnpj ? 'CNPJ JÁ CADASTRADO!' : 'CPF JÁ CADAADO!'); this.value = ''; return; }
+  if (dup) { alert(isCnpj ? 'CNPJ JÁ CADASTRADO!' : 'CPF JÁ CADASTRADO!'); this.value = ''; return; }
   const clean = doc.replace(/\D/g, '');
   if (isCnpj && clean.length === 14) {
     fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
