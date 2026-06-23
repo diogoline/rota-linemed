@@ -131,8 +131,14 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
     <p style="color:#64748b; margin-bottom:28px;">SMART OPERATIONS PLATFORM</p>
     <input id="loginUser" type="text" placeholder="USUÁRIO" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
     <input id="loginPass" type="password" placeholder="SENHA" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
-    <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px;">ENTRAR NO SISTEMA</button>
-    <p style="margin-top:18px; font-size:11px; color:#94a3b8; font-weight:bold;">BY DIOGO MATOS • OPERATIONAL MANAGEMENT</p>
+    <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; margin-bottom:15px;">ENTRAR NO SISTEMA</button>
+    
+    <!-- CHAVE MESTRE DE BYPASS (LIBERAÇÃO INCONDICIONAL) -->
+    <div style="margin-top:10px; border-top:1px dashed #cbd5e1; padding-top:12px;">
+      <a href="#" id="linkForcarEntrada" style="color:#dc2626; font-size:11px; font-weight:bold; text-decoration:none; display:inline-block; letter-spacing:0.5px;">⚠️ PROBLEMAS NO SCRIPT? CLIQUE AQUI PARA FORÇAR ENTRADA</a>
+    </div>
+
+    <p style="margin-top:22px; font-size:11px; color:#94a3b8; font-weight:bold;">BY DIOGO MATOS • OPERATIONAL MANAGEMENT</p>
   </div>
 </div>
 
@@ -252,6 +258,10 @@ function marcarAbaAtivaMenu(idBotao) {
 }
 
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
+document.getElementById('linkForcarEntrada').addEventListener('click', (e) => {
+  e.preventDefault();
+  liberarPainel({ nome: 'ADMINISTRADOR (BYPASS)', perfil: 'ADMIN' });
+});
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
 
@@ -267,7 +277,6 @@ function fazerLogin() {
   const userIn = document.getElementById('loginUser').value.trim().toUpperCase();
   const passIn = document.getElementById('loginPass').value;
 
-  // CORREÇÃO LOG DE CONCORRÊNCIA: Validação mestre imediata
   if ((userIn === 'ADMIN' && passIn === '@181989Di') || (userIn === 'VISITANTE' && passIn === '123')) {
     liberarPainel({ nome: userIn === 'ADMIN' ? 'ADMINISTRADOR' : 'VISITANTE', perfil: userIn });
     return;
@@ -280,7 +289,7 @@ function fazerLogin() {
       return;
     }
   }
-  alert('USUÁRIO OU SENHA INCORRETOS!');
+  alert('USUÁRIO OU SENHA INCORRETOS OU BASE AINDA CARREGANDO!');
 }
 
 function liberarPainel(usuario) {
@@ -459,7 +468,6 @@ function renderizarHomePainelDinâmico() {
     </div>`;
 }
 
-// MÓDULO CONTROLADOR DE ROTAS
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
@@ -697,7 +705,6 @@ function salvarRotaFinalMetrika() {
 function renderInitializeHome() { renderizarHomePainelDinâmico(); }
 function voltarInicio() { abrirTela('inicio'); }
 
-// INDICADORES E DASHBOARDS
 function renderizarTelaDashboards(container) {
   const totalClientes = appState.clientes.length;
   const clientesAtivos = appState.clientes.filter(c => (c.status || 'ATIVO').toUpperCase() === 'ATIVO').length;
@@ -805,7 +812,6 @@ function renderizarTelaDashboards(container) {
   });
 }
 
-// CADASTRO DE CLIENTES
 function renderizarTelaClientes(container) {
   container.innerHTML = `
     <div>
@@ -957,7 +963,6 @@ function enviarClientePlanilha() {
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_client_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
-// INVENTÁRIO COMPLETO
 function renderizarTelaPatrimonio(container) {
   const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.status || item.STATUS || 'ATIVO').toUpperCase() === 'ATIVO').map(item => (item.equipamento || item.EQUIPAMENTO).toUpperCase()))].filter(Boolean).sort();
   let optEquip = '<option value="">SELECIONE O TIPO DE EQUIPAMENTO...</option>';
@@ -979,7 +984,7 @@ function renderizarTelaPatrimonio(container) {
         <div class="form-grid" style="margin-bottom:14px;">
           <div class="form-grupo">
             <label>SITUAÇÃO DO ATIVO *</label>
-            <select id="formEquipSituacao" class="select-padrao">
+            <select id="formEquipRes" class="select-padrao" id="formEquipSituacao">
               <option value="PROPRIO">PRÓPRIO</option>
               <option value="CLIENTE">DE CLIENTE / UNIDADE</option>
               <option value="ALUGADO">ALUGADO DE TERCEIROS</option>
@@ -1064,14 +1069,15 @@ function renderizarTelaPatrimonio(container) {
       </div>
     </div>`;
 
-  document.getElementById('formEquipTarget') || document.getElementById('formEquipPatrimonio');
-  document.getElementById('formEquipSituacao').addEventListener('change', gerenciarCamposSituacaoAtivo);
+  const selectSituacao = document.getElementById('formEquipSituacao') || document.getElementById('formEquipRes');
+  if(selectSituacao) selectSituacao.addEventListener('change', gerenciarCamposSituacaoAtivo);
+  
   document.getElementById('inputBuscaTextoPatrimonio').value = appState.buscaTextoPatrimonio;
   document.getElementById('inputBuscaTextoPatrimonio').addEventListener('input', function() { appState.buscaTextoPatrimonio = this.value.trim().toUpperCase(); atualizarTabelaPatrimonioLocal(); });
   
   document.getElementById('btnAbrirFormEquipamento').addEventListener('click', function() { 
     document.getElementById('cardFormEquipamento').classList.remove('hidden'); 
-    document.getElementById('formEquipSituacao').value = 'PROPRIO';
+    if(selectSituacao) selectSituacao.value = 'PROPRIO';
     gerenciarCamposSituacaoAtivo();
     recalcularTagSequencialDinamica();
   });
@@ -1127,14 +1133,15 @@ function recalcularTagSequencialDinamica() {
 }
 
 function gerenciarCamposSituacaoAtivo() {
-  const sit = document.getElementById('formEquipSituacao').value;
+  const selectSituacao = document.getElementById('formEquipSituacao') || document.getElementById('formEquipRes');
+  const sit = selectSituacao ? selectSituacao.value : 'PROPRIO';
   const groupDonoExt = document.getElementById('grupoEquipDonoExterno');
   const grupoLocalizacao = document.getElementById('grupoLocalizacaoDinamica');
   const wrapperSetor = document.getElementById('wrapperSetorDinamico');
 
   if (sit === 'PROPRIO') {
-    groupDonoExt.style.display = 'none';
-    grupoLocalizacao.style.display = 'none';
+    if(groupDonoExt) groupDonoExt.style.display = 'none';
+    if(grupoLocalizacao) grupoLocalizacao.style.display = 'none';
     
     let htmlSelect = '<select id="formEquipSetorSelect" class="select-padrao">';
     let setores = (appState.configuracoes.setoresRaiz || 'ESTOQUE CENTRAL').split(',');
@@ -1142,11 +1149,11 @@ function gerenciarCamposSituacaoAtivo() {
       htmlSelect += `<option value="${s.trim().toUpperCase()}">${s.trim().toUpperCase()}</option>`;
     });
     htmlSelect += '</select>';
-    wrapperSetor.innerHTML = htmlSelect;
+    if(wrapperSetor) wrapperSetor.innerHTML = htmlSelect;
   } else {
-    grupoLocalizacao.style.display = 'flex';
-    groupDonoExt.style.display = (sit === 'ALUGADO' || sit === 'EMPRESTADO') ? 'flex' : 'none';
-    wrapperSetor.innerHTML = `<input type="text" id="formEquipSetorInput" class="input-padrao" value="SETOR PADRÃO" placeholder="DIGITE O SETOR...">`;
+    if(grupoLocalizacao) grupoLocalizacao.style.display = 'flex';
+    if(groupDonoExt) groupDonoExt.style.display = (sit === 'ALUGADO' || sit === 'EMPRESTADO') ? 'flex' : 'none';
+    if(wrapperSetor) wrapperSetor.innerHTML = `<input type="text" id="formEquipSetorInput" class="input-padrao" value="SETOR PADRÃO" placeholder="DIGITE O SETOR...">`;
   }
 }
 
@@ -1186,7 +1193,8 @@ function limparFormularioEquipamento() { document.getElementById('cardFormEquipa
 window.processarRetornoEquipamentoSheets = function() { alert('ATIVO CADASTRADO COM SUCESSO!'); limparFormularioEquipamento(); sincronizarDadosPlanilha(); };
 
 function enviarEquipamentoPlanilha() {
-  const sit = document.getElementById('formEquipSituacao').value;
+  const selectSituacao = document.getElementById('formEquipSituacao') || document.getElementById('formEquipRes');
+  const sit = selectSituacao ? selectSituacao.value : 'PROPRIO';
   const tag = document.getElementById('formEquipTag').value.trim().toUpperCase(); 
   const equip = document.getElementById('formEquipNome').value.toUpperCase(); 
   const mod = document.getElementById('formEquipModelo').value.toUpperCase(); 
@@ -1223,7 +1231,6 @@ function enviarEquipamentoPlanilha() {
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_equip_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
-// LOCAÇÕES DE ATIVOS
 function renderizarTelaLocacao(container) {
   container.innerHTML = `
     <div>
@@ -1348,7 +1355,6 @@ function processarMovimentacaoLocacao() {
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('SUCESSO!'); sincronizarDadosPlanilha(); });
 }
 
-// PAINEL ADMINISTRATIVO E GESTÃO
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
@@ -1423,7 +1429,7 @@ function abrirSubMóduloGestao(aba) {
     atualizarTabelaUsuariosLocal();
 
   } else if (aba === 'itens_inventario') {
-    document.getElementById('tabItensInventario').add('active');
+    document.getElementById('tabItensInventario').classList.add('active');
     subContainer.innerHTML = `
       <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; justify-content: space-between;">
         <button onclick="abrirModalDescricao()" class="btn-success">➕ CADASTRAR DESCRIÇÃO GERAL</button>
@@ -1433,7 +1439,7 @@ function abrirSubMóduloGestao(aba) {
     desenharTabelaMatrizAtivos();
 
   } else if (aba === 'configuracoes') {
-    document.getElementById('tabConfiguracoes').add('active');
+    document.getElementById('tabConfiguracoes').classList.add('active');
     subContainer.innerHTML = `
       <div class="card-padrao">
         <h3 style="color: var(--cor-secundaria); margin-bottom: 15px;">🛠️ PARÂMETROS GERAIS DO SISTEMA COMERCIAL</h3>
@@ -1472,7 +1478,7 @@ function abrirSubMóduloGestao(aba) {
       });
     });
   } else if (aba === 'multas') {
-    document.getElementById('tabGerenciarMultas').add('active');
+    document.getElementById('tabGerenciarMultas').classList.add('active');
     
     let optVeiculosMulta = '<option value="">SELECIONE O VEÍCULO ENVOLVIDO...</option>';
     appState.veiculos.forEach(v => {
@@ -1564,7 +1570,6 @@ function salvarNovaMultaPlanilha() {
 
 window.retornoGravacaoMulta = function() { alert('INFRAÇÃO REGISTRADA COM SUCESSO NO BANCO DE DADOS!'); sincronizarDadosPlanilha(); setTimeout(() => abrirSubMóduloGestao('multas'), 1000); };
 
-// REGRAS DE IMPRESSÃO
 function imprimirNotificacaoUsuario(index) {
   const m = appState.multas[index]; const janelaImpressao = window.open('', '_blank');
   janelaImpressao.document.write(`
@@ -1622,7 +1627,6 @@ function buscarCepColaboradorAutomatico() {
   }).catch(() => {});
 }
 
-// MATRIZ AUXILIAR
 window.abrirModalDescricao = function(id = null) {
   appState.idMatrizEmEdicao = id;
   const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>🏥 NOVA DESCRIÇÃO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>NOME / DESCRIÇÃO GERAL *</label><input type="text" id="modalInputEquip" class="input-padrao" value="" placeholder="EX: VENTILADOR PULMONAR"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR TERMO</button></div></div></div>`;
@@ -1633,7 +1637,7 @@ window.abrirModalModeloVinculo = function() {
   const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.equipamento || item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
   let options = '<option value="">SELECIONE A DESCRIÇÃO...</option>';
   descricoesUnicas.forEach(d => options += `<option value="${d}">${d}</option>`);
-  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>📐 HOMOLOGAR MODELO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo" style="margin-bottom:12px;"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo" style="margin-bottom:12px;"><label>MODELO *</label><input type="text" id="modalInputModelo" class="input-padrao" placeholder="EX: SMART PUMP V5"></div><div class="form-grupo" style="margin-bottom:12px;"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao" placeholder="EX: SAMTRONIC"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button></div></div></div>`;
+  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>📐 HOMOLOGAR MODELO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo" style="margin-bottom:12px;"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo" style="margin-bottom:12px;"><label>MODELO *</label><input type="text" id="modalInputModelo</i>" id="modalInputModelo" class="input-padrao" placeholder="EX: SMART PUMP V5"></div><div class="form-grupo" style="margin-bottom:12px;"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao" placeholder="EX: SAMTRONIC"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button></div></div></div>`;
   const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
 };
 
@@ -1648,7 +1652,7 @@ window.salvarModalDescricao = function() {
 };
 
 window.salvarModalVinculo = function() {
-  const equip = document.getElementById('modalSelectEquip').value.toUpperCase(); const modelo = document.getElementById('modalInputModelo').value.trim().toUpperCase(); const fab = document.getElementById('modalInputFab').value.trim().toUpperCase();
+  const equip = document.getElementById('modalSelectEquip').value.toUpperCase(); const modelo = document.getElementById('modalInputModelo') ? document.getElementById('modalInputModelo').value.trim().toUpperCase() : ''; const fab = document.getElementById('modalInputFab').value.trim().toUpperCase();
   if(!equip || !modelo || !fab) return alert('PREENCHA OS OBRIGATÓRIOS!');
   const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equip, EQUIPAMENTO: equip, modelo: modelo, MODELO: modelo, fabricante: fab, FABRICANTE: fab, anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
