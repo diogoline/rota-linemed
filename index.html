@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>METRIKA - OPERATIONS PLATFORM</title>
+
+<!-- =========================================================================
+     ESTILOS GERAIS E ARQUITETURA DE DESIGN DA INTERFACE (CSS)
+     ========================================================================= -->
 <style>
 :root {
   --cor-primaria: #2563eb;
@@ -115,7 +119,6 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 .card-atalho-home h4 { font-size: 13px; color: #1e293b; font-weight: 700; }
 .card-atalho-home p { font-size: 11px; color: #64748b; }
 
-/* REGRAS EXCLUSIVAS DO CONSTRUTOR DE ROTAS DIÁRIAS */
 .container-parada { border: 1px solid var(--borda); padding: 18px; border-radius: 12px; margin-bottom: 20px; background: #fff; position: relative; }
 .container-parada.prioridade-alta { border-color: var(--cor-perigo); background: #fff5f5; }
 .sub-tabela-os { width: 100%; margin-top: 15px; border-collapse: collapse; border: 1px solid var(--borda); }
@@ -125,6 +128,9 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 </head>
 <body>
 
+<!-- =========================================================================
+     BLOCO: TELA DE AUTENTICAÇÃO (LOGIN CRIPTOGRAFADO DE ACESSO WEB)
+     ========================================================================= -->
 <div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:99999;">
   <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
     <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">METRIKA</div>
@@ -136,6 +142,9 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
   </div>
 </div>
 
+<!-- =========================================================================
+     BLOCO: ESTRUTURA CORE (SIDEBAR NAVIGATION & MAIN PANEL)
+     ========================================================================= -->
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
   <div class="sidebar">
     <div class="logo-container">
@@ -199,21 +208,27 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <div id="modalContainer" class="hidden"></div>
 <datalist id="datalistClientesGlobal"></datalist>
 
+<!-- =========================================================================
+     MOTOR DE LÓGICA E INTEGRAÇÃO DE SCRIPT DO METRIKA
+     ========================================================================= -->
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby7a2uRwvyKGXtUPT5fXXAxNByIqbYnTfXgAydyEwMVIq_YxVTJOmNAmuQOKEXpKmJJ8w/exec';
 
+/* ==================== CONFIGURAÇÃO GLOBAL DO ESTADO (APPSTATE) ==================== */
 const appState = {
   clientes: JSON.parse(localStorage.getItem('orizonClientes')) || [],
   patrimonio: [],
   movimentacoes: [],
   tecnicos: ['DIOGO', 'ADMINISTRADOR'],
-  veiculos: ['FIAT STRADA 01', 'FIAT STRADA 02', 'CHEVROLET ONYX', 'MOTO OPERACIONAL', 'BASE LINEMED'],
+  // ATUALIZADO COM AS PLACAS DE TRÂNSITO OFICIAIS DOS VEÍCULOS
+  veiculos: ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED'],
   rotas: [],
   multas: [],
   usuarios: [], 
   usuarioLogado: null,
   idClienteEmEdicao: null,
   idUsuarioEmEdicao: null,
+  idMultaEmEdicao: null, // CONTROLE DE FLUXO DE EDIÇÃO DE INFRAÇÃO
   filtroStatusUsuario: 'ATIVO',
   filtroStatusCliente: 'ATIVO',
   buscaTextoCliente: '',
@@ -247,6 +262,7 @@ function marcarAbaAtivaMenu(idBotao) {
   if (btnAlvo) btnAlvo.classList.add('active-menu');
 }
 
+/* ==================== DISPARADORES DE EVENTOS DO MENU PRINCIPAL ==================== */
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
@@ -260,6 +276,7 @@ document.getElementById('btnMenuPatrimonio').addEventListener('click', () => { a
 document.getElementById('btnMenuDashboards').addEventListener('click', () => { abrirTela('dashboards'); marcarAbaAtivaMenu('btnMenuDashboards'); });
 document.getElementById('btnMenuGestao').addEventListener('click', () => { abrirTela('gestao'); marcarAbaAtivaMenu('btnMenuGestao'); });
 
+/* ==================== SISTEMA DE CONTROLE DE ACESSOS E SESSÕES ==================== */
 function fazerLogin() {
   const userIn = document.getElementById('loginUser').value.trim().toUpperCase();
   const passIn = document.getElementById('loginPass').value;
@@ -311,13 +328,14 @@ function verificarSessaoAtiva() {
   }
 }
 
+/* ==================== COMUNICAÇÃO ASSÍNCRONA E SINCRONIZAÇÃO JSONP ==================== */
 window.processarRetornoSincronizacao = function(res) {
   if (res && res.sucesso) {
     appState.clientes = res.clientes || [];
     appState.patrimonio = res.patrimonio || [];
     appState.movimentacoes = res.movimentacoes || [];
     appState.usuarios = res.usuarios || [];
-    appState.veiculos = res.veiculos || ['FIAT STRADA 01', 'FIAT STRADA 02', 'CHEVROLET ONYX', 'MOTO OPERACIONAL', 'BASE LINEMED']; 
+    appState.veiculos = res.veiculos || ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED']; 
     appState.matrizAtivos = res.matrizAtivos || [];
     appState.rotas = res.rotas || [];
     appState.multas = res.multas || [];
@@ -360,6 +378,7 @@ function sincronizarDadosPlanilha() {
   document.body.appendChild(scriptElement);
 }
 
+/* ==================== MÓDULO: HOME / DASHBOARD OPERACIONAL DYNAMIC ==================== */
 function renderizarHomePainelDinâmico() {
   const containerHome = document.getElementById('idContainerHomePrincipal');
   if(!containerHome) return;
@@ -456,6 +475,7 @@ function renderizarHomePainelDinâmico() {
     </div>`;
 }
 
+/* ==================== SISTEMA DE ROTEAMENTO DAS TELAS INTERNAS ==================== */
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
@@ -561,6 +581,7 @@ function abrirTela(menu) {
   }
 }
 
+/* ==================== MÓDULO: CONSTRUTOR DE ROTAS DIÁRIAS LOGÍSTICAS ==================== */
 function adicionarCardParadaMetrika(optionsClientes) {
   contadorParadas++;
   const container = document.getElementById('containerListaParadasMetrika');
@@ -694,6 +715,7 @@ function salvarRotaFinalMetrika() {
 function renderInitializeHome() { renderizarHomePainelDinâmico(); }
 function voltarInicio() { abrirTela('inicio'); }
 
+/* ==================== MÓDULO: GERENCIADOR E RELATÓRIO DE DASHBOARDS ==================== */
 function renderizarTelaDashboards(container) {
   const totalClientes = appState.clientes.length;
   const clientesAtivos = appState.clientes.filter(c => (c.status || 'ATIVO').toUpperCase() === 'ATIVO').length;
@@ -807,6 +829,7 @@ function renderizarTelaDashboards(container) {
   });
 }
 
+/* ==================== MÓDULO: GERENCIADOR MASTER DE CLIENTES ==================== */
 function renderizarTelaClientes(container) {
   container.innerHTML = `
     <div>
@@ -960,6 +983,7 @@ function enviarClientePlanilha() {
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_client_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
+/* ==================== MÓDULO: GESTÃO DO PATRIMÔNIO (INVENTÁRIO CENTRAL) ==================== */
 function renderizarTelaPatrimonio(container) {
   const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => (item.status || item.STATUS || 'ATIVO').toUpperCase() === 'ATIVO').map(item => (item.equipamento || item.EQUIPAMENTO).toUpperCase()))].filter(Boolean).sort();
   let optEquip = '<option value="">SELECIONE O TIPO DE EQUIPAMENTO...</option>';
@@ -1246,6 +1270,7 @@ function enviarEquipamentoPlanilha() {
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_equip_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
+/* ==================== MÓDULO: REMESSAS, MOVIMENTAÇÕES E AUDITORIA NEOVERO ==================== */
 function renderizarTelaLocacao(container) {
   container.innerHTML = `
     <div>
@@ -1295,7 +1320,7 @@ function abrirSubModuloLocacao(aba) {
     document.getElementById('movTipo').addEventListener('change', atualizarDatalistTags);
     atualizarDatalistTags();
   } else if (aba === 'auditoria') {
-    document.getElementById('tabAuditoriaDePara').add('active') || document.getElementById('tabAuditoriaDePara').classList.add('active');
+    document.getElementById('tabAuditoriaDePara').classList.add('active');
     subContainer.innerHTML = `<div id="containerModuloAuditoria"></div>`;
     renderizarModuloAuditoria();
   }
@@ -1370,9 +1395,7 @@ function processarMovimentacaoLocacao() {
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('SUCESSO!'); sincronizarDadosPlanilha(); });
 }
 
-// =========================================================================
-// INTERFACE EXCLUSIVA: MÓDULO DE MULTAS DE TRÂNSITO (CORRIGIDO)
-// =========================================================================
+/* ==================== MÓDULO INTEGRAL: CONTROLE DE MULTAS (EDIÇÃO E DATA CORRIGIDOS) ==================== */
 function renderizarTelaMultas(container) {
   let optCondutores = '<option value="">SELECIONE O CONDUTOR...</option>';
   if (appState.usuarios && appState.usuarios.length > 0) {
@@ -1382,9 +1405,7 @@ function renderizarTelaMultas(container) {
   }
 
   let optVeiculos = '<option value="">SELECIONE O VEÍCULO (PLACA)...</option>';
-  let listaVeiculosEfetiva = (appState.veiculos && appState.veiculos.length > 0) 
-    ? appState.veiculos 
-    : ['FIAT STRADA 01', 'FIAT STRADA 02', 'CHEVROLET ONYX', 'MOTO OPERACIONAL', 'BASE LINEMED'];
+  let listaVeiculosEfetiva = (appState.veiculos && appState.veiculos.length > 0) ? appState.veiculos : ['FIAT STRADA 01', 'FIAT STRADA 02', 'CHEVROLET ONYX', 'MOTO OPERACIONAL', 'BASE LINEMED'];
 
   listaVeiculosEfetiva.forEach(v => {
     let nomeVeiculo = (typeof v === 'object' && v !== null) ? (v.placa || v.nome || v.VEICULO || JSON.stringify(v)) : v;
@@ -1399,7 +1420,7 @@ function renderizarTelaMultas(container) {
       </div>
       
       <div class="card-padrao">
-        <h3 style="margin-bottom:15px; color:var(--cor-perigo);">REGISTRO DE NOTIFICAÇÃO DE MULTA</h3>
+        <h3 id="tituloFormMulta" style="margin-bottom:15px; color:var(--cor-perigo);">REGISTRO DE NOTIFICAÇÃO DE MULTA</h3>
         <div class="form-grid">
           <div class="form-grupo">
             <label>VEÍCULO / PLACA *</label>
@@ -1439,7 +1460,8 @@ function renderizarTelaMultas(container) {
             </select>
           </div>
         </div>
-        <div style="display:flex; justify-content: flex-end; margin-top:15px;">
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
+          <button id="btnCancelarEdicaoMulta" class="btn-secondary hidden" onclick="appState.idMultaEmEdicao = null; abrirTela('multas');">CANCELAR</button>
           <button id="btnSalvarMultaPlanilha" class="btn-danger">💾 SALVAR MULTA</button>
         </div>
       </div>
@@ -1457,13 +1479,14 @@ function renderizarTelaMultas(container) {
             <thead>
               <tr>
                 <th>ID MULTA</th>
-                <th>PLACA</th>
+                <th>PLACA / VEÍCULO</th>
                 <th>CONDUTOR</th>
                 <th>DATA</th>
                 <th>VALOR</th>
                 <th>LOCAL</th>
                 <th>GRAVIDADE</th>
                 <th>SITUAÇÃO</th>
+                <th style="text-align:center;">AÇÕES</th>
               </tr>
             </thead>
             <tbody id="listaMultasTbody"></tbody>
@@ -1482,7 +1505,14 @@ function renderizarTelaMultas(container) {
     atualizarTabelaMultasLocal();
   });
 
-  document.getElementById('formMultaData').valueAsDate = new Date();
+  if (appState.idMultaEmEdicao) {
+    document.getElementById('tituloFormMulta').innerText = "ALTERAR SITUAÇÃO / DADOS DA MULTA";
+    document.getElementById('tituloFormMulta').style.color = "var(--cor-primaria)";
+    document.getElementById('btnCancelarEdicaoMulta').classList.remove('hidden');
+  } else {
+    document.getElementById('formMultaData').valueAsDate = new Date();
+  }
+  
   atualizarTabelaMultasLocal();
 }
 
@@ -1492,7 +1522,7 @@ function atualizarTabelaMultasLocal() {
   tbody.innerHTML = '';
 
   if (!appState.multas || appState.multas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">NENHUMA MULTA LOCALIZADA NO BANCO DE DADOS...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">NENHUMA MULTA LOCALIZADA NO BANCO DE DADOS...</td></tr>`;
     return;
   }
 
@@ -1505,7 +1535,7 @@ function atualizarTabelaMultasLocal() {
   });
 
   if (filtrados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">NENHUM REGISTRO CORRESPONDENTE...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">NENHUM REGISTRO CORRESPONDENTE...</td></tr>`;
     return;
   }
 
@@ -1520,24 +1550,50 @@ function atualizarTabelaMultasLocal() {
     let gravidade = m.gravidade || m.GRAVIDADE || '-';
     let situacao = (m.situacao || m.SITUAÇÃO || 'ABERTO').toUpperCase();
 
+    let idx = appState.multas.findIndex(orig => (orig.id_multa || orig.ID_MULTA) === id);
     let bg = situacao === 'PAGO' ? '#dcfce7; color:#16a34a;' : situacao === 'RECURSO' ? '#dbeafe; color:#2563eb;' : '#fee2e2; color:#dc2626;';
 
     tr.innerHTML = `
       <td><small>${id}</small></td>
       <td><b>${placa.toUpperCase()}</b></td>
       <td>${condutor.toUpperCase()}</td>
-      <td>${formatarDataBr(data)}</td>
+      <td><b>${formatarDataBr(data)}</b></td>
       <td>R$ ${parseFloat(valor).toFixed(2)}</td>
       <td><span style="font-size:12px; color:#475569;">${local.toUpperCase()}</span></td>
       <td><small>${gravidade.toUpperCase()}</small></td>
       <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${situacao}</span></td>
+      <td style="text-align:center;"><button class="btn-primary" style="padding: 4px 8px;" onclick="prepararEdicaoMulta(${idx})">📝 CORRIGIR</button></td>
     `;
     tbody.appendChild(tr);
   });
 }
 
+function prepararEdicaoMulta(i) {
+  const m = appState.multas[i];
+  appState.idMultaEmEdicao = m.id_multa || m.ID_MULTA;
+  
+  abrirTela('multas');
+  
+  document.getElementById('formMultaPlaca').value = (m.placa || m.PLACA || '').toUpperCase();
+  document.getElementById('formMultaCondutor').value = (m.condutor || m.CONDUTOR || '').toUpperCase();
+  document.getElementById('formMultaValor').value = m.valor || m.VALOR;
+  document.getElementById('formMultaLocal').value = (m.local || m.LOCAL || '').toUpperCase();
+  document.getElementById('formMultaGravidade').value = (m.gravidade || m.GRAVIDADE || 'LEVE').toUpperCase();
+  document.getElementById('formIdSituacaoMulta').value = (m.situacao || m.SITUAÇÃO || 'ABERTO').toUpperCase();
+  
+  if(m.data || m.DATA) {
+    try {
+      let dObj = new Date(m.data || m.DATA);
+      if(!isNaN(dObj.getTime())) {
+        document.getElementById('formMultaData').value = dObj.toISOString().split('T')[0];
+      }
+    } catch(e) {}
+  }
+}
+
 window.processarRetornoMultaSheets = function() { 
-  alert('NOTIFICAÇÃO DE MULTA SALVA COM SUCESSO!'); 
+  alert('DADOS DA NOTIFICAÇÃO DE MULTA ATUALIZADOS NO SHEETS!'); 
+  appState.idMultaEmEdicao = null;
   abrirTela('multas'); 
   sincronizarDadosPlanilha(); 
 };
@@ -1555,9 +1611,11 @@ function enviarMultaPlanilha() {
     return alert('POR FAVOR, PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS (*)!');
   }
 
+  const idFinal = appState.idMultaEmEdicao ? appState.idMultaEmEdicao : 'MLT_' + Date.now();
+
   const d = {
-    id_multa: 'MLT_' + Date.now(),
-    ID_MULTA: 'MLT_' + Date.now(),
+    id_multa: idFinal,
+    ID_MULTA: idFinal,
     placa: placa,
     PLACA: placa,
     condutor: condutor,
@@ -1574,7 +1632,9 @@ function enviarMultaPlanilha() {
     SITUAÇÃO: situacao
   };
 
-  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MULTAS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoMultaSheets`;
+  const acao = appState.idMultaEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MULTAS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoMultaSheets`;
+  
   const scriptAntigo = document.getElementById('jsonp_multa_execution_script');
   if(scriptAntigo) scriptAntigo.remove();
 
@@ -1584,9 +1644,7 @@ function enviarMultaPlanilha() {
   document.body.appendChild(scriptElement);
 }
 
-// =========================================================================
-// INTERFACE: MÓDULO GESTÃO
-// =========================================================================
+/* ==================== MÓDULO: ADMINISTRATIVO E GESTÃO DE INFRAESTRUTURA ==================== */
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
@@ -1734,6 +1792,7 @@ function buscarCepColaboradorAutomatico() {
 function normalizarTermoMatriz(str) { if (!str) return ''; return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, '').trim(); }
 function calcularDistanciaLevenshtein(a, b) { const matriz = []; for (let i = 0; i <= b.length; i++) matriz[i] = [i]; for (let j = 0; j <= a.length; j++) matriz[0][j] = j; for (let i = 1; i <= b.length; i++) { for (let j = 1; j <= a.length; j++) { if (b.charAt(i - 1) === a.charAt(j - 1)) { matriz[i][j] = matriz[i - 1][j - 1]; } else { matriz[i][j] = Math.min(matriz[i - 1][j - 1] + 1, Math.min(matriz[i][j - 1] + 1, matriz[i - 1][j] + 1)); } } } return matriz[b.length][a.length]; }
 
+/* ==================== CONFIGURAÇÃO E MANIPULAÇÃO DE MODAIS SUB-GERENCIAIS ==================== */
 window.abrirModalDescricao = function(id = null) {
   appState.idMatrizEmEdicao = id;
   const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>🏥 NOVA DESCRIÇÃO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>NOME / DESCRIÇÃO GERAL *</label><input type="text" id="modalInputEquip" class="input-padrao" value="" placeholder="EX: VENTILADOR PULMONAR"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR TERMO</button></div></div></div>`;
@@ -1804,8 +1863,19 @@ window.desenharTabelaMatrizAtivos = function() {
   });
 };
 
+/* ==================== FUNÇÕES UTILITÁRIAS E FORMATADORES DE DADOS ==================== */
 function formatarDataBr(dataUs) { 
   if(!dataUs) return '-'; 
+  // TRATAMENTO EXCLUSIVO PARA INTERCEPTAR E CONVERTER DATAS LONGAS COM FUSO HORÁRIO (EVITA ERRO GMT)
+  if (String(dataUs).includes('GMT') || String(dataUs).includes(':')) {
+    const d = new Date(dataUs);
+    if (!isNaN(d.getTime())) {
+      const dia = String(d.getDate()).padStart(2, '0');
+      const mes = String(d.getMonth() + 1).padStart(2, '0');
+      const ano = d.getFullYear();
+      return `${dia}/${mes}/${ano}`;
+    }
+  }
   const partes = String(dataUs).split(' ')[0].split('-'); 
   if(partes.length !== 3) return dataUs; 
   return `${partes[2]}/${partes[1]}/${partes[0]}`; 
@@ -1831,7 +1901,7 @@ function atualizarTabelaUsuariosLocal() {
   });
 }
 
-window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); abrirTela('gestao'); sincronizarDadosPlanilha(); };
+window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); abrirTela('getao') || abrirTela('gestao'); sincronizarDadosPlanilha(); };
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
