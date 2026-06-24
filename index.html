@@ -1946,7 +1946,10 @@ function enviarMultaPlanilha() {
   document.body.appendChild(scriptElement);
 }
 
-/* ==================== MÓDULO: GESTÃO DO SISTEMA ==================== */
+/* =========================================================================
+     MÓDULO: GESTÃO DO SISTEMA (COLABORADORES E PARÂMETROS GERAIS)
+     ========================================================================= */
+
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
@@ -1957,8 +1960,11 @@ function renderizarTelaGestao(container) {
       </div>
       <div id="subConteudoGestao"></div>
     </div>`;
+    
   document.getElementById('tabColaboradores').addEventListener('click', () => abrirSubMóduloGestao('colaboradores'));
   document.getElementById('tabConfiguracoes').addEventListener('click', () => abrirSubMóduloGestao('configuracoes'));
+  
+  // Inicializa abrindo a aba de colaboradores por padrão
   abrirSubMóduloGestao('colaboradores');
 }
 
@@ -1980,15 +1986,92 @@ function abrirSubMóduloGestao(aba) {
           <div class="form-grupo"><label>PERFIL</label><select id="formUserPerfil" class="select-padrao"><option value="Técnico">TÉCNICO</option><option value="Gestor">GESTOR</option><option value="Admin">ADMIN</option></select></div>
         </div>
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;"><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button></div>
-      </div>`;
+      </div>
+      
+      <!-- TABELA RESTAURADA: EXIBIÇÃO INTEGRAL DE USUÁRIOS ATIVOS -->
+      <div class="card-padrao">
+        <h3>👥 COLABORADORES REGISTRADOS</h3>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr>
+                <th>NOME COMPLETO</th>
+                <th>USUÁRIO / LOGIN</th>
+                <th>PERFIL DE ACESSO</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="listaUsuariosTbody">
+              <tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">CARREGANDO EQUIPE...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
     
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
     atualizarTabelaUsuariosLocal();
+    
+  } else if (aba === 'configuracoes') {
+    document.getElementById('tabConfiguracoes').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <h3>🛠️ PARÂMETROS GERAIS DO SISTEMA</h3>
+        <p style="color:#64748b; font-size:12px; margin-top:2px; margin-bottom:15px;">GERENCIAMENTO DE REGRAS DE NEGÓCIO E AUTO-INCREMENTO DE ATIVOS.</p>
+        
+        <div class="form-grid">
+          <div class="form-grupo">
+            <label>PREFIXO DA TAG (ATIVOS)</label>
+            <input type="text" id="cfgPrefixoTag" class="input-padrao" value="${appState.configuracoes.prefixoTag || 'LMD'}">
+          </div>
+          <div class="form-grupo">
+            <label>QUANTIDADE DE DÍGITOS DA TAG</label>
+            <input type="number" id="cfgDigitosTag" class="input-padrao" value="${appState.configuracoes.digitosTag || 4}">
+          </div>
+          <div class="form-grupo">
+            <label>EMPRESA RAIZ (SEDE)</label>
+            <input type="text" id="cfgEmpresaRaiz" class="input-padrao" value="${appState.configuracoes.empresaRaiz || ''}">
+          </div>
+          <div class="form-grupo">
+            <label>SETORES DA SEDE (SEPARADOS POR VÍRGULA)</label>
+            <input type="text" id="cfgSetoresRaiz" class="input-padrao" value="${appState.configuracoes.setoresRaiz || ''}">
+          </div>
+        </div>
+        <div style="display:flex; justify-content: flex-end; margin-top:20px;">
+          <button id="btnSalvarConfiguracoes" class="btn-primary" onclick="salvarConfiguracoesGeraisMetrika()">💾 SALVAR PARÂMETROS</button>
+        </div>
+      </div>
+    `;
   }
 }
 
-function normalizarTermoMatriz(str) { if (!str) return ''; return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, '').trim(); }
-window.fecharModal = function() { const container = document.getElementById('modalContainer'); container.innerHTML = ''; container.classList.add('hidden'); };
+// Persistência e sincronização de novos parâmetros corporativos
+window.salvarConfiguracoesGeraisMetrika = function() {
+  const prefixo = document.getElementById('cfgPrefixoTag').value.trim().toUpperCase();
+  const digitos = document.getElementById('cfgDigitosTag').value;
+  const empresa = document.getElementById('cfgEmpresaRaiz').value.trim().toUpperCase();
+  const setores = document.getElementById('cfgSetoresRaiz').value.trim().toUpperCase();
+  
+  appState.configuracoes.prefixoTag = prefixo;
+  appState.configuracoes.digitosTag = digitos;
+  appState.configuracoes.empresaRaiz = empresa;
+  appState.configuracoes.setoresRaiz = setores;
+  
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=CONFIGURACAO&dados=${encodeURIComponent(JSON.stringify(appState.configuracoes))}&prefix=processarRetornoConfigSheets`;
+  
+  const scriptAntigo = document.getElementById('jsonp_cfg_execution_script');
+  if(scriptAntigo) scriptAntigo.remove();
+  
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_cfg_execution_script';
+  scriptElement.src = urlFinal;
+  document.body.appendChild(scriptElement);
+};
+
+window.processarRetornoConfigSheets = function(res) {
+  alert('PARÂMETROS GERAIS ATUALIZADOS COM SUCESSO NO BANCO DE DADOS!');
+  sincronizarDadosPlanilha();
+};
 
 /* ==================== FUNÇÕES UTILITÁRIAS E FORMATADORES DE DADOS ==================== */
 function formatarDataBr(dataUs) { 
