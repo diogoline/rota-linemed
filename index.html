@@ -6,7 +6,7 @@
 <title>METRIKA - OPERATIONS PLATFORM</title>
 
 <!-- =========================================================================
-     ESTILOS GERAIS E ARQUITETURA DE DESIGN DA INTERFACE (CSS)
+     BLOCO 1: ESTILOS GERAIS E ARQUITETURA DE DESIGN DA INTERFACE (CSS)
      ========================================================================= -->
 <style>
 :root {
@@ -129,7 +129,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <body>
 
 <!-- =========================================================================
-     BLOCO: TELA DE AUTENTICAÇÃO (LOGIN CRIPTOGRAFADO DE ACESSO WEB)
+     BLOCO 2: TELA DE AUTENTICAÇÃO (LOGIN CRIPTOGRAFADO DE ACESSO WEB)
      ========================================================================= -->
 <div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:99999;">
   <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
@@ -143,7 +143,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 </div>
 
 <!-- =========================================================================
-     BLOCO: ESTRUTURA CORE (SIDEBAR NAVIGATION & MAIN PANEL)
+     BLOCO 3: ESTRUTURA CORE (SIDEBAR NAVIGATION & MAIN PANEL)
      ========================================================================= -->
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
   <div class="sidebar">
@@ -209,7 +209,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <datalist id="datalistClientesGlobal"></datalist>
 
 <!-- =========================================================================
-     MOTOR DE LÓGICA E INTEGRAÇÃO DE SCRIPT DO METRIKA
+     BLOCO 4: MOTOR DE LÓGICA E INTEGRAÇÃO DE SCRIPT DO METRIKA
      ========================================================================= -->
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby7a2uRwvyKGXtUPT5fXXAxNByIqbYnTfXgAydyEwMVIq_YxVTJOmNAmuQOKEXpKmJJ8w/exec';
@@ -228,6 +228,7 @@ const appState = {
   idClienteEmEdicao: null,
   idUsuarioEmEdicao: null,
   idMultaEmEdicao: null,
+  idRotaEmEdicao: null, // Controle exclusivo para alteração de jornada existente
   filtroStatusUsuario: 'ATIVO',
   filtroStatusCliente: 'ATIVO',
   buscaTextoCliente: '',
@@ -235,6 +236,7 @@ const appState = {
   buscaTextoPatrimonio: '',
   buscaTextoMatrizParam: '', 
   buscaTextoMultas: '',
+  buscaTextoRotas: '', // Filtro de busca do monitor de rotas
 
   matrizAtivos: [],
   idMatrizEmEdicao: null,
@@ -266,7 +268,7 @@ document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
 document.getElementById('btnSidebarLogout').addEventListener('click', efetuarLogout);
 document.getElementById('logoInicio').addEventListener('click', voltarInicio);
 
-document.getElementById('btnMenuRotas').addEventListener('click', () => { abrirTela('rotas'); marcarAbaAtivaMenu('btnMenuRotas'); });
+document.getElementById('btnMenuRotas').addEventListener('click', () => { appState.idRotaEmEdicao = null; abrirTela('rotas'); marcarAbaAtivaMenu('btnMenuRotas'); });
 document.getElementById('btnMenuClientes').addEventListener('click', () => { abrirTela('clientes'); marcarAbaAtivaMenu('btnMenuClientes'); });
 document.getElementById('btnMenuChamados').addEventListener('click', () => { abrirTela('chamados'); marcarAbaAtivaMenu('btnMenuChamados'); });
 document.getElementById('btnMenuLocacao').addEventListener('click', () => { abrirTela('locacao'); marcarAbaAtivaMenu('btnMenuLocacao'); });
@@ -334,7 +336,10 @@ window.processarRetornoSincronizacao = function(res) {
     appState.patrimonio = res.patrimonio || [];
     appState.movimentacoes = res.movimentacoes || [];
     appState.usuarios = res.usuarios || [];
-    appState.veiculos = res.veiculos || ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED']; 
+    
+    // PRESERVAÇÃO RIGOROSA DAS PLACAS DOS VEÍCULOS CORPORATIVOS
+    appState.veiculos = ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED']; 
+    
     appState.matrizAtivos = res.matrizAtivos || [];
     appState.rotas = res.rotas || [];
     appState.multas = res.multas || [];
@@ -474,7 +479,7 @@ function renderizarHomePainelDinâmico() {
     </div>`;
 }
 
-/* ==================== BI-MÓDULO: ROTEAMENTO E EXIBIÇÃO DE MATRIZES GERAIS ==================== */
+/* ==================== BLCO 5: MÓDULO EXCLUSIVO DE ROTAS DIÁRIAS (COMPLETAMENTE INTEGRADO) ==================== */
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
@@ -492,11 +497,7 @@ function abrirTela(menu) {
   } else if (menu === 'multas') {
     renderizarTelaMultas(principal);
   } else if (menu === 'rotas') {
-    let optCli = '<option value="">SELECIONE A UNIDADE DESTINO...</option>';
-    appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
-      optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`;
-    });
-
+    
     let optTecnicos = '<option value="">SELECIONE O TÉCNICO...</option>';
     if (appState.usuarios && appState.usuarios.length > 0) {
       appState.usuarios.forEach(u => optTecnicos += `<option value="${u.nome.toUpperCase()}">${u.nome.toUpperCase()}</option>`);
@@ -511,37 +512,50 @@ function abrirTela(menu) {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <h2>📍 PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2>
         <div style="display:flex; gap:10px;">
-          <button class="btn-primary" onclick="document.getElementById('divRotasMonitor').classList.remove('hidden'); document.getElementById('divRotasCriar').classList.add('hidden');">📋 VER MONITOR</button>
-          <button class="btn-success" onclick="document.getElementById('divRotasMonitor').classList.add('hidden'); document.getElementById('divRotasCriar').classList.remove('hidden');">➕ NOVA ROTA</button>
+          <button class="btn-primary" onclick="document.getElementById('divRotasMonitor').classList.remove('hidden'); document.getElementById('divRotasCriar').classList.add('hidden');">📋 VER MONITOR / CONSULTAR</button>
+          <button class="btn-success" onclick="appState.idRotaEmEdicao = null; document.getElementById('divRotasMonitor').classList.add('hidden'); document.getElementById('divRotasCriar').classList.remove('hidden'); document.getElementById('tituloFormJornada').innerText='🔑 NOVO PLANEJAMENTO DE JORNADA';">➕ NOVA ROTA</button>
         </div>
       </div>
 
+      <!-- PAINEL MONITOR DE CONSULTA DE JORNADAS -->
       <div id="divRotasMonitor" class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+          <h3>HISTÓRICO E CONSULTA DE JORNADAS</h3>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <label style="font-size:12px; font-weight:bold; color:#475569;">CONSULTAR:</label>
+            <input type="text" id="inputBuscaFiltroRotas" class="input-padrao" placeholder="BUSCAR POR TÉCNICO, VEÍCULO OU CLIENTE..." style="width:320px; padding:6px 10px;">
+          </div>
+        </div>
         <div class="tabela-container">
           <table class="tabela-sistema">
             <thead>
               <tr>
-                <th>TÉCNICO RESPONSÁVEL</th>
-                <th>VEÍCULO ALOCADO</th>
-                <th>CLIENTE / DESTINO</th>
+                <th>ID ROTA</th>
                 <th>PERÍODO / DATA</th>
-                <th>STATUS OPERACIONAL</th>
+                <th>EQUIPE TÉCNICA (T1 / T2)</th>
+                <th>VEÍCULO ALOCADO</th>
+                <th>AÇÕES GERENCIAIS</th>
               </tr>
             </thead>
             <tbody id="tbodyRotasOperacionais">
-              <tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">CARREGANDO FLUXOS DE ROTAS...</td></tr>
+              <tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">CARREGANDO JORNADAS...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
+      <!-- FORMULÁRIO DE CRIAÇÃO E ALTERAÇÃO DE JORNADA -->
       <div id="divRotasCriar" class="hidden">
         <div class="card-padrao">
-          <h3 style="color:var(--cor-primaria); margin-bottom:15px;">🔑 NOVO PLANEJAMENTO DE JORNADA</h3>
+          <h3 id="tituloFormJornada" style="color:var(--cor-primaria); margin-bottom:15px;">🔑 NOVO PLANEJAMENTO DE JORNADA</h3>
           <div class="form-grid">
             <div class="form-grupo">
-              <label>TÉCNICO RESPONSÁVEL *</label>
+              <label>TÉCNICO RESPONSÁVEL 1 *</label>
               <select id="rotaTecnico" class="select-padrao">${optTecnicos}</select>
+            </div>
+            <div class="form-grupo">
+              <label>TÉCNICO 2 / AUXILIAR *</label>
+              <select id="rotaTecnico2" class="select-padrao">${optTecnicos}</select>
             </div>
             <div class="form-grupo">
               <label>VEÍCULO OPERACIONAL *</label>
@@ -557,7 +571,8 @@ function abrirTela(menu) {
         <div class="card-padrao">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3>📌 SEQUÊNCIA DE PARADAS</h3>
-            <button class="btn-primary" style="padding:8px 15px; font-size:11px;" onclick="adicionarCardParadaMetrika('${optCli}')">➕ ADICIONAR CLIENTE/PARADA</button>
+            <!-- REMOVIDO INTEGRALMENTE O CARD AZUL DO ATTRIBUTE INLINE DO BOTÃO -->
+            <button class="btn-primary" style="padding:8px 15px; font-size:11px;" onclick="adicionarCardParadaMetrika()">➕ ADICIONAR CLIENTE/PARADA</button>
           </div>
           <div id="containerListaParadasMetrika"></div>
           
@@ -569,9 +584,15 @@ function abrirTela(menu) {
     `;
     
     document.getElementById('rotaData').valueAsDate = new Date();
+    document.getElementById('inputBuscaFiltroRotas').value = appState.buscaTextoRotas;
+    document.getElementById('inputBuscaFiltroRotas').addEventListener('input', function() {
+      appState.buscaTextoRotas = this.value.trim().toUpperCase();
+      atualizarTabelaRotasNativa();
+    });
+
     contadorParadas = 0;
     contadorOS = 0;
-    adicionarCardParadaMetrika(optCli);
+    adicionarCardParadaMetrika();
     atualizarTabelaRotasNativa();
   } else if (menu === 'gestao') {
     renderizarTelaGestao(principal);
@@ -580,12 +601,16 @@ function abrirTela(menu) {
   }
 }
 
-/* ==================== MÓDULO: CONSTRUTOR DE ROTAS DIÁRIAS LOGÍSTICAS ==================== */
-function adicionarCardParadaMetrika(optionsClientes) {
+function adicionarCardParadaMetrika() {
   contadorParadas++;
   const container = document.getElementById('containerListaParadasMetrika');
   if(!container) return;
   
+  let optCli = '<option value="">SELECIONE A UNIDADE DESTINO...</option>';
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+    optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`;
+  });
+
   const div = document.createElement('div');
   div.className = 'container-parada';
   div.id = `parada_${contadorParadas}`;
@@ -598,10 +623,13 @@ function adicionarCardParadaMetrika(optionsClientes) {
         <button class="btn-danger" style="padding:4px 10px; font-size:11px;" onclick="removerCardParadaMetrika(${contadorParadas})">REMOVER</button>
       </div>
     </div>
-    <div class="form-grupo" style="margin-bottom:15px;">
+    <div class="form-grupo" style="margin-bottom:6px;">
       <label>CLIENTE / UNIDADE DESTINO *</label>
-      <select class="select-padrao" id="cli_parada_${contadorParadas}">${optionsClientes}</select>
+      <select class="select-padrao" id="cli_parada_${contadorParadas}" onchange="buscarEnderecoClienteMetrika(${contadorParadas})">${optCli}</select>
     </div>
+    
+    <!-- EXIBIÇÃO DE ENDEREÇO DA UNIDADE EM TEMPO REAL -->
+    <div id="end_exibicao_parada_${contadorParadas}" style="font-size:11px; font-weight:bold; color:var(--cor-primaria); margin-bottom:12px; min-height:15px; padding-left:2px;"></div>
     
     <table class="sub-tabela-os">
       <thead>
@@ -620,6 +648,20 @@ function adicionarCardParadaMetrika(optionsClientes) {
   `;
   container.appendChild(div);
   adicionarLinhaOSMetrika(contadorParadas);
+}
+
+function buscarEnderecoClienteMetrika(idParada) {
+  const select = document.getElementById(`cli_parada_${idParada}`);
+  const labelEnd = document.getElementById(`end_exibicao_parada_${idParada}`);
+  if(!select || !labelEnd) return;
+  
+  const nomeCliente = select.value;
+  const match = appState.clientes.find(c => c.nome.toUpperCase() === nomeCliente.toUpperCase());
+  if (match) {
+    labelEnd.innerText = `📍 ENDEREÇO: ${match.logradouro || ''}, Nº ${match.numero || ''} - BAIRRO: ${match.bairro || ''} - ${match.cidade || ''}/${match.uf || ''}`;
+  } else {
+    labelEnd.innerText = '';
+  }
 }
 
 function removerCardParadaMetrika(idParada) {
@@ -646,9 +688,12 @@ function adicionarLinhaOSMetrika(idParada) {
     <td><input type="text" class="input-padrao no-uppercase" placeholder="EX: CÂMARA ACUMULANDO ÁGUA" id="ocorrencia_os_${contadorOS}" style="padding:6px;"></td>
     <td>
       <select class="select-padrao" style="padding:5px; font-size:11px;">
-        <option value="BASE CLIENTE">FICA NA UNIDADE</option>
-        <option value="LINEMED">RECOLHER SEDE</option>
-        <option value="BASE ELBER">BASE ELBER</option>
+        <option value="BASE">BASE</option>
+        <option value="BASE MONTE AZUL">BASE MONTE AZUL</option>
+        <option value="ELBER">ELBER</option>
+        <option value="CONTRATOS">CONTRATOS</option>
+        <option value="CLIENTES">CLIENTES</option>
+        <option value="CONECT MEDICAL">CONECT MEDICAL</option>
       </select>
     </td>
   `;
@@ -679,36 +724,298 @@ function atualizarTabelaRotasNativa() {
   tbody.innerHTML = '';
   
   if(!appState.rotas || appState.rotas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">NENHUMA ROTA REGISTRADA OU ATIVA NO MOMENTO.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">NENHUMA JORNADA LOCALIZADA NA BASE...</td></tr>`;
     return;
   }
-  
+
+  // AGRUPAMENTO LOGÍSTICO EXCLUSIVO EM MEMÓRIA POR ID DA ROTA
+  const rotasAgrupadas = {};
   appState.rotas.forEach(r => {
+    const id = r.id_rota || r.ID_ROTA || 'ROT-PADRAO';
+    if(!rotasAgrupadas[id]) {
+      rotasAgrupadas[id] = {
+        id_rota: id,
+        data: r.data || r.DATA || '-',
+        tecnico: r.tecnico || r.TECNICO || '-',
+        auxiliar: r.auxiliar || r.AUXILIAR || '-',
+        veiculo: r.veiculo || r.VEICULO || '-',
+        clientes: []
+      };
+    }
+    if(r.cliente && !rotasAgrupadas[id].clientes.includes(r.cliente.toUpperCase())) {
+      rotasAgrupadas[id].clientes.push(r.cliente.toUpperCase());
+    }
+  });
+
+  const filtradas = Object.values(rotasAgrupadas).filter(r => {
+    const txt = appState.buscaTextoRotas || '';
+    return txt === '' || 
+           r.id_rota.toUpperCase().includes(txt) ||
+           r.tecnico.toUpperCase().includes(txt) ||
+           r.auxiliar.toUpperCase().includes(txt) ||
+           r.veiculo.toUpperCase().includes(txt) ||
+           r.clientes.join(', ').includes(txt);
+  });
+
+  if(filtradas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">NENHUM CORRESPONDENTE PARA A CONSULTA.</td></tr>`;
+    return;
+  }
+
+  filtradas.forEach(r => {
     let tr = document.createElement('tr');
-    let st = (r.status || r.STATUS || 'EM ANDAMENTO').toUpperCase();
-    let bg = st === 'CONCLUIDO' || st === 'CONCLUÍDO' ? '#dcfce7; color:#16a34a;' : '#fef3c7; color:#d97706;';
-    
     tr.innerHTML = `
-      <td><b>${(r.tecnico || r.tecnico_responsavel || 'NÃO ATRIBUÍDO').toUpperCase()}</b></td>
-      <td>${(r.veiculo || r.veiculo_alocado || '-').toUpperCase()}</td>
-      <td><b>${(r.cliente || r.cliente_destino || '-').toUpperCase()}</b></td>
-      <td>${r.data || r.periodo || '-'}</td>
-      <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${st}</span></td>
+      <td><small><b>${r.id_rota}</b></small></td>
+      <td><b>${formatarDataBr(r.data)}</b></td>
+      <td><small>1: ${r.tecnico}<br>2: ${r.auxiliar}</small></td>
+      <td><b>${r.veiculo}</b></td>
+      <td>
+        <button class="btn-primary" style="padding:4px 10px; font-size:11px;" onclick="prepararEdicaoRotaMetrika('${r.id_rota}')">📝 CORRIGIR</button>
+        <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="imprimirEspelhoRotaMetrika('${r.id_rota}')">🖨️ IMPRIMIR</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
 }
 
+function prepararEdicaoRotaMetrika(idRota) {
+  appState.idRotaEmEdicao = idRota;
+  const linhas = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
+  if(linhas.length === 0) return;
+
+  document.getElementById('divRotasMonitor').add('hidden');
+  document.getElementById('divRotasCriar').classList.remove('hidden');
+  document.getElementById('tituloFormJornada').innerText = "ALTERAR PLANEJAMENTO DE JORNADA";
+
+  const cab = linhas[0];
+  document.getElementById('rotaTecnico').value = cab.tecnico || cab.TECNICO || '';
+  document.getElementById('rotaTecnico2').value = cab.auxiliar || cab.AUXILIAR || '';
+  document.getElementById('rotaVeiculo').value = cab.veiculo || cab.VEICULO || '';
+  
+  if(cab.data) {
+    try {
+      let dObj = new Date(cab.data);
+      if(!isNaN(dObj.getTime())) document.getElementById('rotaData').value = dObj.toISOString().split('T')[0];
+    } catch(e){}
+  }
+
+  const container = document.getElementById('containerListaParadasMetrika');
+  container.innerHTML = '';
+  contadorParadas = 0;
+
+  // RECONSTRÓI AS PARADAS COM SEUS RESPECTIVOS ENDEREÇOS E LINHAS DE O.S.
+  const paradasMapeadas = {};
+  linhas.forEach(l => {
+    const cName = l.cliente.toUpperCase();
+    if(!paradasMapeadas[cName]) paradasMapeadas[cName] = [];
+    paradasMapeadas[cName].push(l);
+  });
+
+  Object.keys(paradasMapeadas).forEach(cName => {
+    adicionarCardParadaMetrika();
+    document.getElementById(`cli_parada_${contadorParadas}`).value = cName;
+    buscarEnderecoClienteMetrika(contadorParadas);
+
+    const tbody = document.getElementById(`tbody_os_${contadorParadas}`);
+    tbody.innerHTML = ''; // Limpa a linha inicial automática
+
+    paradasMapeadas[cName].forEach(osLinha => {
+      contadorOS++;
+      const tr = document.createElement('tr');
+      tr.id = `linha_os_${contadorOS}`;
+      
+      let descComposta = osLinha.descricao || '';
+      let tagExtraida = descComposta.split(' / ')[0] || '';
+      let serieExtraida = descComposta.split(' / ')[1] || '';
+      let nomeExtraido = descComposta.split(' / ')[2] || '';
+
+      tr.innerHTML = `
+        <td><input type="text" class="input-padrao" value="${osLinha.os || ''}" style="padding:6px;"></td>
+        <td><input type="text" class="input-padrao" value="${tagExtraida}" onchange="buscaAtivoPorFiltro(${contadorOS}, 'tag')" id="tag_os_${contadorOS}" style="padding:6px;"></td>
+        <td><input type="text" class="input-padrao" value="${serieExtraida}" onchange="buscaAtivoPorFiltro(${contadorOS}, 'serie')" id="ser_os_${contadorOS}" style="padding:6px;"></td>
+        <td><input type="text" class="input-padrao" readonly value="${nomeExtraido}" style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria); padding:6px;" id="desc_os_${contadorOS}"></td>
+        <td><input type="text" class="input-padrao no-uppercase" value="${osLinha.observao || osLinha.observacao || ''}" id="ocorrencia_os_${contadorOS}" style="padding:6px;"></td>
+        <td>
+          <select class="select-padrao" id="log_os_${contadorOS}" style="padding:5px; font-size:11px;">
+            <option value="BASE">BASE</option>
+            <option value="BASE MONTE AZUL">BASE MONTE AZUL</option>
+            <option value="ELBER">ELBER</option>
+            <option value="CONTRATOS">CONTRATOS</option>
+            <option value="CLIENTES">CLIENTES</option>
+            <option value="CONECT MEDICAL">CONECT MEDICAL</option>
+          </select>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      const selLog = tr.querySelector('select');
+      if(selLog) selLog.value = osLinha.status || 'BASE';
+    });
+  });
+}
+
+function imprimirEspelhoRotaMetrika(idRota) {
+  const linhas = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
+  if(linhas.length === 0) return alert('DADOS DA JORNADA NÃO ENCONTRADOS.');
+
+  const cab = linhas[0];
+  let conteudoHtml = `
+    <html>
+    <head>
+      <title>IMPRESSÃO - ROTA ${idRota}</title>
+      <style>
+        body { font-family: sans-serif; padding:25px; color:#1e293b; text-transform:uppercase; }
+        .header-print { border-bottom: 3px double #000; padding-bottom:10px; margin-bottom:20px; }
+        .header-print h2 { margin:0; font-size:22px; color:#1e3a8a; }
+        .meta-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px; font-size:13px; }
+        .table-print { width:100%; border-collapse:collapse; margin-top:15px; }
+        .table-print th, .table-print td { border:1px solid #000; padding:8px; text-align:left; font-size:12px; }
+        .table-print th { background:#f1f5f9; }
+        .footer-print { margin-top:50px; text-align:center; font-size:11px; color:#64748b; }
+      </style>
+    </head>
+    <body>
+      <div class="header-print">
+        <h2>PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2>
+        <p>ID JORNADA CORPORATIVA: <b>${idRota}</b></p>
+      </div>
+      <div class="meta-grid">
+        <div><b>TÉCNICO 1:</b> ${cab.tecnico}</div>
+        <div><b>VEÍCULO ALOCADO:</b> ${cab.veiculo}</div>
+        <div><b>TÉCNICO 2 / AUXILIAR:</b> ${cab.auxiliar}</div>
+        <div><b>DATA AGENDADA:</b> ${formatarDataBr(cab.data)}</div>
+      </div>
+      <table class="table-print">
+        <thead>
+          <tr>
+            <th>CLIENTE / UNIDADE</th>
+            <th>Nº O.S.</th>
+            <th>COMPONENTES (TAG/SÉRIE/NOME)</th>
+            <th>DIRETRIZ LOGÍSTICA</th>
+            <th>VISTO / ASSINATURA</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  linhas.forEach(l => {
+    conteudoHtml += `
+      <tr>
+        <td><b>${l.cliente}</b></td>
+        <td>${l.os || '-'}</td>
+        <td>${l.descricao || '-'}</td>
+        <td>${l.status || 'BASE'}</td>
+        <td style="width:150px;"></td>
+      </tr>
+    `;
+  });
+
+  conteudoHtml += `
+        </tbody>
+      </table>
+      <div class="footer-print">
+        <p>METRIKA SMART PLATFORM • DOCUMENTO EMITIDO EM ${new Date().toLocaleString()}</p>
+        <button onclick="window.print()" style="margin-top:20px; padding:8px 15px; font-weight:bold; cursor:pointer;">🖨️ DISPARAR IMPRESSÃO JORNADA</button>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const janelaImpressao = window.open('', '_blank', 'width=900,height=700');
+  janelaImpressao.document.write(conteudoHtml);
+  janelaImpressao.document.close();
+}
+
+window.processarRetornoRotaSheets = function(res) {
+  if(res && res.sucesso) {
+    alert('PROGRAMAÇÃO DE ATENDIMENTO LINEMED SALVA COM SUCESSO NO BANCO DE DADOS!');
+    appState.idRotaEmEdicao = null;
+    document.getElementById('divRotasMonitor').classList.remove('hidden');
+    document.getElementById('divRotasCriar').classList.add('hidden');
+    sincronizarDadosPlanilha();
+  } else {
+    alert('ERRO AO GRAVAR JORNADA: ' + (res.erro || 'FALHA INTERNA'));
+  }
+};
+
 function salvarRotaFinalMetrika() {
   const tecnico = document.getElementById('rotaTecnico').value;
+  const tecnico2 = document.getElementById('rotaTecnico2').value;
   const veiculo = document.getElementById('rotaVeiculo').value;
   const data = document.getElementById('rotaData').value;
   
-  if(!tecnico || !veiculo || !data) return alert('POR FAVOR, PREENCHA OS DADOS DO CABEÇALHO LOGÍSTICO!');
+  if(!tecnico || !veiculo || !data) {
+    return alert('POR FAVOR, PREENCHA OS DADOS OBRIGATÓRIOS DO CABEÇALHO DA JORNADA!');
+  }
+
+  const paradasLista = [];
+  const cardsParadas = document.querySelectorAll('.container-parada');
+
+  if(cardsParadas.length === 0) return alert('ADICIONE AO MENOS UMA PARADA OPERACIONAL!');
+  let validacaoOk = true;
+
+  cardsParadas.forEach(card => {
+    const idAtual = card.id.split('_')[1];
+    const cliente = document.getElementById(`cli_parada_${idAtual}`).value;
+    
+    if(!cliente) {
+      alert('POR FAVOR, INDIQUE O CLIENTE DESTINO DE TODAS AS PARADAS!');
+      validacaoOk = false;
+      return;
+    }
+
+    const linhasOS = [];
+    const trs = document.querySelectorAll(`#tbody_os_${idAtual} tr`);
+
+    trs.forEach(tr => {
+      const inputs = tr.querySelectorAll('input');
+      const selectLogistica = tr.querySelector('select');
+      const numeroOS = inputs[0].value.trim() || 'S/N';
+      const tag = inputs[1].value.trim().toUpperCase();
+      const serie = inputs[2].value.trim().toUpperCase();
+      const equipamento = inputs[3].value.trim().toUpperCase();
+
+      linhasOS.push({
+        numeroOS: numeroOS,
+        tag: tag,
+        serie: serie,
+        equipamento: equipamento,
+        logistica: selectLogistica ? selectLogistica.value : 'BASE'
+      });
+    });
+
+    paradasLista.push({
+      cliente: cliente,
+      linhasOS: linhasOS
+    });
+  });
+
+  if(!validacaoOk) return;
+
+  const pacoteRota = {
+    cabecalho: {
+      tecnico: tecnico,
+      auxiliar: tecnico2 || '-',
+      veiculo: veiculo,
+      data: data
+    },
+    paradas: paradasLista
+  };
+
+  const acao = appState.idRotaEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  if(appState.idRotaEmEdicao) pacoteRota.id_rota = appState.idRotaEmEdicao;
+
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MULTAS&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}&prefix=processarRetornoRotaSheets`;
   
-  alert('SOLICITAÇÃO DE GRAVAÇÃO ENVIADA COM SUCESSO PARA O BANCO DE DADOS DA PLANILHA!');
-  document.getElementById('divRotasMonitor').classList.remove('hidden');
-  document.getElementById('divRotasCriar').classList.add('hidden');
+  // Como o ponte.gs trata salvarRotaLogistica de forma isolada, mudamos a acao para bater na rota de gravacao unificada do Apps Script
+  const urlFinalReal = `${WEB_APP_URL}?acao=salvarRotaLogistica&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}&prefix=processarRetornoRotaSheets`;
+
+  const scriptAntigo = document.getElementById('jsonp_rota_execution_script');
+  if(scriptAntigo) scriptAntigo.remove();
+
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_rota_execution_script';
+  scriptElement.src = urlFinalReal;
+  document.body.appendChild(scriptElement);
 }
 
 function renderInitializeHome() { renderizarHomePainelDinâmico(); }
@@ -721,7 +1028,6 @@ function renderizarTelaDashboards(container) {
   const totalPatrimonio = appState.patrimonio.length;
   const patLocados = appState.patrimonio.filter(p => p.status && p.status.toUpperCase() === 'LOCADO').length;
 
-  // LÓGICA DE INTELIGÊNCIA: RANKING DE QUEM MAIS TOMOU MULTA
   const contagemMultasPorCondutor = {};
   let totalValorMultas = 0;
   appState.multas.forEach(m => {
@@ -733,7 +1039,6 @@ function renderizarTelaDashboards(container) {
     return { nome: key, total: contagemMultasPorCondutor[key] };
   }).sort((a, b) => b.total - a.total).slice(0, 3);
 
-  // LÓGICA DE INTELIGÊNCIA: RANKING DE VEÍCULOS COM MAIOR NÚMERO DE VIAGENS (ROTAS)
   const contagemRotasPorVeiculo = {};
   appState.rotas.forEach(r => {
     const veic = (r.veiculo || r.veiculo_alocado || 'INDEFINIDO').toUpperCase();
@@ -777,13 +1082,10 @@ function renderizarTelaDashboards(container) {
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
-        <!-- CONTAINER VISUAL: QUEM MAIS TOMOU MULTA -->
         <div class="card-padrao">
           <h3 style="color: var(--cor-perigo); font-size:15px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">❌ RANKING: CONDUTORES COM MAIS MULTAS</h3>
           <div id="dashContainerRankingMultas" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
         </div>
-
-        <!-- CONTAINER VISUAL: CARROS COM MAIOR NÚMERO DE VIAGENS -->
         <div class="card-padrao">
           <h3 style="color: var(--cor-primaria); font-size:15px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">🚗 RANKING: VEÍCULOS COM MAIS VIAGENS (ROTAS)</h3>
           <div id="dashContainerRankingVeiculos" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
@@ -791,7 +1093,6 @@ function renderizarTelaDashboards(container) {
       </div>
     </div>`;
 
-  // RENDERIZAÇÃO GRÁFICA DO RANKING DE MULTAS
   const divMlt = document.getElementById('dashContainerRankingMultas');
   if (rankingMultas.length === 0) {
     divMlt.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">NENHUMA INFRAÇÃO REGISTRADA NA PLANILHA.</div>`;
@@ -812,7 +1113,6 @@ function renderizarTelaDashboards(container) {
     });
   }
 
-  // RENDERIZAÇÃO GRÁFICA DO RANKING DE VIAGENS (VEÍCULOS)
   const divVei = document.getElementById('dashContainerRankingVeiculos');
   if (rankingVeiculos.length === 0) {
     divVei.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">NENHUMA ROTA OPERACIONAL DISPARADA AINDA.</div>`;
@@ -1264,7 +1564,7 @@ function enviarEquipamentoPlanilha() {
     localizacao: localizacaoFinal,
     setor: setorFinal, 
     situacao: sit,
-    donoExterno: sit !== 'PROPRIO' ? document.getElementById('formEquiponoExternoInput').value.toUpperCase() : '',
+    donoExterno: sit !== 'PROPRIO' ? document.getElementById('formEquipDonoExternoInput').value.toUpperCase() : '',
     familia: document.getElementById('formEquipFamilia').value,
     acessorios: document.getElementById('formEquipAcessorios').value.toUpperCase(),
     observacao: document.getElementById('formEquipObservation').value.toUpperCase()
@@ -1400,7 +1700,7 @@ function processarMovimentacaoLocacao() {
   fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('SUCESSO!'); sincronizarDadosPlanilha(); });
 }
 
-/* ==================== MÓDULO INTEGRAL: CONTROLE DE MULTAS (EDIÇÃO E DATA CORRIGIDOS) ==================== */
+/* ==================== MÓDULO INTEGRAL: CONTROLE DE MULTAS ==================== */
 function renderizarTelaMultas(container) {
   let optCondutores = '<option value="">SELECIONE O CONDUTOR...</option>';
   if (appState.usuarios && appState.usuarios.length > 0) {
@@ -1410,11 +1710,8 @@ function renderizarTelaMultas(container) {
   }
 
   let optVeiculos = '<option value="">SELECIONE O VEÍCULO (PLACA)...</option>';
-  let listaVeiculosEfetiva = (appState.veiculos && appState.veiculos.length > 0) ? appState.veiculos : ['FIAT STRADA 01', 'FIAT STRADA 02', 'CHEVROLET ONYX', 'MOTO OPERACIONAL', 'BASE LINEMED'];
-
-  listaVeiculosEfetiva.forEach(v => {
-    let nomeVeiculo = (typeof v === 'object' && v !== null) ? (v.placa || v.nome || v.VEICULO || JSON.stringify(v)) : v;
-    optVeiculos += `<option value="${nomeVeiculo.toUpperCase()}">${nomeVeiculo.toUpperCase()}</option>`;
+  appState.veiculos.forEach(v => {
+    optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>`;
   });
 
   container.innerHTML = `
@@ -1649,27 +1946,24 @@ function enviarMultaPlanilha() {
   document.body.appendChild(scriptElement);
 }
 
-/* ==================== MÓDULO: ADMINISTRATIVO E GESTÃO DE INFRAESTRUTURA ==================== */
+/* ==================== MÓDULO: GESTÃO DO SISTEMA ==================== */
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
       <h2>⚙️ PAINEL ADMINISTRATIVO E GESTÃO</h2>
       <div class="tabs-gestao">
         <div class="tab-item active" id="tabColaboradores">👤 COLABORADORES / USUÁRIOS</div>
-        <div class="tab-item" id="tabItensInventario">📋 ITENS DE INVENTÁRIO</div>
         <div class="tab-item" id="tabConfiguracoes">🛠️ PARÂMETROS GERAIS</div>
       </div>
       <div id="subConteudoGestao"></div>
     </div>`;
   document.getElementById('tabColaboradores').addEventListener('click', () => abrirSubMóduloGestao('colaboradores'));
-  document.getElementById('tabItensInventario').addEventListener('click', () => abrirSubMóduloGestao('itens_inventario'));
   document.getElementById('tabConfiguracoes').addEventListener('click', () => abrirSubMóduloGestao('configuracoes'));
   abrirSubMóduloGestao('colaboradores');
 }
 
 function abrirSubMóduloGestao(aba) {
   document.getElementById('tabColaboradores').classList.remove('active');
-  document.getElementById('tabItensInventario').classList.remove('active');
   document.getElementById('tabConfiguracoes').classList.remove('active');
   const subContainer = document.getElementById('subConteudoGestao');
   
@@ -1678,7 +1972,6 @@ function abrirSubMóduloGestao(aba) {
     subContainer.innerHTML = `
       <div class="card-padrao">
         <h3 id="tituloFormUsuario">FICHA DO COLABORADOR</h3>
-        
         <h4 style="font-size:12px; color:var(--cor-primaria); margin:15px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🔑 DADOS DE ACESSO</h4>
         <div class="form-grid">
           <div class="form-grupo"><label>NOME COMPLETO *</label><input type="text" id="formUserNome" class="input-padrao"></div>
@@ -1686,187 +1979,16 @@ function abrirSubMóduloGestao(aba) {
           <div class="form-grupo"><label>SENHA DE ACESSO *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
           <div class="form-grupo"><label>PERFIL</label><select id="formUserPerfil" class="select-padrao"><option value="Técnico">TÉCNICO</option><option value="Gestor">GESTOR</option><option value="Admin">ADMIN</option></select></div>
         </div>
-
-        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🪪 DOCUMENTAÇÃO ADICIONAL</h4>
-        <div class="form-grid">
-          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
-          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
-          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="NÚMERO DE REGISTRO"></div>
-          <div class="form-grupo"><label>TELEFONE / CELULAR</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
-        </div>
-
-        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">📍 ENDEREÇO RESIDENCIAL</h4>
-        <div class="form-grid">
-          <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
-          <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
-          <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formUserNumero" class="input-padrao"></div>
-          <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formUserBairro" class="input-padrao"></div>
-          <div class="form-grupo"><label>CIDADE</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
-          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
-        </div>
-        
-        <input type="hidden" id="formUserStatus" value="ATIVO">
-        <input type="hidden" id="formUserAdmissao" value="">
-        <input type="hidden" id="formUserMotivo" value="">
-
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;"><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button></div>
-      </div>
-      <div class="card-padrao">
-        <h3>COLABORADORES DA BASE</h3>
-        <div class="tabela-container">
-          <table class="tabela-sistema">
-            <thead>
-              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
-            </thead>
-            <tbody id="listaUsuariosTbody"></tbody>
-          </table>
-        </div>
       </div>`;
     
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
-    document.getElementById('formUserCep').addEventListener('blur', buscarCepColaboradorAutomatico);
     atualizarTabelaUsuariosLocal();
-
-  } else if (aba === 'itens_inventario') {
-    document.getElementById('tabItensInventario').classList.add('active');
-    subContainer.innerHTML = `
-      <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; justify-content: space-between;">
-        <button onclick="abrirModalDescricao()" class="btn-success">➕ CADASTRAR DESCRIÇÃO GERAL</button>
-        <button onclick="abrirModalModeloVinculo()" class="btn-primary">➕ HOMOLOGAR MODELO/MARCA</button>
-      </div>
-      <div class="card-padrao"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO / DESCRIÇÃO</th><th>MODELO DE FÁBRICA</th><th>FABRICANTE OFICIAL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div></div>`;
-    desenharTabelaMatrizAtivos();
-
-  } else {
-    document.getElementById('tabConfiguracoes').classList.add('active');
-    subContainer.innerHTML = `
-      <div class="card-padrao">
-        <h3 style="color: var(--cor-secundaria); margin-bottom: 15px;">🛠️ PARÂMETROS GERAIS DO SISTEMA COMERCIAL</h3>
-        <div class="form-grid">
-          <div class="form-grupo"><label>PREFIXO GLOBAL DAS TAGs *</label><input type="text" id="cfgPrefixoTag" class="input-padrao" value="${appState.configuracoes.prefixoTag}"></div>
-          <div class="form-grupo">
-            <label>NÚMERO DE DÍGITOS *</label>
-            <select id="cfgDigitosTag" class="select-padrao">
-              <option value="4" ${appState.configuracoes.digitosTag == 4 ? 'selected' : ''}>4 DÍGITOS (EX: LMD-0001)</option>
-              <option value="5" ${appState.configuracoes.digitosTag == 5 ? 'selected' : ''}>5 DÍGITOS (EX: LMD-00001)</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-grid" style="margin-top:15px;">
-          <div class="form-grupo"><label>RAZÃO SOCIAL / EMPRESA RAIZ (DONA DO SISTEMA) *</label><input type="text" id="cfgEmpresaRaiz" class="input-padrao" value="${appState.configuracoes.empresaRaiz}"></div>
-          <div class="form-grupo"><label>SETORES INTERNOS DA EMPRESA RAIZ (SEPARADOS POR VÍRGULA) *</label><input type="text" id="cfgSetoresRaiz" class="input-padrao" value="${appState.configuracoes.setoresRaiz}"></div>
-        </div>
-        <div style="margin-top: 20px;"><button id="btnSalvarParametrosGerais" class="btn-success">💾 SALVAR CONFIGURAÇÕES COMERCIAIS</button></div>
-      </div>`;
-
-    document.getElementById('btnSalvarParametrosGerais').addEventListener('click', function() {
-      const pref = document.getElementById('cfgPrefixoTag').value.trim().toUpperCase();
-      const dig = document.getElementById('cfgDigitosTag').value;
-      const raiz = document.getElementById('cfgEmpresaRaiz').value.trim().toUpperCase();
-      const sets = document.getElementById('cfgSetoresRaiz').value.trim().toUpperCase();
-      
-      if(!pref || !raiz || !sets) return alert('PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS!');
-      
-      appState.configuracoes.prefixoTag = pref;
-      appState.configuracoes.digitosTag = parseInt(dig);
-      appState.configuracoes.empresaRaiz = raiz;
-      appState.configuracoes.setoresRaiz = sets;
-      
-      fetch(`${WEB_APP_URL}?acao=salvarConfiguracoes&dados=${encodeURIComponent(JSON.stringify(appState.configuracoes))}`, { method: 'POST', mode: 'no-cors' }).then(() => {
-        alert('CONFIGURAÇÕES SALVAS E SINCRONIZADAS COM O SHEETS!');
-        sincronizarDadosPlanilha();
-      });
-    });
   }
 }
 
-function buscarCepColaboradorAutomatico() {
-  const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return;
-  fetch(`https://viacep.com.br/ws/${cep}/json/`)
-    .then(res => res.json())
-    .then(d => {
-      if (!d.erro) {
-        document.getElementById('formUserLogradouro').value = d.logradouro.toUpperCase();
-        document.getElementById('formUserBairro').value = d.bairro.toUpperCase();
-        document.getElementById('formUserCidade').value = d.localidade.toUpperCase();
-        document.getElementById('formUserUf').value = d.uf.toUpperCase();
-      }
-    }).catch(() => {});
-}
-
 function normalizarTermoMatriz(str) { if (!str) return ''; return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, '').trim(); }
-function calcularDistanciaLevenshtein(a, b) { const matriz = []; for (let i = 0; i <= b.length; i++) matriz[i] = [i]; for (let j = 0; j <= a.length; j++) matriz[0][j] = j; for (let i = 1; i <= b.length; i++) { for (let j = 1; j <= a.length; j++) { if (b.charAt(i - 1) === a.charAt(j - 1)) { matriz[i][j] = matriz[i - 1][j - 1]; } else { matriz[i][j] = Math.min(matriz[i - 1][j - 1] + 1, Math.min(matriz[i][j - 1] + 1, matriz[i - 1][j] + 1)); } } } return matriz[b.length][a.length]; }
-
-/* ==================== CONFIGURAÇÃO E MANIPULAÇÃO DE MODAIS SUB-GERENCIAIS ==================== */
-window.abrirModalDescricao = function(id = null) {
-  appState.idMatrizEmEdicao = id;
-  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>🏥 NOVA DESCRIÇÃO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>NOME / DESCRIÇÃO GERAL *</label><input type="text" id="modalInputEquip" class="input-padrao" value="" placeholder="EX: VENTILADOR PULMONAR"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR TERMO</button></div></div></div>`;
-  const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
-};
-
-window.abrirModalModeloVinculo = function() {
-  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.equipamento || item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
-  let options = '<option value="">SELECIONE A DESCRIÇÃO...</option>';
-  descricoesUnicas.forEach(d => options += `<option value="${d}">${d}</option>`);
-  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>📐 HOMOLOGAR MODELO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo" style="margin-bottom:12px;"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo" style="margin-bottom:12px;"><label>MODELO *</label><input type="text" id="modalInputModelo" class="input-padrao" placeholder="EX: SMART PUMP V5"></div><div class="form-grupo" style="margin-bottom:12px;"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao" placeholder="EX: SAMTRONIC"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button></div></div></div>`;
-  const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
-};
-
-window.fecharModal = function() { const container = document.getElementById('modalContainer'); container.innerHTML = ''; container.classList.add('hidden'); appState.idMatrizEmEdicao = null; };
-window.fecharModalProcesso = function() { fecharModal(); sincronizarDadosPlanilha(); };
-
-window.salvarModalDescricao = function() {
-  const equipInput = document.getElementById('modalInputEquip').value.trim().toUpperCase(); if(!equipInput) return alert('INSIRA A DESCRIÇÃO!');
-  const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equipInput, EQUIPAMENTO: equipInput, modelo: '-', MODELO: '-', fabricante: '-', FABRICANTE: '-', anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
-  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
-  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
-};
-
-window.salvarModalVinculo = function() {
-  const equip = document.getElementById('modalSelectEquip').value.toUpperCase(); const modelo = document.getElementById('modalInputModelo').value.trim().toUpperCase(); const fab = document.getElementById('modalInputFab').value.trim().toUpperCase();
-  if(!equip || !modelo || !fab) return alert('PREENCHA OS OBRIGATÓRIOS!');
-  const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equip, EQUIPAMENTO: equip, modelo: modelo, MODELO: modelo, fabricante: fab, FABRICANTE: fab, anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
-  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
-  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
-};
-
-window.alternarStatusMatriz = function(id) {
-  const item = appState.matrizAtivos.find(x => String(x.id_registro || x.ID_REGISTRO) === String(id)); if(!item) return;
-  const currentSt = (item.status || item.STATUS || 'ATIVO').toUpperCase();
-  const novoStatus = currentSt === 'ATIVO' ? 'INATIVO' : 'ATIVO';
-  if(!confirm(`ALTERAR STATUS PARA ${novoStatus}?`)) return;
-  const d = { id_registro: id, ID_REGISTRO: id, equipamento: item.equipamento || item.EQUIPAMENTO, EQUIPAMENTO: item.equipamento || item.EQUIPAMENTO, modelo: item.modelo || item.MODELO, MODELO: item.modelo || item.MODELO, fabricante: item.fabricante || item.FABRICANTE, FABRICANTE: item.fabricante || item.FABRICANTE, anvisa: '-', ANVISA: '-', status: novoStatus, STATUS: novoStatus };
-  const urlFinal = `${WEB_APP_URL}?acao=editarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
-  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
-};
-
-window.desenharTabelaMatrizAtivos = function() {
-  const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return; tbody.innerHTML = '';
-  if(!appState.matrizAtivos || appState.matrizAtivos.length === 0) return;
-  
-  appState.matrizAtivos.forEach(item => {
-    const id = item.id_registro || item.ID_REGISTRO;
-    const eq = (item.equipamento || item.EQUIPAMENTO || '').toUpperCase();
-    const mo = (item.modelo || item.MODELO || '-').toUpperCase();
-    const fa = (item.fabricante || item.FABRICANTE || '-').toUpperCase();
-    const st = (item.status || item.STATUS || 'ATIVO').toUpperCase();
-    const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
-    const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
-    
-    let tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><b>${eq}</b></td>
-      <td>${mo}</td>
-      <td>${fa}</td>
-      <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
-      <td style="text-align:center;">
-        <button class="${st === 'ATIVO' ? 'btn-danger' : 'btn-success'}" style="padding:4px 8px; font-size:11px;" onclick="alternarStatusMatriz('${id}')">
-          ${st === 'ATIVO' ? '🚫 INATIVAR' : '⚡ ATIVAR'}
-        </button>
-      </td>`;
-    tbody.appendChild(tr);
-  });
-};
+window.fecharModal = function() { const container = document.getElementById('modalContainer'); container.innerHTML = ''; container.classList.add('hidden'); };
 
 /* ==================== FUNÇÕES UTILITÁRIAS E FORMATADORES DE DADOS ==================== */
 function formatarDataBr(dataUs) { 
@@ -1887,39 +2009,22 @@ function formatarDataBr(dataUs) {
 
 function atualizarTabelaUsuariosLocal() {
   const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(!appState.usuarios || appState.usuarios.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">NENHUM REGISTRO ENCONTRADO</td></tr>`; return; }
+  if(!appState.usuarios || appState.usuarios.length === 0) return;
   
   appState.usuarios.forEach((u) => {
     const st = (u.status || 'ATIVO').toUpperCase();
     const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
-    const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
-    
-    tbody.innerHTML += `
-      <tr>
-        <td><b>${u.nome.toUpperCase()}</b></td>
-        <td>${u.login.toUpperCase()}</td>
-        <td>${u.perfil.toUpperCase()}</td>
-        <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
-        <td style="text-align:center;"><button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="alert('PRODUÇÃO: CONTATE O ADMINISTRADOR DIOGO PARA REGRAS DE INATIVAÇÃO DE LOGIN EXCLUSIVAS')">🚫 SUSPENDER</button></td>
-      </tr>`;
+    tbody.innerHTML += `<tr><td><b>${u.nome.toUpperCase()}</b></td><td>${u.login.toUpperCase()}</td><td>${u.perfil.toUpperCase()}</td><td><span style="padding:4px 8px; background:${bg}; border-radius:6px;">${st}</span></td></tr>`;
   });
 }
 
-window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); abrirTela('getao') || abrirTela('gestao'); sincronizarDadosPlanilha(); };
+window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); sincronizarDadosPlanilha(); };
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
-  
-  const d = { 
-    id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO', 
-    cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telephone: document.getElementById('formUserTelefone').value, 
-    cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), 
-    admissao: '', motivoDesligamento: '' 
-  };
-  
+  const d = { id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO' };
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
-  const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
-  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 </script>
 </body>
