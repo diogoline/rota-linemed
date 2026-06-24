@@ -220,7 +220,6 @@ const appState = {
   patrimonio: [],
   movimentacoes: [],
   tecnicos: ['DIOGO', 'ADMINISTRADOR'],
-  // ATUALIZADO COM AS PLACAS DE TRÂNSITO OFICIAIS DOS VEÍCULOS
   veiculos: ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED'],
   rotas: [],
   multas: [],
@@ -228,7 +227,7 @@ const appState = {
   usuarioLogado: null,
   idClienteEmEdicao: null,
   idUsuarioEmEdicao: null,
-  idMultaEmEdicao: null, // CONTROLE DE FLUXO DE EDIÇÃO DE INFRAÇÃO
+  idMultaEmEdicao: null,
   filtroStatusUsuario: 'ATIVO',
   filtroStatusCliente: 'ATIVO',
   buscaTextoCliente: '',
@@ -475,7 +474,7 @@ function renderizarHomePainelDinâmico() {
     </div>`;
 }
 
-/* ==================== SISTEMA DE ROTEAMENTO DAS TELAS INTERNAS ==================== */
+/* ==================== BI-MÓDULO: ROTEAMENTO E EXIBIÇÃO DE MATRIZES GERAIS ==================== */
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
@@ -715,118 +714,124 @@ function salvarRotaFinalMetrika() {
 function renderInitializeHome() { renderizarHomePainelDinâmico(); }
 function voltarInicio() { abrirTela('inicio'); }
 
-/* ==================== MÓDULO: GERENCIADOR E RELATÓRIO DE DASHBOARDS ==================== */
+/* ==================== MÓDULO: GERENCIADOR E RELATÓRIO DE DASHBOARDS (UPGRADED) ==================== */
 function renderizarTelaDashboards(container) {
   const totalClientes = appState.clientes.length;
   const clientesAtivos = appState.clientes.filter(c => (c.status || 'ATIVO').toUpperCase() === 'ATIVO').length;
-  const clientesInativos = totalClientes - clientesAtivos;
-  const pctAtivos = totalClientes > 0 ? Math.round((clientesAtivos / totalClientes) * 100) : 0;
-
   const totalPatrimonio = appState.patrimonio.length;
   const patLocados = appState.patrimonio.filter(p => p.status && p.status.toUpperCase() === 'LOCADO').length;
-  const patEstoque = appState.patrimonio.filter(p => p.status && p.status.toUpperCase() === 'DISPONÍVEL EM ESTOQUE').length;
-  const pctLocados = totalPatrimonio > 0 ? Math.round((patLocados / totalPatrimonio) * 100) : 0;
 
-  const contagemPorCliente = {};
-  appState.patrimonio.forEach(p => {
-    if (p.status && p.status.toUpperCase() === 'LOCADO' && p.localizacao) {
-      contagemPorCliente[p.localizacao] = (contagemPorCliente[p.localizacao] || 0) + 1;
-    }
+  // LÓGICA DE INTELIGÊNCIA: RANKING DE QUEM MAIS TOMOU MULTA
+  const contagemMultasPorCondutor = {};
+  let totalValorMultas = 0;
+  appState.multas.forEach(m => {
+    const cond = (m.condutor || m.CONDUTOR || 'INDEFINIDO').toUpperCase();
+    contagemMultasPorCondutor[cond] = (contagemMultasPorCondutor[cond] || 0) + 1;
+    totalValorMultas += parseFloat(m.valor || m.VALOR || 0);
   });
+  const rankingMultas = Object.keys(contagemMultasPorCondutor).map(key => {
+    return { nome: key, total: contagemMultasPorCondutor[key] };
+  }).sort((a, b) => b.total - a.total).slice(0, 3);
 
-  const topClientesOrdenados = Object.keys(contagemPorCliente).map(key => {
-    return { nome: key, total: contagemPorCliente[key] };
-  }).sort((a, b) => b.total - a.total).slice(0, 5);
+  // LÓGICA DE INTELIGÊNCIA: RANKING DE VEÍCULOS COM MAIOR NÚMERO DE VIAGENS (ROTAS)
+  const contagemRotasPorVeiculo = {};
+  appState.rotas.forEach(r => {
+    const veic = (r.veiculo || r.veiculo_alocado || 'INDEFINIDO').toUpperCase();
+    contagemRotasPorVeiculo[veic] = (contagemRotasPorVeiculo[veic] || 0) + 1;
+  });
+  const rankingVeiculos = Object.keys(contagemRotasPorVeiculo).map(key => {
+    return { nome: key, total: contagemRotasPorVeiculo[key] };
+  }).sort((a, b) => b.total - a.total).slice(0, 3);
 
   container.innerHTML = `
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <div>
           <h2>📊 DASHBOARDS & INDICADORES OPERACIONAIS</h2>
-          <p style="color:#64748b; font-size:13px; margin-top:2px;">DADOS GERENCIAIS CONSOLIDADOS EM TEMPO REAL COM BASE NO INVENTÁRIO CENTRAL.</p>
+          <p style="color:#64748b; font-size:13px; margin-top:2px;">DADOS GERENCIAIS CONSOLIDADOS EM TEMPO REAL COM HISTÓRICO DE LOGÍSTICA E INFRAÇÕES.</p>
         </div>
-        <button onclick="sincronizarDadosPlanilha(); setTimeout(() => abrirTela('dashboards'), 1500);" class="btn-secondary" style="font-size:12px;">🔄 ATUALIZAR GRÁFICOS</button>
+        <button onclick="sincronizarDadosPlanilha(); setTimeout(() => abrirTela('dashboards'), 1200);" class="btn-secondary" style="font-size:12px;">🔄 ATUALIZAR GRÁFICOS</button>
       </div>
 
       <div class="dashboard-grid" style="margin-bottom:25px; margin-top: 0;">
         <div class="card-padrao dash-card-num">
           <h4>🏥 TOTAL DE CLIENTES</h4>
           <div class="num">${totalClientes}</div>
-          <small style="color:#64748b; margin-top:5px;"><b>${clientesAtivos}</b> ATIVOS • <b>${clientesInativos}</b> INATIVOS</small>
+          <small style="color:#64748b; margin-top:5px;"><b>${clientesAtivos}</b> UNIDADES EM ATIVIDADE</small>
         </div>
-        
         <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-sucesso);">
-          <h4>📦 ATIVOS EM CLIENTES (LOCADOS)</h4>
+          <h4>📦 ATIVOS EM CAMPO (LOCADOS)</h4>
           <div class="num" style="color: var(--cor-sucesso);">${patLocados}</div>
-          <small style="color:#64748b; margin-top:5px;">EQUIPAMENTOS EM OPERAÇÃO EXTERNA</small>
+          <small style="color:#64748b; margin-top:5px;">SOMA DE ATIVOS CADASTRADOS: <b>${totalPatrimonio}</b></small>
         </div>
-
-        <div class="card-padrao dash-card-num" style="border-left-color: #f59e0b;">
-          <h4>🏢 ATIVOS EM ESTOQUE (SEDE)</h4>
-          <div class="num" style="color: #f59e0b;">${patEstoque}</div>
-          <small style="color:#64748b; margin-top:5px;">PRONTOS PARA NOVAS MOVIMENTAÇÕES</small>
+        <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-perigo);">
+          <h4>⚠️ INFRAÇÕES DE TRÂNSITO</h4>
+          <div class="num" style="color: var(--cor-perigo);">${appState.multas.length}</div>
+          <small style="color:#64748b; margin-top:5px;">CUSTO TOTAL: <b>R$ ${totalValorMultas.toFixed(2)}</b></small>
         </div>
-
-        <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-secundaria);">
-          <h4>🧮 PATRIMÔNIO TOTAL CADASTRADO</h4>
-          <div class="num" style="color: var(--cor-secundaria);">${totalPatrimonio}</div>
-          <small style="color:#64748b; margin-top:5px;">SOMA TOTAL DE ATIVOS DA BASE</small>
+        <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-alerta);">
+          <h4>📍 JORNADAS DE TRANSPORTE</h4>
+          <div class="num" style="color: var(--cor-alerta);">${appState.rotas.length}</div>
+          <small style="color:#64748b; margin-top:5px;">LOG OPERACIONAL DE ROTAS ATIVAS</small>
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
+        <!-- CONTAINER VISUAL: QUEM MAIS TOMOU MULTA -->
         <div class="card-padrao">
-          <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">📈 DISTRIBUIÇÃO DE ATIVOS E CLIENTES</h3>
-          
-          <div style="margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;">
-              <span>TAXA DE LOCAÇÃO DE EQUIPAMENTOS</span>
-              <span style="color: var(--cor-sucesso);">${pctLocados}%</span>
-            </div>
-            <div class="bar-progresso-container">
-              <div class="bar-progresso-fill" style="width: ${pctLocados}%; background: var(--cor-sucesso);"></div>
-            </div>
-          </div>
-
-          <div>
-            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;">
-              <span>CLIENTES COM CADASTRO ATIVO</span>
-              <span style="color: var(--cor-primaria);">${pctAtivos}%</span>
-            </div>
-            <div class="bar-progresso-container">
-              <div class="bar-progresso-fill" style="width: ${pctAtivos}%; background: var(--cor-primaria);"></div>
-            </div>
-          </div>
+          <h3 style="color: var(--cor-perigo); font-size:15px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">❌ RANKING: CONDUTORES COM MAIS MULTAS</h3>
+          <div id="dashContainerRankingMultas" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
         </div>
 
+        <!-- CONTAINER VISUAL: CARROS COM MAIOR NÚMERO DE VIAGENS -->
         <div class="card-padrao">
-          <h3 style="color: var(--cor-secundaria); font-size:16px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">🏆 MAIORES CLIENTES POR VOLUME DE ATIVOS</h3>
-          <div id="dashContainerTopClientes" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+          <h3 style="color: var(--cor-primaria); font-size:15px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">🚗 RANKING: VEÍCULOS COM MAIS VIAGENS (ROTAS)</h3>
+          <div id="dashContainerRankingVeiculos" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
         </div>
       </div>
     </div>`;
 
-  const containerTop = document.getElementById('dashContainerTopClientes');
-  if (topClientesOrdenados.length === 0) {
-    containerTop.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">NENHUM EQUIPAMENTO CONSTA COMO "LOCADO".</div>`;
-    return;
+  // RENDERIZAÇÃO GRÁFICA DO RANKING DE MULTAS
+  const divMlt = document.getElementById('dashContainerRankingMultas');
+  if (rankingMultas.length === 0) {
+    divMlt.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">NENHUMA INFRAÇÃO REGISTRADA NA PLANILHA.</div>`;
+  } else {
+    const maxMlt = rankingMultas[0].total;
+    rankingMultas.forEach((item, index) => {
+      const widthPct = Math.max(20, Math.round((item.total / maxMlt) * 100));
+      divMlt.innerHTML += `
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
+            <span>${index + 1}º - ${item.nome}</span>
+            <span style="background:#fee2e2; color:#dc2626; padding:2px 6px; border-radius:4px; font-size:11px;">${item.total} MULTAS</span>
+          </div>
+          <div style="background:#f1f5f9; height:8px; border-radius:4px; width:100%; overflow:hidden;">
+            <div style="background: linear-gradient(90deg, #f87171, #dc2626); height:100%; width:${widthPct}%;"></div>
+          </div>
+        </div>`;
+    });
   }
 
-  const maxAtivosVal = topClientesOrdenados[0].total;
-  topClientesOrdenados.forEach((item, index) => {
-    const itemPctWidth = Math.max(15, Math.round((item.total / maxAtivosVal) * 100));
-    const row = document.createElement('div');
-    row.style = "display: flex; flex-direction: column; gap: 3px;";
-    row.innerHTML = `
-      <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; color:#1e293b;">
-        <span>${index + 1}º - ${item.nome.toUpperCase()}</span>
-        <span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:11px;">${item.total} EQ.</span>
-      </div>
-      <div style="background:#f1f5f9; height:8px; border-radius:4px; width:100%; overflow:hidden;">
-        <div style="background: linear-gradient(90deg, #3b82f6, #1d4ed8); height:100%; width:${itemPctWidth}%;"></div>
-      </div>`;
-    containerTop.appendChild(row);
-  });
+  // RENDERIZAÇÃO GRÁFICA DO RANKING DE VIAGENS (VEÍCULOS)
+  const divVei = document.getElementById('dashContainerRankingVeiculos');
+  if (rankingVeiculos.length === 0) {
+    divVei.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">NENHUMA ROTA OPERACIONAL DISPARADA AINDA.</div>`;
+  } else {
+    const maxRot = rankingVeiculos[0].total;
+    rankingVeiculos.forEach((item, index) => {
+      const widthPct = Math.max(20, Math.round((item.total / maxRot) * 100));
+      divVei.innerHTML += `
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
+            <span>${index + 1}º - ${item.nome}</span>
+            <span style="background:#e0f2fe; color:#0284c7; padding:2px 6px; border-radius:4px; font-size:11px;">${item.total} JORNADAS</span>
+          </div>
+          <div style="background:#f1f5f9; height:8px; border-radius:4px; width:100%; overflow:hidden;">
+            <div style="background: linear-gradient(90deg, #3b82f6, #2563eb); height:100%; width:${widthPct}%;"></div>
+          </div>
+        </div>`;
+    });
+  }
 }
 
 /* ==================== MÓDULO: GERENCIADOR MASTER DE CLIENTES ==================== */
@@ -1259,7 +1264,7 @@ function enviarEquipamentoPlanilha() {
     localizacao: localizacaoFinal,
     setor: setorFinal, 
     situacao: sit,
-    donoExterno: sit !== 'PROPRIO' ? document.getElementById('formEquipDonoExternoInput').value.toUpperCase() : '',
+    donoExterno: sit !== 'PROPRIO' ? document.getElementById('formEquiponoExternoInput').value.toUpperCase() : '',
     familia: document.getElementById('formEquipFamilia').value,
     acessorios: document.getElementById('formEquipAcessorios').value.toUpperCase(),
     observacao: document.getElementById('formEquipObservation').value.toUpperCase()
@@ -1866,7 +1871,6 @@ window.desenharTabelaMatrizAtivos = function() {
 /* ==================== FUNÇÕES UTILITÁRIAS E FORMATADORES DE DADOS ==================== */
 function formatarDataBr(dataUs) { 
   if(!dataUs) return '-'; 
-  // TRATAMENTO EXCLUSIVO PARA INTERCEPTAR E CONVERTER DATAS LONGAS COM FUSO HORÁRIO (EVITA ERRO GMT)
   if (String(dataUs).includes('GMT') || String(dataUs).includes(':')) {
     const d = new Date(dataUs);
     if (!isNaN(d.getTime())) {
