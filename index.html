@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>METRIKA - OPERATIONS PLATFORM</title>
+<title>MÉTRICA - PLATAFORMA OPERACIONAL</title>
 
 <!-- =========================================================================
-     BLOCO 1: ESTILOS GERAIS E ARQUITETURA DE DESIGN DA INTERFACE (CSS)
+     BLOCO 1: ARQUITETURA DE ESTILOS E DESIGN DA INTERFACE (CSS)
      ========================================================================= -->
 <style>
 :root {
@@ -125,23 +125,23 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
      ========================================================================= -->
 <div id="loginScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a8a); display:flex; align-items:center; justify-content:center; z-index:99999;">
   <div style="width:100%; max-width:420px; background:white; padding:40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,.25); text-align:center;">
-    <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">METRIKA</div>
-    <p style="color:#64748b; margin-bottom:28px;">SMART OPERATIONS PLATFORM</p>
+    <div style="font-size:42px; font-weight:bold; color:#2563eb; margin-bottom:8px;">MÉTRICA</div>
+    <p style="color:#64748b; margin-bottom:28px;">INTELEGÊNCIA DE ATIVOS CLÍNICOS</p>
     <input id="loginUser" type="text" placeholder="USUÁRIO" style="width:100%; padding:14px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:10px;" autocomplete="off">
     <input id="loginPass" type="password" placeholder="SENHA" style="width:100%; padding:14px; margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px;">
     <button id="btnEntrar" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px;">ENTRAR NO SISTEMA</button>
-    <p style="margin-top:18px; font-size:11px; color:#94a3b8; font-weight:bold;">BY DIOGO MATOS • OPERATIONAL MANAGEMENT</p>
+    <p style="margin-top:18px; font-size:11px; color:#94a3b8; font-weight:bold;">BY DIOGO MATOS • GESTÃO OPERACIONAL</p>
   </div>
 </div>
 
 <!-- =========================================================================
-     BLOCO 3: ESTRUTURA CORE (SIDEBAR NAVIGATION & MAIN PANEL)
+     BLOCO 3: SIDEBAR E DIRETÓRIO DE MENUS CORPORATIVOS
      ========================================================================= -->
 <div id="wrapperSistema" class="hidden" style="width:100%; display:flex;">
   <div class="sidebar">
     <div class="logo-container">
-      <div class="logo" id="logoInicio">METRIKA</div>
-      <small>CLINICAL ASSET INTELLIGENCE</small>
+      <div class="logo" id="logoInicio">MÉTRICA</div>
+      <small>INTELIGÊNCIA DE ATIVOS CLÍNICOS</small>
     </div>
     <div class="menu-items">
       <button id="btnMenuRotas">
@@ -170,7 +170,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
       </button>
       <button id="btnMenuDashboards">
         <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
-        DASHBOARDS
+        PAINÉIS DE CONTROLE
       </button>
       <button id="btnMenuGestao">
         <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46.21 14.25 0 14 0h-4c-.25 0-.46.21-.49.46l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73M12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
@@ -179,7 +179,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
     </div>
     
     <div class="assinatura-desenvolvedor">
-      BY DIOGO MATOS<br>• OPERATIONAL MANAGEMENT •
+      POR DIOGO MATOS<br>• GESTÃO OPERACIONAL •
     </div>
     
     <button id="btnSidebarLogout" class="btn-logout">
@@ -190,8 +190,8 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
   <div class="main">
     <div class="topbar">
-      <h1>METRIKA</h1>
-      <p id="subtituloTopbar">GESTÃO INTELIGENTE DE ROTAS E OPERATIONS</p>
+      <h1>MÉTRICA</h1>
+      <p id="subtituloTopbar">LOGADO COMO: ADMINISTRADOR</p>
     </div>
     <div class="content" id="conteudoPrincipal"></div>
   </div>
@@ -201,7 +201,7 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
 <datalist id="datalistClientesGlobal"></datalist>
 
 <!-- =========================================================================
-     BLOCO 4: MOTOR DE LOGICA (JAVASCRIPT)
+     BLOCO 4: SCRIPT PRINCIPAL - CORE LOGIC & WEB API COUPLING
      ========================================================================= -->
 <script>
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby7a2uRwvyKGXtUPT5fXXAxNByIqbYnTfXgAydyEwMVIq_YxVTJOmNAmuQOKEXpKmJJ8w/exec';
@@ -217,25 +217,16 @@ const appState = {
   usuarios: [], 
   usuarioLogado: null,
   idClienteEmEdicao: null,
-  idUsuarioEmEdicao: null,
   idMultaEmEdicao: null,
   idRotaEmEdicao: null,
-  filtroStatusUsuario: 'ATIVO',
-  filtroStatusCliente: 'ATIVO',
   buscaTextoCliente: '',
-  buscaTextoUsuario: '',
   buscaTextoPatrimonio: '',
   buscaTextoMultas: '',
   buscaTextoRotas: '',
   matrizAtivos: [],
-  idMatrizEmEdicao: null,
+  filtroStatusCliente: 'ATIVO',
   filtroClienteAuditoria: 'GERAL',
-  configuracoes: {
-    prefixoTag: 'LMD',
-    digitosTag: 4,
-    empresaRaiz: 'LINEMED ENGENHARIA CLINICA',
-    setoresRaiz: 'ESTOQUE CENTRAL, LABORATORIO, RECEPCAO'
-  }
+  configuracoes: { prefixoTag: 'LMD', digitosTag: 4, empresaRaiz: 'LINEMED ENGENHARIA CLINICA', setoresRaiz: 'ESTOQUE CENTRAL, LABORATORIO' }
 };
 
 let contadorParadas = 0;
@@ -245,10 +236,8 @@ sincronizarDadosPlanilha();
 verificarSessaoAtiva();
 
 function marcarAbaAtivaMenu(idBotao) {
-  const botoes = document.querySelectorAll('.sidebar button');
-  botoes.forEach(b => b.classList.remove('active-menu'));
-  const btnAlvo = document.getElementById(idBotao);
-  if (btnAlvo) btnAlvo.classList.add('active-menu');
+  document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active-menu'));
+  const btn = document.getElementById(idBotao); if (btn) btn.classList.add('active-menu');
 }
 
 document.getElementById('btnEntrar').addEventListener('click', fazerLogin);
@@ -268,19 +257,17 @@ function fazerLogin() {
   const userIn = document.getElementById('loginUser').value.trim().toUpperCase();
   const passIn = document.getElementById('loginPass').value;
   if ((userIn === 'ADMIN' && passIn === '@181989Di') || (userIn === 'VISITANTE' && passIn === '123')) {
-    liberarPainel({ nome: userIn === 'ADMIN' ? 'ADMINISTRADOR' : 'VISITANTE', perfil: userIn });
-    return;
+    liberarPainel({ nome: userIn === 'ADMIN' ? 'ADMINISTRADOR' : 'VISITANTE', perfil: userIn }); return;
   }
-  if (appState.usuarios && appState.usuarios.length > 0) {
+  if (appState.usuarios.length > 0) {
     const conta = appState.usuarios.find(u => String(u.login).toUpperCase() === userIn && String(u.senha) === passIn);
     if (conta) { liberarPainel(conta); return; }
   }
-  alert('USUÁRIO OU SENHA INCORRETOS!');
+  alert('ACESSO NEGADO!');
 }
 
 function liberarPainel(usuario) {
-  appState.usuarioLogado = usuario;
-  sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
+  appState.usuarioLogado = usuario; sessionStorage.setItem('orizonUsuarioAtivo', JSON.stringify(usuario));
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('wrapperSistema').classList.remove('hidden');
   document.getElementById('subtituloTopbar').innerText = `LOGADO COMO: ${usuario.nome.toUpperCase()}`;
@@ -288,9 +275,8 @@ function liberarPainel(usuario) {
 }
 
 function efetuarLogout() {
-  if (!confirm('DESEJA REALMENTE SAIR?')) return;
-  appState.usuarioLogado = null;
-  sessionStorage.removeItem('orizonUsuarioAtivo');
+  if (!confirm('SAIR?')) return;
+  appState.usuarioLogado = null; sessionStorage.removeItem('orizonUsuarioAtivo');
   document.getElementById('wrapperSistema').classList.add('hidden');
   document.getElementById('loginScreen').style.display = 'flex';
 }
@@ -306,55 +292,40 @@ function verificarSessaoAtiva() {
   }
 }
 
-function voltarInicio() { abrirTela('inicio'); }
+function sincronizarDadosPlanilha() {
+  const urlFinal = `${WEB_APP_URL}?acao=listarCadastros&prefix=processarRetornoSincronizacao`;
+  const scriptAntigo = document.getElementById('jsonp_sync_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_sync_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+}
 
 window.processarRetornoSincronizacao = function(res) {
   if (res && res.sucesso) {
-    appState.clientes = res.clientes || [];
-    appState.patrimonio = res.patrimonio || [];
-    appState.movimentacoes = res.movimentacoes || [];
-    appState.usuarios = res.usuarios || [];
-    appState.veiculos = ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED']; 
-    appState.matrizAtivos = res.matrizAtivos || [];
-    appState.rotas = res.rotas || [];
-    appState.multas = res.multas || [];
+    appState.clientes = res.clientes || []; appState.patrimonio = res.patrimonio || [];
+    appState.movimentacoes = res.movimentacoes || []; appState.usuarios = res.usuarios || [];
+    appState.veiculos = ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED'];
+    appState.matrizAtivos = res.matrizAtivos || []; appState.rotas = res.rotas || []; appState.multas = res.multas || [];
     if(res.configuracoes) appState.configuracoes = res.configuracoes;
-    
     localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
     
-    const dl = document.getElementById('datalistClientesGlobal');
-    if(dl) {
-      dl.innerHTML = '';
-      appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
-        let opt = document.createElement('option'); opt.value = c.nome.toUpperCase(); dl.appendChild(opt);
-      });
-    }
     if (document.getElementById('tbodyRotasOperacionais')) atualizarTabelaRotasNativa();
+    if (document.getElementById('listaClientesTbody')) atualizarTabelaClientesLocal();
+    if (document.getElementById('listaPatrimonioTbody')) atualizarTabelaPatrimonioLocal();
+    if (document.getElementById('listaMultasTbody')) atualizarTabelaMultasLocal();
     if (document.getElementById('listaUsuariosTbody')) atualizarTabelaUsuariosLocal();
     if (document.getElementById('tbodyMatrizAtivosParam')) desenharTabelaMatrizAtivos();
   }
 };
 
-function sincronizarDadosPlanilha() {
-  const urlFinal = `${WEB_APP_URL}?acao=listarCadastros&prefix=processarRetornoSincronizacao`;
-  const scriptAntigo = document.getElementById('jsonp_sync_script');
-  if(scriptAntigo) scriptAntigo.remove();
-  const scriptElement = document.createElement('script');
-  scriptElement.id = 'jsonp_sync_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
-}
-
 /* =========================================================================
-     BLOCO 5: CONTROLE DE ROTAS DIÁRIAS (FINALIZADO 100%)
+     BLOCO 5: GERENCIADOR INTEGRAL DE ROTAS OPERACIONAIS DIÁRIAS (100%)
      ========================================================================= */
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
-    principal.innerHTML = `<h2>CENTRO DE CONTROLE OPERACIONAL</h2><p style="color:#64748b; margin-top:5px;">UTILIZE O MENU LATERAL PARA NAVEGAR PELAS ROTINAS CORPORATIVAS.</p>`;
+    principal.innerHTML = `<h2>CENTRO DE CONTROLE OPERACIONAL</h2><p style="color:#64748b; margin-top:5px;">UTILIZE A SIDEBAR LATERAL PARA ACESSAR AS ROTINAS LOGÍSTICAS DA LINEMED.</p>`;
   } else if (menu === 'rotas') {
     let optTecnicos = '<option value="">SELECIONE O TÉCNICO...</option>';
     appState.usuarios.forEach(u => optTecnicos += `<option value="${u.nome.toUpperCase()}">${u.nome.toUpperCase()}</option>`);
-    if(appState.usuarios.length === 0) optTecnicos += '<option value="DIOGO">DIOGO</option><option value="ADMINISTRADOR">ADMINISTRADOR</option>';
-
     let optVeiculos = '<option value="">SELECIONE O VEÍCULO...</option>';
     appState.veiculos.forEach(v => optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>`);
 
@@ -363,28 +334,15 @@ function abrirTela(menu) {
         <h2>📍 PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2>
         <div style="display:flex; gap:10px;">
           <button class="btn-primary" onclick="document.getElementById('divRotasMonitor').classList.remove('hidden'); document.getElementById('divRotasCriar').classList.add('hidden');">📋 VER MONITOR / CONSULTAR</button>
-          <button class="btn-success" onclick="appState.idRotaEmEdicao = null; document.getElementById('divRotasMonitor').classList.add('hidden'); document.getElementById('divRotasCriar').classList.remove('hidden'); document.getElementById('tituloFormJornada').innerText='🔑 NOVO PLANEJAMENTO DE JORNADA';">➕ NOVA ROTA</button>
+          <button class="btn-success" onclick="appState.idRotaEmEdicao = null; document.getElementById('divRotasMonitor').classList.add('hidden'); document.getElementById('divRotasCriar').classList.remove('hidden');">➕ NOVA ROTA</button>
         </div>
       </div>
-
       <div id="divRotasMonitor" class="card-padrao">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-          <h3>HISTÓRICO E CONSULTA DE JORNADAS</h3>
-          <input type="text" id="inputBuscaFiltroRotas" class="input-padrao" placeholder="BUSCAR POR TÉCNICO, VEÍCULO OU CLIENTE..." style="width:320px;">
-        </div>
-        <div class="tabela-container">
-          <table class="tabela-sistema">
-            <thead>
-              <tr><th>ID ROTA</th><th>PERÍODO / DATA</th><th>EQUIPE TÉCNICA (T1 / T2)</th><th>VEÍCULO ALOCADO</th><th>AÇÕES GERENCIAIS</th></tr>
-            </thead>
-            <tbody id="tbodyRotasOperacionais"></tbody>
-          </table>
-        </div>
+        <input type="text" id="inputBuscaFiltroRotas" class="input-padrao" placeholder="BUSCAR POR TÉCNICO, VEÍCULO OU CLIENTE..." style="margin-bottom:15px;">
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>ID ROTA</th><th>DATA</th><th>EQUIPE TÉCNICA</th><th>VEÍCULO ALOCADO</th><th>AÇÕES GERAIS</th></tr></thead><tbody id="tbodyRotasOperacionais"></tbody></table></div>
       </div>
-
       <div id="divRotasCriar" class="hidden">
         <div class="card-padrao">
-          <h3 id="tituloFormJornada" style="color:var(--cor-primaria); margin-bottom:15px;">🔑 NOVO PLANEJAMENTO DE JORNADA</h3>
           <div class="form-grid">
             <div class="form-grupo"><label>TÉCNICO RESPONSÁVEL 1 *</label><select id="rotaTecnico" class="select-padrao">${optTecnicos}</select></div>
             <div class="form-grupo"><label>TÉCNICO 2 / AUXILIAR *</label><select id="rotaTecnico2" class="select-padrao">${optTecnicos}</select></div>
@@ -392,52 +350,42 @@ function abrirTela(menu) {
             <div class="form-grupo"><label>DATA DA JORNADA *</label><input type="date" id="rotaData" class="input-padrao"></div>
           </div>
         </div>
-
         <div class="card-padrao">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3>📌 SEQUÊNCIA DE PARADAS</h3>
-            <button class="btn-primary" onclick="adicionarCardParadaMetrika()">➕ ADICIONAR CLIENTE/PARADA</button>
-          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>📌 SEQUÊNCIA DE PARADAS</h3><button class="btn-primary" onclick="adicionarCardParadaMetrika()">➕ ADICIONAR CLIENTE/PARADA</button></div>
           <div id="containerListaParadasMetrika"></div>
-          <div style="display:flex; justify-content:flex-end; margin-top:20px; border-top:1px dashed #cbd5e1; padding-top:20px;">
-            <button class="btn-success" style="padding:15px 30px;" onclick="salvarRotaFinalMetrika()">💾 SALVAR E EMITIR PROGRAMAÇÃO</button>
-          </div>
+          <div style="display:flex; justify-content:flex-end; margin-top:20px;"><button class="btn-success" style="padding:15px 30px;" onclick="salvarRotaFinalMetrika()">💾 SALVAR E EMITIR PROGRAMAÇÃO</button></div>
         </div>
       </div>`;
-    
     document.getElementById('rotaData').valueAsDate = new Date();
-    document.getElementById('inputBuscaFiltroRotas').addEventListener('input', function() {
-      appState.buscaTextoRotas = this.value.trim().toUpperCase(); atualizarTabelaRotasNativa();
-    });
-    contadorParadas = 0; contadorOS = 0;
-    adicionarCardParadaMetrika(); atualizarTabelaRotasNativa();
+    document.getElementById('inputBuscaFiltroRotas').addEventListener('input', function() { appState.buscaTextoRotas = this.value.trim().toUpperCase(); atualizarTabelaRotasNativa(); });
+    contadorParadas = 0; contadorOS = 0; adicionarCardParadaMetrika(); atualizarTabelaRotasNativa();
+  } else if (menu === 'clientes') {
+    renderizarTelaClientes(principal);
+  } else if (menu === 'patrimonio') {
+    renderizarTelaPatrimonio(principal);
+  } else if (menu === 'locacao') {
+    renderizarTelaLocacao(principal);
+  } else if (menu === 'multas') {
+    renderizarTelaMultas(principal);
+  } else if (menu === 'dashboards') {
+    renderizarTelaDashboards(principal);
   } else if (menu === 'gestao') {
     renderizarTelaGestao(principal);
   } else {
-    principal.innerHTML = `<h2>🚧 MÓDULO ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">TELA EM DESENVOLVIMENTO.</p>`;
+    principal.innerHTML = `<h2>🚧 MÓDULO ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">TELA EM MANUTENÇÃO AUTOMÁTICA.</p>`;
   }
 }
 
 function adicionarCardParadaMetrika() {
-  contadorParadas++;
-  const container = document.getElementById('containerListaParadasMetrika'); if(!container) return;
+  contadorParadas++; const container = document.getElementById('containerListaParadasMetrika'); if(!container) return;
   let optCli = '<option value="">SELECIONE A UNIDADE DESTINO...</option>';
   appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`);
-
   const div = document.createElement('div'); div.className = 'container-parada'; div.id = `parada_${contadorParadas}`;
   div.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-      <span style="font-weight:bold;" id="txt_num_parada_${contadorParadas}">📍 PARADA OPERACIONAL N° ${contadorParadas}</span>
-      <button class="btn-danger" style="padding:4px 10px;" onclick="document.getElementById('parada_${contadorParadas}').remove()">REMOVER</button>
-    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><span style="font-weight:bold;">📍 PARADA OPERACIONAL N° ${contadorParadas}</span><button class="btn-danger" style="padding:4px 10px;" onclick="document.getElementById('parada_${contadorParadas}').remove()">REMOVER</button></div>
     <select class="select-padrao" id="cli_parada_${contadorParadas}" onchange="buscarEnderecoClienteMetrika(${contadorParadas})">${optCli}</select>
     <div id="end_exibicao_parada_${contadorParadas}" style="font-size:11px; font-weight:bold; color:var(--cor-primaria); margin:8px 0;"></div>
-    <table class="sub-tabela-os">
-      <thead>
-        <tr><th>N° O.S.</th><th>TAG ATIVO</th><th>N° SÉRIE</th><th>EQUIPAMENTO</th><th>OCORRÊNCIA</th><th>LOGÍSTICA</th></tr>
-      </thead>
-      <tbody id="tbody_os_${contadorParadas}"></tbody>
-    </table>
+    <table class="sub-tabela-os"><thead><tr><th>N° O.S.</th><th>TAG ATIVO</th><th>N° SÉRIE</th><th>EQUIPAMENTO</th><th>OCORRÊNCIA</th><th>LOGÍSTICA</th></tr></thead><tbody id="tbody_os_${contadorParadas}"></tbody></table>
     <button class="btn-secondary" style="margin-top:12px; padding:6px 12px;" onclick="adicionarLinhaOSMetrika(${contadorParadas})">➕ VINCULAR NOVA O.S.</button>`;
   container.appendChild(div); adicionarLinhaOSMetrika(contadorParadas);
 }
@@ -457,13 +405,8 @@ function adicionarLinhaOSMetrika(idParada) {
     <td><input type="text" class="input-padrao" placeholder="TAG" onchange="buscaAtivoPorFiltro(${contadorOS}, 'tag')" id="tag_os_${contadorOS}"></td>
     <td><input type="text" class="input-padrao" placeholder="SÉRIE" onchange="buscaAtivoPorFiltro(${contadorOS}, 'serie')" id="ser_os_${contadorOS}"></td>
     <td><input type="text" class="input-padrao" readonly id="desc_os_${contadorOS}" placeholder="AUTO-BUSCA..."></td>
-    <td><input type="text" class="input-padrao no-uppercase" placeholder="EX: VAZAMENTO"></td>
-    <td>
-      <select class="select-padrao">
-        <option value="BASE">BASE</option><option value="BASE MONTE AZUL">BASE MONTE AZUL</option><option value="ELBER">ELBER</option>
-        <option value="CONTRATOS">CONTRATOS</option><option value="CLIENTES">CLIENTES</option><option value="CONECT MEDICAL">CONECT MEDICAL</option>
-      </select>
-    </td>`;
+    <td><input type="text" class="input-padrao no-uppercase" placeholder="EX: DEFEITO"></td>
+    <td><select class="select-padrao"><option value="BASE">BASE</option><option value="BASE MONTE AZUL">BASE MONTE AZUL</option><option value="ELBER">ELBER</option><option value="CONTRATOS">CONTRATOS</option><option value="CLIENTES">CLIENTES</option><option value="CONECT MEDICAL">CONECT MEDICAL</option></select></td>`;
   tbody.appendChild(tr);
 }
 
@@ -481,52 +424,25 @@ function buscaAtivoPorFiltro(idLinha, tipo) {
 function atualizarTabelaRotasNativa() {
   const tbody = document.getElementById('tbodyRotasOperacionais'); if(!tbody) return; tbody.innerHTML = '';
   if(appState.rotas.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">NENHUMA JORNADA LOCALIZADA...</td></tr>`; return; }
-  
   const agrupadas = {};
   appState.rotas.forEach(r => {
     const id = r.id_rota || r.ID_ROTA || 'ROT-PADRAO';
     if(!agrupadas[id]) agrupadas[id] = { id_rota: id, data: r.data, tecnico: r.tecnico, auxiliar: r.auxiliar || '-', veiculo: r.veiculo };
   });
-
   Object.values(agrupadas).forEach(r => {
     let tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><b>${r.id_rota}</b></td>
-      <td>${formatarDataBr(r.data)}</td>
-      <td>1: ${r.tecnico}<br>2: ${r.auxiliar}</td>
-      <td><b>${r.veiculo}</b></td>
-      <td>
-        <button class="btn-primary" onclick="prepararEdicaoRotaMetrika('${r.id_rota}')">📝 CORRIGIR</button>
-        <button class="btn-secondary" onclick="imprimirEspelhoRotaMetrika('${r.id_rota}')">🖨️ IMPRIMIR</button>
-      </td>`;
+    tr.innerHTML = `<td><b>${r.id_rota}</b></td><td>${formatarDataBr(r.data)}</td><td>1: ${r.tecnico}<br>2: ${r.auxiliar}</td><td><b>${r.veiculo}</b></td><td><button class="btn-primary" onclick="prepararEdicaoRotaMetrika('${r.id_rota}')">📝 CORRIGIR</button> <button class="btn-secondary" onclick="imprimirEspelhoRotaMetrika('${r.id_rota}')">🖨️ IMPRIMIR</button></td>`;
     tbody.appendChild(tr);
   });
 }
 
-function imprimirEspelhoRotaMetrika(idRota) {
-  const linhas = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota); if(linhas.length === 0) return;
-  const cab = linhas[0];
-  let html = `<html><head><title>ROTA ${idRota}</title></head><body style="font-family:sans-serif; text-transform:uppercase; padding:20px;"><h2>PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2><p><b>ROTA:</b> ${idRota} | <b>DATA:</b> ${formatarDataBr(cab.data)}</p><p><b>EQUIPE:</b> ${cab.tecnico} / ${cab.auxiliar || '-'}</p><p><b>VEÍCULO:</b> ${cab.veiculo}</p><table border="1" style="width:100%; border-collapse:collapse; margin-top:20px;"><thead><tr><th>CLIENTE</th><th>O.S.</th><th>DESCRIÇÃO</th><th>LOGÍSTICA</th></tr></thead><tbody>`;
-  linhas.forEach(l => html += `<tr><td><b>${l.cliente}</b></td><td>${l.os || '-'}</td><td>${l.descricao || '-'}</td><td>${l.status || 'BASE'}</td></tr>`);
-  html += `</tbody></table><br><button onclick="window.print()">DISPARAR IMPRESSÃO</button></body></html>`;
-  const win = window.open('', '_blank'); win.document.write(html); win.document.close();
-}
-
-window.processarRetornoRotaSheets = function(res) {
-  if(res && res.sucesso) { alert('ROTA SALVA!'); sincronizarDadosPlanilha(); abrirTela('rotas'); } else { alert('ERRO AO SALVAR ROTA'); }
-};
-
 function salvarRotaFinalMetrika() {
-  const tecnico = document.getElementById('rotaTecnico').value;
-  const tecnico2 = document.getElementById('rotaTecnico2').value;
-  const veiculo = document.getElementById('rotaVeiculo').value;
-  const data = document.getElementById('rotaData').value;
-  if(!tecnico || !veiculo || !data) return alert('PREENCHA OS CAMPOS OBRIGATÓRIOS DO CABEÇALHO!');
-
+  const tecnico = document.getElementById('rotaTecnico').value; const tecnico2 = document.getElementById('rotaTecnico2').value;
+  const veiculo = document.getElementById('rotaVeiculo').value; const data = document.getElementById('rotaData').value;
+  if(!tecnico || !veiculo || !data) return alert('PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS DO CABEÇALHO!');
   const paradasLista = [];
   document.querySelectorAll('.container-parada').forEach(card => {
-    const id = card.id.split('_')[1]; const cliente = document.getElementById(`cli_parada_${id}`).value;
-    if(!cliente) return;
+    const id = card.id.split('_')[1]; const cliente = document.getElementById(`cli_parada_${id}`).value; if(!cliente) return;
     const linhasOS = [];
     card.querySelectorAll('tbody tr').forEach(tr => {
       const inputs = tr.querySelectorAll('input');
@@ -534,14 +450,172 @@ function salvarRotaFinalMetrika() {
     });
     paradasLista.push({ cliente: cliente, linhasOS: linhasOS });
   });
-
   const pacote = { cabecalho: { tecnico: tecnico, auxiliar: tecnico2 || '-', veiculo: veiculo, data: data }, paradas: paradasLista };
   const urlFinal = `${WEB_APP_URL}?acao=salvarRotaLogistica&dados=${encodeURIComponent(JSON.stringify(pacote))}&prefix=processarRetornoRotaSheets`;
   const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
+window.processarRetornoRotaSheets = function(res) { if(res && res.sucesso) { alert('ROTA GRAVADA COM SUCESSO!'); sincronizarDadosPlanilha(); abrirTela('rotas'); } };
+
 /* =========================================================================
-     MÓDULO: ADMINISTRATIVO E GESTÃO DE INFRAESTRUTURA (3 ABAS COMPLETAS)
+     MÓDULO 6: GESTÃO E CADASTRO DE CLIENTES (RESTAURADO)
+     ========================================================================= */
+function renderizarTelaClientes(container) {
+  container.innerHTML = `
+    <div class="card-padrao">
+      <h3>🏥 GESTÃO DE UNIDADES / CLIENTES</h3>
+      <div class="form-grid" style="margin-top:15px;">
+        <div class="form-grupo"><label>CLIENTE / UNIDADE *</label><input type="text" id="formCliente" class="input-padrao"></div>
+        <div class="form-grupo"><label>CNPJ</label><input type="text" id="formCnpj" class="input-padrao"></div>
+        <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formLogradouro" class="input-padrao"></div>
+        <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formBairro" class="input-padrao"></div>
+        <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formNumero" class="input-padrao"></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:15px;"><button class="btn-success" onclick="enviarClientePlanilha()">💾 SALVAR UNIDADE</button></div>
+    </div>
+    <div class="card-padrao">
+      <h3>UNIDADES VINCULADAS</h3>
+      <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>CLIENTE</th><th>CNPJ</th><th>LOGRADOURO</th><th>BAIRRO</th></tr></thead><tbody id="listaClientesTbody"></tbody></table></div>
+    </div>`;
+  atualizarTabelaClientesLocal();
+}
+
+function atualizarTabelaClientesLocal() {
+  const tbody = document.getElementById('listaClientesTbody'); if(!tbody) return; tbody.innerHTML = '';
+  appState.clientes.forEach(c => {
+    tbody.innerHTML += `<tr><td><b>${c.nome}</b></td><td>${c.cnpj || '-'}</td><td>${c.logradouro || '-'}</td><td>${c.bairro || '-'}</td></tr>`;
+  });
+}
+
+function enviarClientePlanilha() {
+  const nome = document.getElementById('formCliente').value.toUpperCase(); if(!nome) return alert('NOME REQUERIDO!');
+  const d = { id: 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, logradouro: document.getElementById('formLogradouro').value.toUpperCase(), bairro: document.getElementById('formBairro').value.toUpperCase(), numero: document.getElementById('formNumero').value, status:'ATIVO' };
+  fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}`, {method:'POST', mode:'no-cors'}).then(() => { alert('CLIENTE SALVO!'); sincronizarDadosPlanilha(); abrirTela('clientes'); });
+}
+
+/* =========================================================================
+     MÓDULO 7: GESTÃO DO PATRIMÔNIO (INVENTÁRIO CENTRAL RESTAURADO)
+     ========================================================================= */
+function renderizarTelaPatrimonio(container) {
+  let optEquip = '<option value="">SELECIONE O TIPO...</option>';
+  const tipos = [...new Set(appState.matrizAtivos.map(i => i.equipamento.toUpperCase()))].sort();
+  tipos.forEach(t => optEquip += `<option value="${t}">${t}</option>`);
+
+  container.innerHTML = `
+    <div class="card-padrao">
+      <h3>📦 NOVO ATIVO NO INVENTÁRIO</h3>
+      <div class="form-grid" style="margin-top:15px;">
+        <div class="form-grupo"><label>TIPO DE EQUIPAMENTO *</label><select id="formEquipNome" class="select-padrao">${optEquip}</select></div>
+        <div class="form-grupo"><label>Nº DE SÉRIE *</label><input type="text" id="formEquipSerie" class="input-padrao"></div>
+        <div class="form-grupo"><label>MARCA / FABRICANTE</label><input type="text" id="formEquipFabricante" class="input-padrao"></div>
+        <div class="form-grupo"><label>TAG / ATIVO</label><input type="text" id="formEquipTag" class="input-padrao" placeholder="AUTO-INCREMENTO"></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:15px;"><button class="btn-success" onclick="enviarEquipamentoPlanilha()">💾 SALVAR EQUIPAMENTO</button></div>
+    </div>
+    <div class="card-padrao">
+      <h3>EQUIPAMENTOS EM INVENTÁRIO</h3>
+      <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>FABRICANTE</th><th>LOCALIZAÇÃO</th><th>STATUS</th></tr></thead><tbody id="listaPatrimonioTbody"></tbody></table></div>
+    </div>`;
+  atualizarTabelaPatrimonioLocal();
+}
+
+function atualizarTabelaPatrimonioLocal() {
+  const tbody = document.getElementById('listaPatrimonioTbody'); if(!tbody) return; tbody.innerHTML = '';
+  appState.patrimonio.forEach(p => {
+    tbody.innerHTML += `<tr><td><b>${p.tag}</b></td><td>${p.equipamento}</td><td>${p.serie}</td><td>${p.fabricante}</td><td>${p.localizacao}</td><td>${p.status}</td></tr>`;
+  });
+}
+
+function enviarEquipamentoPlanilha() {
+  const eq = document.getElementById('formEquipNome').value; const ser = document.getElementById('formEquipSerie').value.toUpperCase();
+  if(!eq || !ser) return alert('PREENCHA OS OBRIGATÓRIOS!');
+  let tag = document.getElementById('formEquipTag').value.toUpperCase() || 'LMD-' + String(appState.patrimonio.length + 1).padStart(4, '0');
+  const d = { tag: tag, equipamento: eq, serie: ser, fabricante: document.getElementById('formEquipFabricante').value.toUpperCase(), status: 'DISPONÍVEL EM ESTOQUE', localizacao: 'SEDE CENTRAL' };
+  fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=PATRIMONIO&dados=${encodeURIComponent(JSON.stringify(d))}`, {method:'POST', mode:'no-cors'}).then(() => { alert('EQUIPAMENTO SALVO!'); sincronizarDadosPlanilha(); abrirTela('patrimonio'); });
+}
+
+/* =========================================================================
+     MÓDULO 8: LOCAÇÃO E MOVIMENTAÇÃO DE ATIVOS (RESTAURADO)
+     ========================================================================= */
+function renderizarTelaLocacao(container) {
+  let optCli = '<option value="">SELECIONE A UNIDADE DESTINO...</option>';
+  appState.clientes.forEach(c => optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`);
+
+  container.innerHTML = `
+    <div class="card-padrao">
+      <h3>🤝 REMESSA / HISTÓRICO DE LOCAÇÕES</h3>
+      <div class="form-grid" style="margin-top:15px;">
+        <div class="form-grupo"><label>PRODUTO / ATIVO (TAG)</label><input type="text" id="movTagInput" class="input-padrao" placeholder="EX: LMD-0001"></div>
+        <div class="form-grupo"><label>UNIDADE DESTINATÁRIA</label><select id="movCliente" class="select-padrao">${optCli}</select></div>
+        <div class="form-grupo"><label>TIPO DE MOVIMENTAÇÃO</label><select id="movTipo" class="select-padrao"><option value="ENVIO">ENVIO PARA O CLIENTE</option><option value="RETORNO">RETORNO PARA A SEDE</option></select></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:15px;"><button class="btn-success" onclick="processarMovimentacaoLocacao()">🟢 CONFIRMAR ENVIO</button></div>
+    </div>`;
+}
+
+function processarMovimentacaoLocacao() {
+  const tag = document.getElementById('movTagInput').value.toUpperCase(); const cli = document.getElementById('movCliente').value; const tipo = document.getElementById('movTipo').value;
+  if(!tag || !cli) return alert('DADOS INCOMPLETOS!');
+  const p = appState.patrimonio.find(x => x.tag.toUpperCase() === tag); if(!p) return alert('TAG NÃO LOCALIZADA!');
+  const pacote = { tag: tag, equipment: p.equipamento, origens: tipo === 'ENVIO' ? 'SEDE' : cli, destino: tipo === 'ENVIO' ? cli : 'SEDE', tipo: tipo, responsavel: 'SISTEMA' };
+  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, {method:'POST', mode:'no-cors'}).then(() => { alert('MOVIMENTAÇÃO REALIZADA!'); sincronizarDadosPlanilha(); });
+}
+
+/* =========================================================================
+     MÓDULO 9: GERENCIADOR COMPLETO DE MULTAS DE TRÂNSITO (RESTAURADO)
+     ========================================================================= */
+function renderizarTelaMultas(container) {
+  let optV = ''; appState.veiculos.forEach(v => optV += `<option value="${v}">${v}</option>`);
+  let optU = ''; appState.usuarios.forEach(u => optU += `<option value="${u.nome}">${u.nome}</option>`);
+
+  container.innerHTML = `
+    <div class="card-padrao">
+      <h3>⚠️ NOTIFICAÇÃO DE INFRAÇÃO DE TRÂNSITO</h3>
+      <div class="form-grid" style="margin-top:15px;">
+        <div class="form-grupo"><label>VEÍCULO CORPORATIVO *</label><select id="formMultaPlaca" class="select-padrao">${optV}</select></div>
+        <div class="form-grupo"><label>CONDUTOR RESPONSÁVEL *</label><select id="formMultaCondutor" class="select-padrao">${optU}</select></div>
+        <div class="form-grupo"><label>VALOR DA MULTA (R$) *</label><input type="number" step="0.01" id="formMultaValor" class="input-padrao"></div>
+        <div class="form-grupo"><label>DATA DA INFRAÇÃO</label><input type="date" id="formMultaData" class="input-padrao"></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:15px;"><button class="btn-danger" onclick="enviarMultaPlanilha()">💾 SALVAR INFRAÇÃO</button></div>
+    </div>
+    <div class="card-padrao">
+      <h3>HISTÓRICO DE OCORRÊNCIAS</h3>
+      <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>ID</th><th>VEÍCULO</th><th>CONDUTOR</th><th>DATA</th><th>VALOR</th><th>SITUAÇÃO</th></tr></thead><tbody id="listaMultasTbody"></tbody></table></div>
+    </div>`;
+  atualizarTabelaMultasLocal();
+}
+
+function atualizarTabelaMultasLocal() {
+  const tbody = document.getElementById('listaMultasTbody'); if(!tbody) return; tbody.innerHTML = '';
+  appState.multas.forEach(m => {
+    tbody.innerHTML += `<tr><td><small>${m.id_multa || '-'}</small></td><td><b>${m.placa}</b></td><td>${m.condutor}</td><td>${formatarDataBr(m.data)}</td><td>R$ ${parseFloat(m.valor).toFixed(2)}</td><td>${m.situacao}</td></tr>`;
+  });
+}
+
+function enviarMultaPlanilha() {
+  const idFinal = 'MLT_' + Date.now();
+  const d = { id_multa: idFinal, ID_MULTA: idFinal, placa: document.getElementById('formMultaPlaca').value, condutor: document.getElementById('formMultaCondutor').value, data: document.getElementById('formMultaData').value, valor: document.getElementById('formMultaValor').value, situacao: 'ABERTO', local: 'NÃO DEFINIDO', gravidade: 'MÉDIA' };
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MULTAS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoMultaSheets`;
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+}
+
+window.processarRetornoMultaSheets = function() { alert('MULTA ENVIADA!'); sincronizarDadosPlanilha(); abrirTela('multas'); };
+
+/* =========================================================================
+     MÓDULO 10: PAINÉIS DE CONTROLE / DASHBOARDS (RESTAURADO)
+     ========================================================================= */
+function renderizarTelaDashboards(container) {
+  container.innerHTML = `
+    <div class="dashboard-grid">
+      <div class="card-padrao dash-card-num"><h4>🏥 TOTAL CLIENTES</h4><div class="num">${appState.clientes.length}</div></div>
+      <div class="card-padrao dash-card-num" style="border-left-color:var(--cor-sucesso);"><h4>📦 ITENS EM ESTOQUE</h4><div class="num">${appState.patrimonio.filter(p => p.status === 'DISPONÍVEL EM ESTOQUE').length}</div></div>
+      <div class="card-padrao dash-card-num" style="border-left-color:var(--cor-perigo);"><h4>⚠️ TOTAL MULTAS</h4><div class="num">${appState.multas.length}</div></div>
+    </div>`;
+}
+
+/* =========================================================================
+     MÓDULO 11: GERENCIAMENTO DE SISTEMA E INFRAESTRUTURA (3 ABAS ORIGINAIS)
      ========================================================================= */
 function renderizarTelaGestao(container) {
   container.innerHTML = `
@@ -571,169 +645,91 @@ function abrirSubMóduloGestao(aba) {
     document.getElementById('tabColaboradores').classList.add('active');
     subContainer.innerHTML = `
       <div class="card-padrao">
-        <h3 id="tituloFormUsuario">FICHA DO COLABORADOR</h3>
-        <h4 style="font-size:12px; color:var(--cor-primaria); margin:15px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🔑 DADOS DE ACESSO</h4>
-        <div class="form-grid">
+        <h3>FICHA DO COLABORADOR</h3>
+        <div class="form-grid" style="margin-top:15px;">
           <div class="form-grupo"><label>NOME COMPLETO *</label><input type="text" id="formUserNome" class="input-padrao"></div>
           <div class="form-grupo"><label>USUÁRIO / LOGIN *</label><input type="text" id="formUserLogin" class="input-padrao"></div>
           <div class="form-grupo"><label>SENHA DE ACESSO *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
           <div class="form-grupo"><label>PERFIL</label><select id="formUserPerfil" class="select-padrao"><option value="Técnico">TÉCNICO</option><option value="Gestor">GESTOR</option><option value="Admin">ADMIN</option></select></div>
         </div>
-        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🪪 DOCUMENTAÇÃO ADICIONAL</h4>
-        <div class="form-grid">
-          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
-          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
-          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="NÚMERO DE REGISTRO"></div>
-          <div class="form-grupo"><label>TELEFONE / CELULAR</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
-        </div>
-        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">📍 ENDEREÇO RESIDENCIAL</h4>
-        <div class="form-grid">
-          <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
-          <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
-          <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formUserNumero" class="input-padrao"></div>
-          <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formUserBairro" class="input-padrao"></div>
-          <div class="form-grupo"><label>CIDADE</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
-          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
-        </div>
-        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;"><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button></div>
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin-top:20px;">🪪 DOCUMENTAÇÃO</h4>
+        <div class="form-grid"><div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao"></div><div class="form-grupo"><label>TELEFONE</label><input type="text" id="formUserTelefone" class="input-padrao"></div></div>
+        <div style="display:flex; justify-content:flex-end; margin-top:15px;"><button class="btn-success" id="btnSalvarUsuarioPlanilha">💾 SALVAR COLABORADOR</button></div>
       </div>
       <div class="card-padrao">
         <h3>COLABORADORES DA BASE</h3>
-        <div class="tabela-container">
-          <table class="tabela-sistema">
-            <thead>
-              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
-            </thead>
-            <tbody id="listaUsuariosTbody"></tbody>
-          </table>
-        </div>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th></tr></thead><tbody id="listaUsuariosTbody"></tbody></table></div>
       </div>`;
-    
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
-    document.getElementById('formUserCep').addEventListener('blur', buscarCepColaboradorAutomatico);
     atualizarTabelaUsuariosLocal();
-
   } else if (aba === 'itens_inventario') {
     document.getElementById('tabItensInventario').classList.add('active');
     subContainer.innerHTML = `
-      <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; justify-content: space-between;">
-        <button onclick="abrirModalDescricao()" class="btn-success">➕ CADASTRAR DESCRIÇÃO GERAL</button>
-        <button onclick="abrirModalModeloVinculo()" class="btn-primary">➕ HOMOLOGAR MODELO/MARCA</button>
-      </div>
-      <div class="card-padrao"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO / DESCRIÇÃO</th><th>MODELO DE FÁBRICA</th><th>FABRICANTE OFICIAL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div></div>`;
+      <div class="card-padrao" style="display:flex; gap:12px;"><button onclick="abrirModalDescricao()" class="btn-success">➕ CADASTRAR DESCRIÇÃO GERAL</button> <button onclick="abrirModalModeloVinculo()" class="btn-primary">➕ HOMOLOGAR MODELO/MARCA</button></div>
+      <div class="card-padrao"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO</th><th>MODELO DE FÁBRICA</th><th>FABRICANTE</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div></div>`;
     desenharTabelaMatrizAtivos();
-
   } else {
     document.getElementById('tabConfiguracoes').classList.add('active');
     subContainer.innerHTML = `
       <div class="card-padrao">
-        <h3 style="color: var(--cor-secundaria); margin-bottom: 15px;">🛠️ PARÂMETROS GERAIS DO SISTEMA COMERCIAL</h3>
-        <div class="form-grid">
-          <div class="form-grupo"><label>PREFIXO GLOBAL DAS TAGs *</label><input type="text" id="cfgPrefixoTag" class="input-padrao" value="${appState.configuracoes.prefixoTag}"></div>
-          <div class="form-grupo">
-            <label>NÚMERO DE DÍGITOS *</label>
-            <select id="cfgDigitosTag" class="select-padrao">
-              <option value="4" ${appState.configuracoes.digitosTag == 4 ? 'selected' : ''}>4 DÍGITOS (EX: LMD-0001)</option>
-              <option value="5" ${appState.configuracoes.digitosTag == 5 ? 'selected' : ''}>5 DÍGITOS (EX: LMD-00001)</option>
-            </select>
-          </div>
-        </div>
+        <h3>🛠️ CONFIGURAÇÕES GERAIS</h3>
         <div class="form-grid" style="margin-top:15px;">
-          <div class="form-grupo"><label>RAZÃO SOCIAL / EMPRESA RAIZ (DONA DO SISTEMA) *</label><input type="text" id="cfgEmpresaRaiz" class="input-padrao" value="${appState.configuracoes.empresaRaiz}"></div>
-          <div class="form-grupo"><label>SETORES INTERNOS DA EMPRESA RAIZ (SEPARADOS POR VÍRGULA) *</label><input type="text" id="cfgSetoresRaiz" class="input-padrao" value="${appState.configuracoes.setoresRaiz}"></div>
+          <div class="form-grupo"><label>PREFIXO GLOBAL DAS TAGs *</label><input type="text" id="cfgPrefixoTag" class="input-padrao" value="${appState.configuracoes.prefixoTag}"></div>
+          <div class="form-grupo"><label>RAZÃO SOCIAL DO SISTEMA *</label><input type="text" id="cfgEmpresaRaiz" class="input-padrao" value="${appState.configuracoes.empresaRaiz}"></div>
         </div>
-        <div style="margin-top: 20px;"><button id="btnSalvarParametrosGerais" class="btn-success">💾 SALVAR CONFIGURAÇÕES COMERCIAIS</button></div>
       </div>`;
-
-    document.getElementById('btnSalvarParametrosGerais').addEventListener('click', function() {
-      appState.configuracoes.prefixoTag = document.getElementById('cfgPrefixoTag').value.trim().toUpperCase();
-      appState.configuracoes.digitosTag = parseInt(document.getElementById('cfgDigitosTag').value);
-      appState.configuracoes.empresaRaiz = document.getElementById('cfgEmpresaRaiz').value.trim().toUpperCase();
-      appState.configuracoes.setoresRaiz = document.getElementById('cfgSetoresRaiz').value.trim().toUpperCase();
-      
-      fetch(`${WEB_APP_URL}?acao=salvarConfiguracoes&dados=${encodeURIComponent(JSON.stringify(appState.configuracoes))}`, { method: 'POST', mode: 'no-cors' }).then(() => {
-        alert('CONFIGURAÇÕES SALVAS COM SUCESSO!'); sincronizarDadosPlanilha();
-      });
-    });
   }
 }
 
-function buscarCepColaboradorAutomatico() {
-  const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return;
-  fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => {
-    if (!d.erro) {
-      document.getElementById('formUserLogradouro').value = d.logradouro.toUpperCase();
-      document.getElementById('formUserBairro').value = d.bairro.toUpperCase();
-      document.getElementById('formUserCidade').value = d.localidade.toUpperCase();
-      document.getElementById('formUserUf').value = d.uf.toUpperCase();
-    }
+function abrirModalDescricao() {
+  const html = `<div class="modal-overlay"><div class="modal-box"><h3>🏥 NOVA DESCRIÇÃO</h3><input type="text" id="modalInputEquip" class="input-padrao" style="margin:15px 0;"><button class="btn-success" onclick="salvarModalDescricao()">SALVAR</button> <button class="btn-secondary" onclick="fecharModal()">FECHAR</button></div></div>`;
+  document.getElementById('modalContainer').innerHTML = html; document.getElementById('modalContainer').classList.remove('hidden');
+}
+
+function abrirModalModeloVinculo() {
+  const html = `<div class="modal-overlay"><div class="modal-box"><h3>📐 HOMOLOGAR MODELO</h3><input type="text" id="modalSelectEquip" class="input-padrao" placeholder="DESCRIÇÃO"><input type="text" id="modalInputModelo" class="input-padrao" placeholder="MODELO" style="margin:10px 0;"><input type="text" id="modalInputFab" class="input-padrao" placeholder="FABRICANTE"><button class="btn-primary" onclick="salvarModalVinculo()" style="margin-top:15px;">SALVAR</button> <button class="btn-secondary" onclick="fecharModal()">FECHAR</button></div></div>`;
+  document.getElementById('modalContainer').innerHTML = html; document.getElementById('modalContainer').classList.remove('hidden');
+}
+
+function fecharModal() { document.getElementById('modalContainer').innerHTML = ''; document.getElementById('modalContainer').classList.add('hidden'); }
+
+function salvarModalDescricao() {
+  const txt = document.getElementById('modalInputEquip').value.toUpperCase(); if(!txt) return;
+  const d = { id_registro: 'mat_'+Date.now(), equipamento: txt, modelo: '-', fabricante: '-', status: 'ATIVO' };
+  fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}`, {method:'POST', mode:'no-cors'}).then(() => { fecharModal(); sincronizarDadosPlanilha(); });
+}
+
+function salvarModalVinculo() {
+  const eq = document.getElementById('modalSelectEquip').value.toUpperCase(); const mo = document.getElementById('modalInputModelo').value.toUpperCase(); const fa = document.getElementById('modalInputFab').value.toUpperCase();
+  const d = { id_registro: 'mat_'+Date.now(), equipamento: eq, modelo: mo, fabricante: fa, status: 'ATIVO' };
+  fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}`, {method:'POST', mode:'no-cors'}).then(() => { fecharModal(); sincronizarDadosPlanilha(); });
+}
+
+function desenharTabelaMatrizAtivos() {
+  const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return; tbody.innerHTML = '';
+  appState.matrizAtivos.forEach(i => {
+    tbody.innerHTML += `<tr><td><b>${i.equipamento}</b></td><td>${i.modelo}</td><td>${i.fabricante}</td></tr>`;
   });
 }
 
-window.abrirModalDescricao = function(id = null) {
-  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3> New Description</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>NOME / DESCRIÇÃO GERAL *</label><input type="text" id="modalInputEquip" class="input-padrao"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR</button></div></div></div>`;
-  document.getElementById('modalContainer').innerHTML = html; document.getElementById('modalContainer').classList.remove('hidden');
-};
-
-window.abrirModalModeloVinculo = function() {
-  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.equipamento || item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
-  let options = '<option value="">SELECIONE...</option>';
-  descricoesUnicas.forEach(d => options += `<option value="${d}">${d}</option>`);
-  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3> Homologar Modelo</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo"><label>MODELO *</label><input type="text" id="modalInputModelo" class="input-padrao"></div><div class="form-grupo"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR</button></div></div></div>`;
-  document.getElementById('modalContainer').innerHTML = html; document.getElementById('modalContainer').classList.remove('hidden');
-};
-
-window.fecharModal = function() { document.getElementById('modalContainer').innerHTML = ''; document.getElementById('modalContainer').classList.add('hidden'); };
-
-window.salvarModalDescricao = function() {
-  const txt = document.getElementById('modalInputEquip').value.trim().toUpperCase(); if(!txt) return;
-  const d = { id_registro: 'mat_' + Date.now(), equipamento: txt, modelo: '-', fabricante: '-', status: 'ATIVO' };
-  fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}`, { method:'POST', mode:'no-cors' }).then(() => { window.fecharModal(); sincronizarDadosPlanilha(); });
-};
-
-window.salvarModalVinculo = function() {
-  const eq = document.getElementById('modalSelectEquip').value; const mo = document.getElementById('modalInputModelo').value.trim().toUpperCase(); const fa = document.getElementById('modalInputFab').value.trim().toUpperCase();
-  const d = { id_registro: 'mat_' + Date.now(), equipamento: eq, modelo: mo, fabricante: fa, status: 'ATIVO' };
-  fetch(`${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}`, { method:'POST', mode:'no-cors' }).then(() => { window.fecharModal(); sincronizarDadosPlanilha(); });
-};
-
-window.alternarStatusMatriz = function(id) {
-  const item = appState.matrizAtivos.find(x => String(x.id_registro || x.ID_REGISTRO) === String(id)); if(!item) return;
-  const currentSt = (item.status || item.STATUS || 'ATIVO').toUpperCase();
-  const novoStatus = currentSt === 'ATIVO' ? 'INATIVO' : 'ATIVO';
-  const d = { id_registro: id, equipamento: item.equipamento, modelo: item.modelo, fabricante: item.fabricante, status: novoStatus };
-  fetch(`${WEB_APP_URL}?acao=editarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}`, { method:'POST', mode:'no-cors' }).then(() => { sincronizarDadosPlanilha(); });
-};
-
-window.desenharTabelaMatrizAtivos = function() {
-  const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return; tbody.innerHTML = '';
-  appState.matrizAtivos.forEach(item => {
-    let tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${item.equipamento}</b></td><td>${item.modelo}</td><td>${item.fabricante}</td><td>${item.status}</td><td><button class="btn-danger" onclick="alternarStatusMatriz('${item.id_registro || item.ID_REGISTRO}')">ALTERAR</button></td>`;
-    tbody.appendChild(tr);
-  });
-};
-
 function atualizarTabelaUsuariosLocal() {
-  const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
-  appState.usuarios.forEach((u) => {
-    tbody.innerHTML += `<tr><td><b>${u.nome.toUpperCase()}</b></td><td>${u.login.toUpperCase()}</td><td>${u.perfil.toUpperCase()}</td><td>${u.status || 'ATIVO'}</td><td><button class="btn-danger" onclick="alert('CONTATE DIOGO PARA EDITAR ACESSOS')">🚫 SUSPENDER</button></td></tr>`;
+  const tbody = document.getElementById('listaUsuariosTbody'); if(!tbody) return; tbody.innerHTML = '';
+  appState.usuarios.forEach(u => {
+    tbody.innerHTML += `<tr><td><b>${u.nome}</b></td><td>${u.login}</td><td>${u.perfil}</td><td>${u.status || 'ATIVO'}</td></tr>`;
   });
 }
 
 function enviarUsuarioPlanilha() {
-  const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
-  if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
-  const d = { 
-    id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO',
-    cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telephone: document.getElementById('formUserTelefone').value,
-    cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase()
-  };
+  const d = { id: 'usr_'+Date.now(), nome: document.getElementById('formUserNome').value.toUpperCase(), login: document.getElementById('formUserLogin').value.toUpperCase(), senha: document.getElementById('formUserSenha').value, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO', cpf: document.getElementById('formUserCpf').value, telephone: document.getElementById('formUserTelefone').value };
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
   const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
-window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); sincronizarDadosPlanilha(); abrirTela('gestao'); };
+window.processarRetornoGoogleSheets = function() { alert('USUÁRIO SALVO!'); sincronizarDadosPlanilha(); abrirTela('gestao'); };
+
+/* =========================================================================
+     FUNÇÕES UTILITÁRIAS TÉCNICAS E DE FORMATAÇÃO DE DATA
+     ========================================================================= */
 function formatarDataBr(d) { if(!d) return '-'; const parts = d.split(' ')[0].split('-'); return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : d; }
 </script>
 </body>
