@@ -228,7 +228,7 @@ const appState = {
   idClienteEmEdicao: null,
   idUsuarioEmEdicao: null,
   idMultaEmEdicao: null,
-  idRotaEmEdicao: null, // Controle exclusivo para alteração de jornada existente
+  idRotaEmEdicao: null,
   filtroStatusUsuario: 'ATIVO',
   filtroStatusCliente: 'ATIVO',
   buscaTextoCliente: '',
@@ -236,7 +236,7 @@ const appState = {
   buscaTextoPatrimonio: '',
   buscaTextoMatrizParam: '', 
   buscaTextoMultas: '',
-  buscaTextoRotas: '', // Filtro de busca do monitor de rotas
+  buscaTextoRotas: '',
 
   matrizAtivos: [],
   idMatrizEmEdicao: null,
@@ -337,7 +337,6 @@ window.processarRetornoSincronizacao = function(res) {
     appState.movimentacoes = res.movimentacoes || [];
     appState.usuarios = res.usuarios || [];
     
-    // PRESERVAÇÃO RIGOROSA DAS PLACAS DOS VEÍCULOS CORPORATIVOS
     appState.veiculos = ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED']; 
     
     appState.matrizAtivos = res.matrizAtivos || [];
@@ -479,7 +478,7 @@ function renderizarHomePainelDinâmico() {
     </div>`;
 }
 
-/* ==================== BLCO 5: MÓDULO EXCLUSIVO DE ROTAS DIÁRIAS (COMPLETAMENTE INTEGRADO) ==================== */
+/* ==================== BLOCO 5: MÓDULO EXCLUSIVO DE ROTAS DIÁRIAS (COMPLETAMENTE INTEGRADO) ==================== */
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
@@ -571,7 +570,6 @@ function abrirTela(menu) {
         <div class="card-padrao">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h3>📌 SEQUÊNCIA DE PARADAS</h3>
-            <!-- REMOVIDO INTEGRALMENTE O CARD AZUL DO ATTRIBUTE INLINE DO BOTÃO -->
             <button class="btn-primary" style="padding:8px 15px; font-size:11px;" onclick="adicionarCardParadaMetrika()">➕ ADICIONAR CLIENTE/PARADA</button>
           </div>
           <div id="containerListaParadasMetrika"></div>
@@ -628,7 +626,6 @@ function adicionarCardParadaMetrika() {
       <select class="select-padrao" id="cli_parada_${contadorParadas}" onchange="buscarEnderecoClienteMetrika(${contadorParadas})">${optCli}</select>
     </div>
     
-    <!-- EXIBIÇÃO DE ENDEREÇO DA UNIDADE EM TEMPO REAL -->
     <div id="end_exibicao_parada_${contadorParadas}" style="font-size:11px; font-weight:bold; color:var(--cor-primaria); margin-bottom:12px; min-height:15px; padding-left:2px;"></div>
     
     <table class="sub-tabela-os">
@@ -728,7 +725,6 @@ function atualizarTabelaRotasNativa() {
     return;
   }
 
-  // AGRUPAMENTO LOGÍSTICO EXCLUSIVO EM MEMÓRIA POR ID DA ROTA
   const rotasAgrupadas = {};
   appState.rotas.forEach(r => {
     const id = r.id_rota || r.ID_ROTA || 'ROT-PADRAO';
@@ -780,14 +776,14 @@ function atualizarTabelaRotasNativa() {
 
 function prepararEdicaoRotaMetrika(idRota) {
   appState.idRotaEmEdicao = idRota;
-  const linhas = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
-  if(linhas.length === 0) return;
+  const lines = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
+  if(lines.length === 0) return;
 
-  document.getElementById('divRotasMonitor').add('hidden');
+  document.getElementById('divRotasMonitor').classList.add('hidden');
   document.getElementById('divRotasCriar').classList.remove('hidden');
   document.getElementById('tituloFormJornada').innerText = "ALTERAR PLANEJAMENTO DE JORNADA";
 
-  const cab = linhas[0];
+  const cab = lines[0];
   document.getElementById('rotaTecnico').value = cab.tecnico || cab.TECNICO || '';
   document.getElementById('rotaTecnico2').value = cab.auxiliar || cab.AUXILIAR || '';
   document.getElementById('rotaVeiculo').value = cab.veiculo || cab.VEICULO || '';
@@ -803,9 +799,8 @@ function prepararEdicaoRotaMetrika(idRota) {
   container.innerHTML = '';
   contadorParadas = 0;
 
-  // RECONSTRÓI AS PARADAS COM SEUS RESPECTIVOS ENDEREÇOS E LINHAS DE O.S.
   const paradasMapeadas = {};
-  linhas.forEach(l => {
+  lines.forEach(l => {
     const cName = l.cliente.toUpperCase();
     if(!paradasMapeadas[cName]) paradasMapeadas[cName] = [];
     paradasMapeadas[cName].push(l);
@@ -817,7 +812,7 @@ function prepararEdicaoRotaMetrika(idRota) {
     buscarEnderecoClienteMetrika(contadorParadas);
 
     const tbody = document.getElementById(`tbody_os_${contadorParadas}`);
-    tbody.innerHTML = ''; // Limpa a linha inicial automática
+    tbody.innerHTML = '';
 
     paradasMapeadas[cName].forEach(osLinha => {
       contadorOS++;
@@ -854,10 +849,10 @@ function prepararEdicaoRotaMetrika(idRota) {
 }
 
 function imprimirEspelhoRotaMetrika(idRota) {
-  const linhas = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
-  if(linhas.length === 0) return alert('DADOS DA JORNADA NÃO ENCONTRADOS.');
+  const lines = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
+  if(lines.length === 0) return alert('DADOS DA JORNADA NÃO ENCONTRADOS.');
 
-  const cab = linhas[0];
+  const cab = lines[0];
   let conteudoHtml = `
     <html>
     <head>
@@ -897,7 +892,7 @@ function imprimirEspelhoRotaMetrika(idRota) {
         <tbody>
   `;
 
-  linhas.forEach(l => {
+  lines.forEach(l => {
     conteudoHtml += `
       <tr>
         <td><b>${l.cliente}</b></td>
@@ -978,7 +973,7 @@ function salvarRotaFinalMetrika() {
         numeroOS: numeroOS,
         tag: tag,
         serie: serie,
-        equipamento: equipamento,
+        equipment: equipamento,
         logistica: selectLogistica ? selectLogistica.value : 'BASE'
       });
     });
@@ -1004,9 +999,6 @@ function salvarRotaFinalMetrika() {
   const acao = appState.idRotaEmEdicao ? 'editarCadastro' : 'salvarCadastro';
   if(appState.idRotaEmEdicao) pacoteRota.id_rota = appState.idRotaEmEdicao;
 
-  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MULTAS&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}&prefix=processarRetornoRotaSheets`;
-  
-  // Como o ponte.gs trata salvarRotaLogistica de forma isolada, mudamos a acao para bater na rota de gravacao unificada do Apps Script
   const urlFinalReal = `${WEB_APP_URL}?acao=salvarRotaLogistica&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}&prefix=processarRetornoRotaSheets`;
 
   const scriptAntigo = document.getElementById('jsonp_rota_execution_script');
@@ -1795,8 +1787,7 @@ function renderizarTelaMultas(container) {
           </table>
         </div>
       </div>
-    </div>
-  `;
+    </div>`;
 
   document.getElementById('btnSyncMultasPlanilha').addEventListener('click', sincronizarDadosPlanilha);
   document.getElementById('btnSalvarMultaPlanilha').addEventListener('click', enviarMultaPlanilha);
@@ -1873,7 +1864,6 @@ function atualizarTabelaMultasLocal() {
 function prepararEdicaoMulta(i) {
   const m = appState.multas[i];
   appState.idMultaEmEdicao = m.id_multa || m.ID_MULTA;
-  
   abrirTela('multas');
   
   document.getElementById('formMultaPlaca').value = (m.placa || m.PLACA || '').toUpperCase();
@@ -1946,30 +1936,27 @@ function enviarMultaPlanilha() {
   document.body.appendChild(scriptElement);
 }
 
-/* =========================================================================
-     MÓDULO: GESTÃO DO SISTEMA (COLABORADORES E PARÂMETROS GERAIS)
-     ========================================================================= */
-
+/* ==================== MÓDULO CORRIGIDO: ADMINISTRATIVO E GESTÃO DE INFRAESTRUTURA (3 ABAS ORIGINAIS) ==================== */
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
       <h2>⚙️ PAINEL ADMINISTRATIVO E GESTÃO</h2>
       <div class="tabs-gestao">
         <div class="tab-item active" id="tabColaboradores">👤 COLABORADORES / USUÁRIOS</div>
+        <div class="tab-item" id="tabItensInventario">📋 ITENS DE INVENTÁRIO</div>
         <div class="tab-item" id="tabConfiguracoes">🛠️ PARÂMETROS GERAIS</div>
       </div>
       <div id="subConteudoGestao"></div>
     </div>`;
-    
   document.getElementById('tabColaboradores').addEventListener('click', () => abrirSubMóduloGestao('colaboradores'));
+  document.getElementById('tabItensInventario').addEventListener('click', () => abrirSubMóduloGestao('itens_inventario'));
   document.getElementById('tabConfiguracoes').addEventListener('click', () => abrirSubMóduloGestao('configuracoes'));
-  
-  // Inicializa abrindo a aba de colaboradores por padrão
   abrirSubMóduloGestao('colaboradores');
 }
 
 function abrirSubMóduloGestao(aba) {
   document.getElementById('tabColaboradores').classList.remove('active');
+  document.getElementById('tabItensInventario').classList.remove('active');
   document.getElementById('tabConfiguracoes').classList.remove('active');
   const subContainer = document.getElementById('subConteudoGestao');
   
@@ -1978,6 +1965,7 @@ function abrirSubMóduloGestao(aba) {
     subContainer.innerHTML = `
       <div class="card-padrao">
         <h3 id="tituloFormUsuario">FICHA DO COLABORADOR</h3>
+        
         <h4 style="font-size:12px; color:var(--cor-primaria); margin:15px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🔑 DADOS DE ACESSO</h4>
         <div class="form-grid">
           <div class="form-grupo"><label>NOME COMPLETO *</label><input type="text" id="formUserNome" class="input-padrao"></div>
@@ -1985,92 +1973,186 @@ function abrirSubMóduloGestao(aba) {
           <div class="form-grupo"><label>SENHA DE ACESSO *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
           <div class="form-grupo"><label>PERFIL</label><select id="formUserPerfil" class="select-padrao"><option value="Técnico">TÉCNICO</option><option value="Gestor">GESTOR</option><option value="Admin">ADMIN</option></select></div>
         </div>
+
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🪪 DOCUMENTAÇÃO ADICIONAL</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
+          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
+          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="NÚMERO DE REGISTRO"></div>
+          <div class="form-grupo"><label>TELEFONE / CELULAR</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
+        </div>
+
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">📍 ENDEREÇO RESIDENCIAL</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formUserNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formUserBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>CIDADE</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
+        </div>
+        
+        <input type="hidden" id="formUserStatus" value="ATIVO">
+        <input type="hidden" id="formUserAdmissao" value="">
+        <input type="hidden" id="formUserMotivo" value="">
+
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;"><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button></div>
       </div>
-      
-      <!-- TABELA RESTAURADA: EXIBIÇÃO INTEGRAL DE USUÁRIOS ATIVOS -->
       <div class="card-padrao">
-        <h3>👥 COLABORADORES REGISTRADOS</h3>
+        <h3>COLABORADORES DA BASE</h3>
         <div class="tabela-container">
           <table class="tabela-sistema">
             <thead>
-              <tr>
-                <th>NOME COMPLETO</th>
-                <th>USUÁRIO / LOGIN</th>
-                <th>PERFIL DE ACESSO</th>
-                <th>STATUS</th>
-              </tr>
+              <tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
             </thead>
-            <tbody id="listaUsuariosTbody">
-              <tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">CARREGANDO EQUIPE...</td></tr>
-            </tbody>
+            <tbody id="listaUsuariosTbody"></tbody>
           </table>
         </div>
-      </div>
-    `;
-    
+      </div>`;
+      
     document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
+    document.getElementById('formUserCep').addEventListener('blur', buscarCepColaboradorAutomatico);
     atualizarTabelaUsuariosLocal();
-    
-  } else if (aba === 'configuracoes') {
+
+  } else if (aba === 'itens_inventario') {
+    document.getElementById('tabItensInventario').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; justify-content: space-between;">
+        <button onclick="abrirModalDescricao()" class="btn-success">➕ CADASTRAR DESCRIÇÃO GERAL</button>
+        <button onclick="abrirModalModeloVinculo()" class="btn-primary">➕ HOMOLOGAR MODELO/MARCA</button>
+      </div>
+      <div class="card-padrao"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO / DESCRIÇÃO</th><th>MODELO DE FÁBRICA</th><th>FABRICANTE OFICIAL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div></div>`;
+    desenharTabelaMatrizAtivos();
+
+  } else {
     document.getElementById('tabConfiguracoes').classList.add('active');
     subContainer.innerHTML = `
       <div class="card-padrao">
-        <h3>🛠️ PARÂMETROS GERAIS DO SISTEMA</h3>
-        <p style="color:#64748b; font-size:12px; margin-top:2px; margin-bottom:15px;">GERENCIAMENTO DE REGRAS DE NEGÓCIO E AUTO-INCREMENTO DE ATIVOS.</p>
-        
+        <h3 style="color: var(--cor-secundaria); margin-bottom: 15px;">🛠️ PARÂMETROS GERAIS DO SISTEMA COMERCIAL</h3>
         <div class="form-grid">
+          <div class="form-grupo"><label>PREFIXO GLOBAL DAS TAGs *</label><input type="text" id="cfgPrefixoTag" class="input-padrao" value="${appState.configuracoes.prefixoTag || 'LMD'}"></div>
           <div class="form-grupo">
-            <label>PREFIXO DA TAG (ATIVOS)</label>
-            <input type="text" id="cfgPrefixoTag" class="input-padrao" value="${appState.configuracoes.prefixoTag || 'LMD'}">
-          </div>
-          <div class="form-grupo">
-            <label>QUANTIDADE DE DÍGITOS DA TAG</label>
-            <input type="number" id="cfgDigitosTag" class="input-padrao" value="${appState.configuracoes.digitosTag || 4}">
-          </div>
-          <div class="form-grupo">
-            <label>EMPRESA RAIZ (SEDE)</label>
-            <input type="text" id="cfgEmpresaRaiz" class="input-padrao" value="${appState.configuracoes.empresaRaiz || ''}">
-          </div>
-          <div class="form-grupo">
-            <label>SETORES DA SEDE (SEPARADOS POR VÍRGULA)</label>
-            <input type="text" id="cfgSetoresRaiz" class="input-padrao" value="${appState.configuracoes.setoresRaiz || ''}">
+            <label>NÚMERO DE DÍGITOS *</label>
+            <select id="cfgDigitosTag" class="select-padrao">
+              <option value="4" ${appState.configuracoes.digitosTag == 4 ? 'selected' : ''}>4 DÍGITOS (EX: LMD-0001)</option>
+              <option value="5" ${appState.configuracoes.digitosTag == 5 ? 'selected' : ''}>5 DÍGITOS (EX: LMD-00001)</option>
+            </select>
           </div>
         </div>
-        <div style="display:flex; justify-content: flex-end; margin-top:20px;">
-          <button id="btnSalvarConfiguracoes" class="btn-primary" onclick="salvarConfiguracoesGeraisMetrika()">💾 SALVAR PARÂMETROS</button>
+        <div class="form-grid" style="margin-top:15px;">
+          <div class="form-grupo"><label>RAZÃO SOCIAL / EMPRESA RAIZ (DONA DO SISTEMA) *</label><input type="text" id="cfgEmpresaRaiz" class="input-padrao" value="${appState.configuracoes.empresaRaiz || ''}"></div>
+          <div class="form-grupo"><label>SETORES INTERNOS DA EMPRESA RAIZ (SEPARADOS POR VÍRGULA) *</label><input type="text" id="cfgSetoresRaiz" class="input-padrao" value="${appState.configuracoes.setoresRaiz || ''}"></div>
         </div>
-      </div>
-    `;
+        <div style="margin-top: 20px;"><button id="btnSalvarParametrosGerais" class="btn-success">💾 SALVAR CONFIGURAÇÕES COMERCIAIS</button></div>
+      </div>`;
+
+    document.getElementById('btnSalvarParametrosGerais').addEventListener('click', function() {
+      const pref = document.getElementById('cfgPrefixoTag').value.trim().toUpperCase();
+      const dig = document.getElementById('cfgDigitosTag').value;
+      const raiz = document.getElementById('cfgEmpresaRaiz').value.trim().toUpperCase();
+      const sets = document.getElementById('cfgSetoresRaiz').value.trim().toUpperCase();
+      
+      if(!pref || !raiz || !sets) return alert('PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS!');
+      
+      appState.configuracoes.prefixoTag = pref;
+      appState.configuracoes.digitosTag = parseInt(dig);
+      appState.configuracoes.empresaRaiz = raiz;
+      appState.configuracoes.setoresRaiz = sets;
+      
+      fetch(`${WEB_APP_URL}?acao=salvarConfiguracoes&dados=${encodeURIComponent(JSON.stringify(appState.configuracoes))}`, { method: 'POST', mode: 'no-cors' }).then(() => {
+        alert('CONFIGURAÇÕES SALVAS E SINCRONIZADAS COM O SHEETS!');
+        sincronizarDadosPlanilha();
+      });
+    });
   }
 }
 
-// Persistência e sincronização de novos parâmetros corporativos
-window.salvarConfiguracoesGeraisMetrika = function() {
-  const prefixo = document.getElementById('cfgPrefixoTag').value.trim().toUpperCase();
-  const digitos = document.getElementById('cfgDigitosTag').value;
-  const empresa = document.getElementById('cfgEmpresaRaiz').value.trim().toUpperCase();
-  const setores = document.getElementById('cfgSetoresRaiz').value.trim().toUpperCase();
-  
-  appState.configuracoes.prefixoTag = prefixo;
-  appState.configuracoes.digitosTag = digitos;
-  appState.configuracoes.empresaRaiz = empresa;
-  appState.configuracoes.setoresRaiz = setores;
-  
-  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=CONFIGURACAO&dados=${encodeURIComponent(JSON.stringify(appState.configuracoes))}&prefix=processarRetornoConfigSheets`;
-  
-  const scriptAntigo = document.getElementById('jsonp_cfg_execution_script');
-  if(scriptAntigo) scriptAntigo.remove();
-  
-  const scriptElement = document.createElement('script');
-  scriptElement.id = 'jsonp_cfg_execution_script';
-  scriptElement.src = urlFinal;
-  document.body.appendChild(scriptElement);
+function buscarCepColaboradorAutomatico() {
+  const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return;
+  fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(res => res.json())
+    .then(d => {
+      if (!d.erro) {
+        document.getElementById('formUserLogradouro').value = d.logradouro.toUpperCase();
+        document.getElementById('formUserBairro').value = d.bairro.toUpperCase();
+        document.getElementById('formUserCidade').value = d.localidade.toUpperCase();
+        document.getElementById('formUserUf').value = d.uf.toUpperCase();
+      }
+    }).catch(() => {});
+}
+
+function normalizarTermoMatriz(str) { if (!str) return ''; return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, '').trim(); }
+function calcularDistanciaLevenshtein(a, b) { const matriz = []; for (let i = 0; i <= b.length; i++) matriz[i] = [i]; for (let j = 0; j <= a.length; j++) matriz[0][j] = j; for (let i = 1; i <= b.length; i++) { for (let j = 1; j <= a.length; j++) { if (b.charAt(i - 1) === a.charAt(j - 1)) { matriz[i][j] = matriz[i - 1][j - 1]; } else { matriz[i][j] = Math.min(matriz[i - 1][j - 1] + 1, Math.min(matriz[i][j - 1] + 1, matriz[i - 1][j] + 1)); } } } return matriz[b.length][a.length]; }
+
+/* ==================== CONFIGURAÇÃO E MANIPULAÇÃO DE MODAIS SUB-GERENCIAIS ==================== */
+window.abrirModalDescricao = function(id = null) {
+  appState.idMatrizEmEdicao = id;
+  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>🏥 NOVA DESCRIÇÃO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>NOME / DESCRIÇÃO GERAL *</label><input type="text" id="modalInputEquip" class="input-padrao" value="" placeholder="EX: VENTILADOR PULMONAR"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR TERMO</button></div></div></div>`;
+  const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
 };
 
-window.processarRetornoConfigSheets = function(res) {
-  alert('PARÂMETROS GERAIS ATUALIZADOS COM SUCESSO NO BANCO DE DADOS!');
-  sincronizarDadosPlanilha();
+window.abrirModalModeloVinculo = function() {
+  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => (item.equipamento || item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
+  let options = '<option value="">SELECIONE A DESCRIÇÃO...</option>';
+  descricoesUnicas.forEach(d => options += `<option value="${d}">${d}</option>`);
+  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>📐 HOMOLOGAR MODELO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo" style="margin-bottom:12px;"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo" style="margin-bottom:12px;"><label>MODELO *</label><input type="text" id="modalInputModelo" class="input-padrao" placeholder="EX: SMART PUMP V5"></div><div class="form-grupo" style="margin-bottom:12px;"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao" placeholder="EX: SAMTRONIC"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button></div></div></div>`;
+  const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
+};
+
+window.fecharModal = function() { const container = document.getElementById('modalContainer'); container.innerHTML = ''; container.classList.add('hidden'); appState.idMatrizEmEdicao = null; };
+window.fecharModalProcesso = function() { fecharModal(); sincronizarDadosPlanilha(); };
+
+window.salvarModalDescricao = function() {
+  const equipInput = document.getElementById('modalInputEquip').value.trim().toUpperCase(); if(!equipInput) return alert('INSIRA A DESCRIÇÃO!');
+  const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equipInput, EQUIPAMENTO: equipInput, modelo: '-', MODELO: '-', fabricante: '-', FABRICANTE: '-', anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+};
+
+window.salvarModalVinculo = function() {
+  const equip = document.getElementById('modalSelectEquip').value.toUpperCase(); const modelo = document.getElementById('modalInputModelo').value.trim().toUpperCase(); const fab = document.getElementById('modalInputFab').value.trim().toUpperCase();
+  if(!equip || !modelo || !fab) return alert('PREENCHA OS OBRIGATÓRIOS!');
+  const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equip, EQUIPAMENTO: equip, modelo: modelo, MODELO: modelo, fabricante: fab, FABRICANTE: fab, anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+};
+
+window.alternarStatusMatriz = function(id) {
+  const item = appState.matrizAtivos.find(x => String(x.id_registro || x.ID_REGISTRO) === String(id)); if(!item) return;
+  const currentSt = (item.status || item.STATUS || 'ATIVO').toUpperCase();
+  const novoStatus = currentSt === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+  if(!confirm(`ALTERAR STATUS PARA ${novoStatus}?`)) return;
+  const d = { id_registro: id, ID_REGISTRO: id, equipamento: item.equipamento || item.EQUIPAMENTO, EQUIPAMENTO: item.equipamento || item.EQUIPAMENTO, modelo: item.modelo || item.MODELO, MODELO: item.modelo || item.MODELO, fabricante: item.fabricante || item.FABRICANTE, FABRICANTE: item.fabricante || item.FABRICANTE, anvisa: '-', ANVISA: '-', status: novoStatus, STATUS: novoStatus };
+  const urlFinal = `${WEB_APP_URL}?acao=editarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+};
+
+window.desenharTabelaMatrizAtivos = function() {
+  const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return; tbody.innerHTML = '';
+  if(!appState.matrizAtivos || appState.matrizAtivos.length === 0) return;
+  
+  appState.matrizAtivos.forEach(item => {
+    const id = item.id_registro || item.ID_REGISTRO;
+    const eq = (item.equipamento || item.EQUIPAMENTO || '').toUpperCase();
+    const mo = (item.modelo || item.MODELO || '-').toUpperCase();
+    const fa = (item.fabricante || item.FABRICANTE || '-').toUpperCase();
+    const st = (item.status || item.STATUS || 'ATIVO').toUpperCase();
+    const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
+    const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
+    
+    let tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${eq}</b></td>
+      <td>${mo}</td>
+      <td>${fa}</td>
+      <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
+      <td style="text-align:center;">
+        <button class="${st === 'ATIVO' ? 'btn-danger' : 'btn-success'}" style="padding:4px 8px; font-size:11px;" onclick="alternarStatusMatriz('${id}')">
+          ${st === 'ATIVO' ? '🚫 INATIVAR' : '⚡ ATIVAR'}
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
 };
 
 /* ==================== FUNÇÕES UTILITÁRIAS E FORMATADORES DE DADOS ==================== */
@@ -2092,22 +2174,39 @@ function formatarDataBr(dataUs) {
 
 function atualizarTabelaUsuariosLocal() {
   const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(!appState.usuarios || appState.usuarios.length === 0) return;
+  if(!appState.usuarios || appState.usuarios.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">NENHUM REGISTRO ENCONTRADO</td></tr>`; return; }
   
   appState.usuarios.forEach((u) => {
     const st = (u.status || 'ATIVO').toUpperCase();
     const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2';
-    tbody.innerHTML += `<tr><td><b>${u.nome.toUpperCase()}</b></td><td>${u.login.toUpperCase()}</td><td>${u.perfil.toUpperCase()}</td><td><span style="padding:4px 8px; background:${bg}; border-radius:6px;">${st}</span></td></tr>`;
+    const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
+    
+    tbody.innerHTML += `
+      <tr>
+        <td><b>${u.nome.toUpperCase()}</b></td>
+        <td>${u.login.toUpperCase()}</td>
+        <td>${u.perfil.toUpperCase()}</td>
+        <td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td>
+        <td style="text-align:center;"><button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="alert('PRODUÇÃO: CONTATE O ADMINISTRADOR DIOGO PARA REGRAS DE INATIVAÇÃO DE LOGIN EXCLUSIVAS')">🚫 SUSPENDER</button></td>
+      </tr>`;
   });
 }
 
-window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); sincronizarDadosPlanilha(); };
+window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); abrirTela('gestao'); sincronizarDadosPlanilha(); };
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
-  const d = { id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO' };
+  
+  const d = { 
+    id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO', 
+    cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telephone: document.getElementById('formUserTelefone').value, 
+    cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), 
+    admissao: '', motivoDesligamento: '' 
+  };
+  
   const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
-  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+  const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 </script>
 </body>
