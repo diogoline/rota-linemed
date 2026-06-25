@@ -185,11 +185,11 @@ button:hover { transform: translateY(-1px); filter: brightness(1.05); }
         GESTÃO DO SISTEMA
       </button>
     </div>
-    
+     
     <div class="assinatura-desenvolvedor">
       BY DIOGO MATOS<br>• OPERATIONAL MANAGEMENT •
     </div>
-    
+     
     <button id="btnSidebarLogout" class="btn-logout">
       <svg viewBox="0 0 24 24" style="width:16px; height:16px;"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
       SAIR DO SISTEMA
@@ -286,7 +286,7 @@ function fazerLogin() {
     liberarPainel({ nome: userIn === 'ADMIN' ? 'ADMINISTRADOR' : 'VISITANTE', perfil: userIn });
     return;
   }
-  
+   
   if (appState.usuarios && appState.usuarios.length > 0) {
     const conta = appState.usuarios.find(u => String(u.login).toUpperCase() === userIn && String(u.senha) === passIn);
     if (conta) { 
@@ -336,16 +336,16 @@ window.processarRetornoSincronizacao = function(res) {
     appState.patrimonio = res.patrimonio || [];
     appState.movimentacoes = res.movimentacoes || [];
     appState.usuarios = res.usuarios || [];
-    
+     
     appState.veiculos = ['FIAT STRADA 01 (BRA2E19)', 'FIAT STRADA 02 (ABC1D23)', 'CHEVROLET ONYX (XYZ9H88)', 'MOTO OPERACIONAL (KTM3M11)', 'BASE LINEMED']; 
-    
+     
     appState.matrizAtivos = res.matrizAtivos || [];
     appState.rotas = res.rotas || [];
     appState.multas = res.multas || [];
     if(res.configuracoes) appState.configuracoes = res.configuracoes;
-    
+     
     localStorage.setItem('orizonClientes', JSON.stringify(appState.clientes));
-    
+     
     const dl = document.getElementById('datalistClientesGlobal');
     if(dl) {
       dl.innerHTML = '';
@@ -363,7 +363,7 @@ window.processarRetornoSincronizacao = function(res) {
     if (document.getElementById('containerModuloAuditoria')) renderizarModuloAuditoria();
     if (document.getElementById('tbodyRotasOperacionais')) atualizarTabelaRotasNativa();
     if (document.getElementById('listaMultasTbody')) atualizarTabelaMultasLocal();
-    
+     
     if (document.getElementById('cardFormEquipamento') && !document.getElementById('cardFormEquipamento').classList.contains('hidden')) {
       recalcularTagSequencialDinamica();
     }
@@ -374,7 +374,7 @@ function sincronizarDadosPlanilha() {
   const urlFinal = `${WEB_APP_URL}?acao=listarCadastros&prefix=processarRetornoSincronizacao`;
   const scriptAntigo = document.getElementById('jsonp_sync_script');
   if(scriptAntigo) scriptAntigo.remove();
-  
+   
   const scriptElement = document.createElement('script');
   scriptElement.id = 'jsonp_sync_script';
   scriptElement.src = urlFinal;
@@ -393,7 +393,7 @@ function renderizarHomePainelDinâmico() {
 
   const dicionarioContagem = {};
   appState.patrimonio.forEach(p => {
-    const nomeEq = (p.equipamento || 'NÃO DEFINIDO').toUpperCase();
+    const nomeEq = p.equipamento ? String(p.equipamento).toUpperCase() : 'NÃO DEFINIDO';
     dicionarioContagem[nomeEq] = (dicionarioContagem[nomeEq] || 0) + 1;
   });
 
@@ -707,7 +707,7 @@ function buscaAtivoPorFiltro(idLinha, tipoCampo) {
   if(ativo) {
     document.getElementById(`tag_os_${idLinha}`).value = (ativo.tag || '').toUpperCase();
     document.getElementById(`ser_os_${idLinha}`).value = (ativo.serie || '').toUpperCase();
-    document.getElementById(`desc_os_${idLinha}`).value = `${ativo.equipamento} | ${ativo.modelo}`.toUpperCase();
+    document.getElementById(`desc_os_${idLinha}`).value = `${ativo.equipamento || ''} | ${ativo.modelo || ''}`.toUpperCase();
     document.getElementById(`desc_os_${idLinha}`).style.color = 'var(--cor-sucesso)';
   } else {
     document.getElementById(`desc_os_${idLinha}`).value = "NÃO LOCALIZADO NO INVENTÁRIO";
@@ -829,7 +829,7 @@ function prepararEdicaoRotaMetrika(idRota) {
         <td><input type="text" class="input-padrao" value="${tagExtraida}" onchange="buscaAtivoPorFiltro(${contadorOS}, 'tag')" id="tag_os_${contadorOS}" style="padding:6px;"></td>
         <td><input type="text" class="input-padrao" value="${serieExtraida}" onchange="buscaAtivoPorFiltro(${contadorOS}, 'serie')" id="ser_os_${contadorOS}" style="padding:6px;"></td>
         <td><input type="text" class="input-padrao" readonly value="${nomeExtraido}" style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria); padding:6px;" id="desc_os_${contadorOS}"></td>
-        <td><input type="text" class="input-padrao no-uppercase" value="${osLinha.observao || osLinha.observacao || ''}" id="ocorrencia_os_${contadorOS}" style="padding:6px;"></td>
+        <td><input type="text" class="input-padrao no-uppercase" value="${osLinha.ocorrencia || osLinha.observacao || osLinha.observao || ''}" id="ocorrencia_os_${contadorOS}" style="padding:6px;"></td>
         <td>
           <select class="select-padrao" id="log_os_${contadorOS}" style="padding:5px; font-size:11px;">
             <option value="BASE">BASE</option>
@@ -968,19 +968,23 @@ function salvarRotaFinalMetrika() {
       const tag = inputs[1].value.trim().toUpperCase();
       const serie = inputs[2].value.trim().toUpperCase();
       const equipamento = inputs[3].value.trim().toUpperCase();
+      const ocorrencia = inputs[4] ? inputs[4].value.trim() : '';
 
       linhasOS.push({
         numeroOS: numeroOS,
         tag: tag,
         serie: serie,
         equipment: equipamento,
+        equipamento: equipamento,
+        ocorrencia: ocorrencia,
+        observacao: ocorrencia,
         logistica: selectLogistica ? selectLogistica.value : 'BASE'
       });
     });
 
     paradasLista.push({
       cliente: cliente,
-      linhasOS: linhasOS
+      linhasOS: linesOS
     });
   });
 
@@ -1141,7 +1145,7 @@ function renderizarTelaClientes(container) {
           <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
           <div class="form-grupo"><label>CLIENTE / UNIDADE *</label><input type="text" id="formCliente" class="input-padrao"></div>
           <div class="form-grupo"><label>CONTRATO</label><input type="text" id="formContrato" class="input-padrao"></div>
-          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao"></div>
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
           <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formLogradouro" class="input-padrao"></div>
           <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formNumero" class="input-padrao"></div>
           <div class="form-grupo"><label>COMPLEMENTO</label><input type="text" id="formComplemento" class="input-padrao"></div>
@@ -1483,10 +1487,15 @@ function gerenciarCamposSituacaoAtivo() {
 
 function atualizarTabelaPatrimonioLocal() {
   const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
-  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:15px;">NENHUM ITEM CADASTRADO...</td></tr>`; return; }
+  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:15px; color:#64748b;">NENHUM ITEM CADASTRADO...</td></tr>`; return; }
   
   var filtrados = appState.patrimonio.filter(p => {
-    return (appState.buscaTextoPatrimonio === '') || (p.tag || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.equipamento || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.serie || '').toUpperCase().includes(appState.buscaTextoPatrimonio) || (p.patrimonio || '').toUpperCase().includes(appState.buscaTextoPatrimonio);
+    const txt = appState.buscaTextoPatrimonio || '';
+    return (txt === '') || 
+           (p.tag || '').toUpperCase().includes(txt) || 
+           (p.equipamento || '').toUpperCase().includes(txt) || 
+           (p.serie || '').toUpperCase().includes(txt) || 
+           (p.patrimonio || '').toUpperCase().includes(txt);
   });
 
   filtrados.sort((a,b) => (a.equipamento || '').localeCompare(b.equipamento || ''));
@@ -1497,16 +1506,25 @@ function atualizarTabelaPatrimonioLocal() {
     let sitLabel = p.situacao === 'PROPRIO' ? 'PRÓPRIO' : (p.situacao || 'PRÓPRIO');
     let labelDono = p.donoExterno ? ` (${p.donoExterno})` : '';
     
+    // Blindagem de strings contra valores nulos/indefinidos vindos do banco
+    let tagStr = p.tag ? String(p.tag).toUpperCase() : '-';
+    let equipStr = p.equipamento ? String(p.equipamento).toUpperCase() : '-';
+    let modStr = p.modelo ? String(p.modelo).toUpperCase() : '-';
+    let fabStr = p.fabricante ? String(p.fabricante).toUpperCase() : '-';
+    let serStr = p.serie ? String(p.serie).toUpperCase() : '-';
+    let locStr = p.localizacao ? String(p.localizacao).toUpperCase() : 'SEDE CENTRAL';
+    let setStr = p.setor ? String(p.setor).toUpperCase() : 'SETOR PADRÃO';
+    
     tr.innerHTML = `
-      <td><b>${p.tag.toUpperCase()}</b></td>
-      <td><small>${sitLabel}${labelDono}</small></td>
-      <td><small>${p.familia || 'MÉDICO'}</small></td>
-      <td>${p.equipamento.toUpperCase()}</td>
-      <td>${p.modelo.toUpperCase()}</td>
-      <td>${p.fabricante.toUpperCase()}</td>
-      <td>${p.serie.toUpperCase()}</td>
-      <td><b>${p.localizacao.toUpperCase()}</b></td>
-      <td><span style="color:#475569;">${(p.setor || 'SETOR PADRÃO').toUpperCase()}</span></td>
+      <td><b>${tagStr}</b></td>
+      <td><small>${sitLabel.toUpperCase()}${labelDono.toUpperCase()}</small></td>
+      <td><small>${(p.familia || 'MÉDICO').toUpperCase()}</small></td>
+      <td>${equipStr}</td>
+      <td>${modStr}</td>
+      <td>${fabStr}</td>
+      <td>${serStr}</td>
+      <td><b>${locStr}</b></td>
+      <td><span style="color:#475569;">${setStr}</span></td>
       <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${stVal}</span></td>
     `;
     tbody.appendChild(tr);
@@ -1636,7 +1654,7 @@ function renderizarModuloAuditoria() {
   }
 
   const totaisPorTipo = {};
-  itemsAuditoria.forEach(p => { const tipo = (p.equipamento || 'INDEFINIDO').toUpperCase(); totaisPorTipo[tipo] = (totaisPorTipo[tipo] || 0) + 1; });
+  itemsAuditoria.forEach(p => { const tipo = p.equipamento ? String(p.equipamento).toUpperCase() : 'INDEFINIDO'; totaisPorTipo[tipo] = (totaisPorTipo[tipo] || 0) + 1; });
 
   let cardsHtml = '';
   Object.keys(totaisPorTipo).sort().forEach(tipo => {
@@ -1664,7 +1682,11 @@ function renderizarModuloAuditoria() {
   const tbody = document.getElementById('tbodyTabelaAuditoria');
   itemsAuditoria.forEach(p => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><b>${p.tag}</b></td><td><small>${p.equipamento}</small><br><b>${p.modelo}</b></td><td>${p.localizacao}</td><td>${p.setor || '-'}</td><td><input type="text" id="note_${p.tag}" class="input-padrao no-uppercase" style="font-size:12px;"></td><td style="text-align:center;"><button onclick="salvarAuditoriaRapida('${p.tag}', '${p.equipamento}', '${p.localizacao}', 'OK')" class="btn-success" style="font-size:11px;">🟢 OK</button></td>`;
+    let eqLabel = p.equipamento ? String(p.equipamento).toUpperCase() : '-';
+    let modLabel = p.modelo ? String(p.modelo).toUpperCase() : '-';
+    let locLabel = p.localizacao ? String(p.localizacao).toUpperCase() : '-';
+    let setLabel = p.setor ? String(p.setor).toUpperCase() : '-';
+    tr.innerHTML = `<td><b>${p.tag}</b></td><td><small>${eqLabel}</small><br><b>${modLabel}</b></td><td>${locLabel}</td><td>${setLabel}</td><td><input type="text" id="note_${p.tag}" class="input-padrao no-uppercase" style="font-size:12px;"></td><td style="text-align:center;"><button onclick="salvarAuditoriaRapida('${p.tag}', '${eqLabel}', '${locLabel}', 'OK')" class="btn-success" style="font-size:11px;">🟢 OK</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -1712,7 +1734,7 @@ function renderizarTelaMultas(container) {
         <h2>📑 CONTROLE DE MULTAS DE TRÂNSITO</h2>
         <button id="btnSyncMultasPlanilha" class="btn-secondary" style="font-size:12px;">🔄 SINCRONIZAR PLANILHA</button>
       </div>
-      
+       
       <div class="card-padrao">
         <h3 id="tituloFormMulta" style="margin-bottom:15px; color:var(--cor-perigo);">REGISTRO DE NOTIFICAÇÃO DE MULTA</h3>
         <div class="form-grid">
@@ -1900,7 +1922,7 @@ function enviarMultaPlanilha() {
   const situacao = document.getElementById('formIdSituacaoMulta').value;
 
   if(!placa || !condutor || !data || !valor || !local) {
-    return alert('POR FAVOR, PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS (*)!');
+    return alert('POR FAVOR, PREENCHA OS DADOS OBRIGATÓRIOS DO CABEÇALHO DA JORNADA!');
   }
 
   const idFinal = appState.idMultaEmEdicao ? appState.idMultaEmEdicao : 'MLT_' + Date.now();
@@ -1936,7 +1958,7 @@ function enviarMultaPlanilha() {
   document.body.appendChild(scriptElement);
 }
 
-/* ==================== MÓDULO CORRIGIDO: ADMINISTRATIVO E GESTÃO DE INFRAESTRUTURA (3 ABAS ORIGINAIS) ==================== */
+/* ==================== MÓDULO GESTÃO DE INFRAESTRUTURA (3 ABAS ORIGINAIS) ==================== */
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
@@ -2118,7 +2140,7 @@ window.salvarModalVinculo = function() {
 };
 
 window.alternarStatusMatriz = function(id) {
-  const item = appState.matrizAtivos.find(x => String(x.id_registro || x.ID_REGISTRO) === String(id)); if(!item) return;
+  const item = appState.matrizAtivos.find(x => String(x.id_registro || x.ID_REGISTRE) === String(id)); if(!item) return;
   const currentSt = (item.status || item.STATUS || 'ATIVO').toUpperCase();
   const novoStatus = currentSt === 'ATIVO' ? 'INATIVO' : 'ATIVO';
   if(!confirm(`ALTERAR STATUS PARA ${novoStatus}?`)) return;
