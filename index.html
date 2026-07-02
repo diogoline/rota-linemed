@@ -477,4 +477,1602 @@ function abrirTela(menu) {
     renderizarTelaClientes(principal);
   } else if (menu === 'patrimonio') {
     renderizarTelaPatrimonio(principal);
-  } else if (
+  } else if (menu === 'locacao') {
+    renderizarTelaLocacao(principal);
+  } else if (menu === 'dashboards') {
+    renderizarTelaDashboards(principal);
+  } else if (menu === 'multas') {
+    renderizarTelaMultas(principal);
+  } else if (menu === 'rotas') {
+    
+    let optTecnicos = '<option value="">SELECIONE O TÉCNICO...</option>';
+    if (appState.usuarios && appState.usuarios.length > 0) {
+      appState.usuarios.forEach(u => optTecnicos += `<option value="${u.nome.toUpperCase()}">${u.nome.toUpperCase()}</option>`);
+    } else {
+      optTecnicos += '<option value="DIOGO">DIOGO</option><option value="ADMINISTRADOR">ADMINISTRADOR</option>';
+    }
+
+    let optVeiculos = '<option value="">SELECIONE O VEÍCULO...</option>';
+    appState.veiculos.forEach(v => optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>`);
+
+    principal.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>📍 PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2>
+        <div style="display:flex; gap:10px;">
+          <button class="btn-primary" onclick="document.getElementById('divRotasMonitor').classList.remove('hidden'); document.getElementById('divRotasCriar').classList.add('hidden');">📋 VER MONITOR / CONSULTAR</button>
+          <button class="btn-success" onclick="appState.idRotaEmEdicao = null; document.getElementById('divRotasMonitor').classList.add('hidden'); document.getElementById('divRotasCriar').classList.remove('hidden'); document.getElementById('tituloFormJornada').innerText='🔑 NOVO PLANEJAMENTO DE JORNADA';">➕ NOVA ROTA</button>
+        </div>
+      </div>
+
+      <div id="divRotasMonitor" class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+          <h3>HISTÓRICO E CONSULTA DE JORNADAS</h3>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <label style="font-size:12px; font-weight:bold; color:#475569;">CONSULTAR:</label>
+            <input type="text" id="inputBuscaFiltroRotas" class="input-padrao" placeholder="BUSCAR POR TÉCNICO, VEÍCULO OU CLIENTE..." style="width:320px; padding:6px 10px;">
+          </div>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr>
+                <th>ID ROTA</th>
+                <th>PERÍODO / DATA</th>
+                <th>EQUIPE TÉCNICA (T1 / T2)</th>
+                <th>VEÍCULO ALOCADO</th>
+                <th>AÇÕES GERENCIAIS</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyRotasOperacionais">
+              <tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">CARREGANDO JORNADAS...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="divRotasCriar" class="hidden">
+        <div class="card-padrao">
+          <h3 id="tituloFormJornada" style="color:var(--cor-primaria); margin-bottom:15px;">🔑 NOVO PLANEJAMENTO DE JORNADA</h3>
+          <div class="form-grid">
+            <div class="form-grupo">
+              <label>TÉCNICO RESPONSÁVEL 1 *</label>
+              <select id="rotaTecnico" class="select-padrao">${optTecnicos}</select>
+            </div>
+            <div class="form-grupo">
+              <label>TÉCNICO 2 / AUXILIAR *</label>
+              <select id="rotaTecnico2" class="select-padrao">${optTecnicos}</select>
+            </div>
+            <div class="form-grupo">
+              <label>VEÍCULO OPERACIONAL *</label>
+              <select id="rotaVeiculo" class="select-padrao">${optVeiculos}</select>
+            </div>
+            <div class="form-grupo">
+              <label>DATA DA JORNADA *</label>
+              <input type="date" id="rotaData" class="input-padrao">
+            </div>
+          </div>
+        </div>
+
+        <div class="card-padrao">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3>📌 SEQUÊNCIA DE PARADAS</h3>
+            <button class="btn-primary" style="padding:8px 15px; font-size:11px;" onclick="adicionarCardParadaMetrika()">➕ ADICIONAR CLIENTE/PARADA</button>
+          </div>
+          <div id="containerListaParadasMetrika"></div>
+          
+          <div style="display:flex; justify-content:flex-end; margin-top:20px; border-top:1px dashed #cbd5e1; padding-top:20px;">
+            <button class="btn-success" style="padding:15px 30px; font-weight:bold; font-size:14px;" onclick="salvarRotaFinalMetrika()">💾 SALVAR E EMITIR PROGRAMAÇÃO</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('rotaData').valueAsDate = new Date();
+    document.getElementById('inputBuscaFiltroRotas').value = appState.buscaTextoRotas;
+    document.getElementById('inputBuscaFiltroRotas').addEventListener('input', function() {
+      appState.buscaTextoRotas = this.value.trim().toUpperCase();
+      atualizarTabelaRotasNativa();
+    });
+
+    contadorParadas = 0;
+    contadorOS = 0;
+    adicionarCardParadaMetrika();
+    atualizarTabelaRotasNativa();
+  } else if (menu === 'gestao') {
+    renderizarTelaGestao(principal);
+  } else {
+    principal.innerHTML = `<h2>🚧 MÓDULO ${menu.toUpperCase()}</h2><p style="color:#64748b; margin-top:10px;">TELA EM DESENVOLVIMENTO.</p>`;
+  }
+}
+
+function adicionarCardParadaMetrika() {
+  contadorParadas++;
+  const container = document.getElementById('containerListaParadasMetrika');
+  if(!container) return;
+  
+  let optCli = '<option value="">SELECIONE A UNIDADE DESTINO...</option>';
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+    optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`;
+  });
+
+  const div = document.createElement('div');
+  div.className = 'container-parada';
+  div.id = `parada_${contadorParadas}`;
+  
+  div.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <span style="font-weight:bold; color:var(--cor-secundaria); font-size:13px;" id="txt_num_parada_${contadorParadas}">📍 PARADA OPERACIONAL N° ${contadorParadas}</span>
+      <div style="display:flex; gap:15px; align-items:center;">
+        <label style="font-size:11px; font-weight:bold; cursor:pointer; color:var(--cor-perigo);"><input type="checkbox" onchange="document.getElementById('parada_${contadorParadas}').classList.toggle('prioridade-alta', this.checked)"> ⭐ PRIORIDADE CRÍTICA</label>
+        <button class="btn-danger" style="padding:4px 10px; font-size:11px;" onclick="removerCardParadaMetrika(${contadorParadas})">REMOVER</button>
+      </div>
+    </div>
+    <div class="form-grupo" style="margin-bottom:6px;">
+      <label>CLIENTE / UNIDADE DESTINO *</label>
+      <select class="select-padrao" id="cli_parada_${contadorParadas}" onchange="buscarEnderecoClienteMetrika(${contadorParadas})">${optCli}</select>
+    </div>
+    
+    <div id="end_exibicao_parada_${contadorParadas}" style="font-size:11px; font-weight:bold; color:var(--cor-primaria); margin-bottom:12px; min-height:15px; padding-left:2px;"></div>
+    
+    <table class="sub-tabela-os">
+      <thead>
+        <tr>
+          <th style="width: 12%;">N° O.S. / PROTOCOLO</th>
+          <th style="width: 12%;">TAG ATIVO</th>
+          <th style="width: 15%;">N° DE SÉRIE</th>
+          <th style="width: 25%;">EQUIPAMENTO / MODELO</th>
+          <th style="width: 23%;">OCORRÊNCIA / RELATO TÉCNICO</th>
+          <th style="width: 13%;">LOGÍSTICA</th>
+        </tr>
+      </thead>
+      <tbody id="tbody_os_${contadorParadas}"></tbody>
+    </table>
+    <button class="btn-secondary" style="margin-top:12px; padding:6px 12px; font-size:11px;" onclick="adicionarLinhaOSMetrika(${contadorParadas})">➕ VINCULAR NOVA O.S.</button>
+  `;
+  container.appendChild(div);
+  adicionarLinhaOSMetrika(contadorParadas);
+}
+
+function buscarEnderecoClienteMetrika(idParada) {
+  const select = document.getElementById(`cli_parada_${idParada}`);
+  const labelEnd = document.getElementById(`end_exibicao_parada_${idParada}`);
+  if(!select || !labelEnd) return;
+  
+  const nomeCliente = select.value;
+  const match = appState.clientes.find(c => c.nome.toUpperCase() === nomeCliente.toUpperCase());
+  if (match) {
+    labelEnd.innerText = `📍 ENDEREÇO: ${match.logradouro || ''}, Nº ${match.numero || ''} - BAIRRO: ${match.bairro || ''} - ${match.cidade || ''}/${match.uf || ''}`;
+  } else {
+    labelEnd.innerText = '';
+  }
+}
+
+function removerCardParadaMetrika(idParada) {
+  document.getElementById(`parada_${idParada}`).remove();
+  const paradasRestantes = document.querySelectorAll('.container-parada');
+  paradasRestantes.forEach((p, idx) => {
+    const spanNum = p.querySelector('[id^="txt_num_parada_"]');
+    if(spanNum) spanNum.innerText = `📍 PARADA OPERACIONAL N° ${idx + 1}`;
+  });
+}
+
+function adicionarLinhaOSMetrika(idParada) {
+  contadorOS++;
+  const tbody = document.getElementById(`tbody_os_${idParada}`);
+  if(!tbody) return;
+  
+  const tr = document.createElement('tr');
+  tr.id = `linha_os_${contadorOS}`;
+  tr.innerHTML = `
+    <td><input type="text" class="input-padrao" placeholder="N° O.S." style="padding:6px;"></td>
+    <td><input type="text" class="input-padrao" placeholder="TAG" onchange="buscaAtivoPorFiltro(${contadorOS}, 'tag')" id="tag_os_${contadorOS}" style="padding:6px;"></td>
+    <td><input type="text" class="input-padrao" placeholder="SÉRIE" onchange="buscaAtivoPorFiltro(${contadorOS}, 'serie')" id="ser_os_${contadorOS}" style="padding:6px;"></td>
+    <td><input type="text" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria); padding:6px;" id="desc_os_${contadorOS}" placeholder="AUTO-BUSCA..."></td>
+    <td><input type="text" class="input-padrao no-uppercase" placeholder="EX: CÂMARA ACUMULANDO ÁGUA" id="ocorrencia_os_${contadorOS}" style="padding:6px;"></td>
+    <td>
+      <select class="select-padrao" style="padding:5px; font-size:11px;">
+        <option value="BASE">BASE</option>
+        <option value="BASE MONTE AZUL">BASE MONTE AZUL</option>
+        <option value="ELBER">ELBER</option>
+        <option value="CONTRATOS">CONTRATOS</option>
+        <option value="CLIENTES">CLIENTES</option>
+        <option value="CONECT MEDICAL">CONECT MEDICAL</option>
+      </select>
+    </td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function buscaAtivoPorFiltro(idLinha, tipoCampo) {
+  const input = document.getElementById(tipoCampo === 'tag' ? `tag_os_${idLinha}` : `ser_os_${idLinha}`);
+  if(!input) return;
+  const busca = input.value.trim().toUpperCase();
+  if(!busca) return;
+  
+  // Mapeamento dinâmico: Aceita tanto chaves em maiúsculo (enviadas pelo novo backend) quanto minúsculo
+  const ativo = appState.patrimonio.find(p => {
+    let tagAtivo = (p.TAG || p.tag || '').toString().toUpperCase();
+    let serieAtivo = (p.SERIE || p.serie || '').toString().toUpperCase();
+    return tipoCampo === 'tag' ? tagAtivo === busca : serieAtivo === busca;
+  });
+  
+  if(ativo) {
+    let tagFinal = (ativo.TAG || ativo.tag || '').toString().toUpperCase();
+    let serieFinal = (ativo.SERIE || ativo.serie || '').toString().toUpperCase();
+    let equipFinal = (ativo.EQUIPAMENTO || ativo.equipamento || '').toString().toUpperCase();
+    let modFinal = (ativo.MODELO || ativo.modelo || '').toString().toUpperCase();
+
+    document.getElementById(`tag_os_${idLinha}`).value = tagFinal;
+    document.getElementById(`ser_os_${idLinha}`).value = serieFinal;
+    document.getElementById(`desc_os_${idLinha}`).value = `${equipFinal} | ${modFinal}`;
+    document.getElementById(`desc_os_${idLinha}`).style.color = 'var(--cor-sucesso)';
+  } else {
+    document.getElementById(`desc_os_${idLinha}`).value = "NÃO LOCALIZADO NO INVENTÁRIO";
+    document.getElementById(`desc_os_${idLinha}`).style.color = 'var(--cor-perigo)';
+  }
+}
+
+function atualizarTabelaRotasNativa() {
+  const tbody = document.getElementById('tbodyRotasOperacionais');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  
+  if(!appState.rotas || appState.rotas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">NENHUMA JORNADA LOCALIZADA NA BASE...</td></tr>`;
+    return;
+  }
+
+  const rotasAgrupadas = {};
+  appState.rotas.forEach(r => {
+    const id = r.id_rota || r.ID_ROTA || 'ROT-PADRAO';
+    if(!rotasAgrupadas[id]) {
+      rotasAgrupadas[id] = {
+        id_rota: id,
+        data: r.data || r.DATA || '-',
+        tecnico: r.tecnico || r.TECNICO || '-',
+        auxiliar: r.auxiliar || r.AUXILIAR || '-',
+        veiculo: r.veiculo || r.VEICULO || '-',
+        clientes: []
+      };
+    }
+    if(r.cliente && !rotasAgrupadas[id].clientes.includes(r.cliente.toUpperCase())) {
+      rotasAgrupadas[id].clientes.push(r.cliente.toUpperCase());
+    }
+  });
+
+  const filtradas = Object.values(rotasAgrupadas).filter(r => {
+    const txt = appState.buscaTextoRotas || '';
+    return txt === '' || 
+           r.id_rota.toUpperCase().includes(txt) ||
+           r.tecnico.toUpperCase().includes(txt) ||
+           r.auxiliar.toUpperCase().includes(txt) ||
+           r.veiculo.toUpperCase().includes(txt) ||
+           r.clientes.join(', ').includes(txt);
+  });
+
+  if(filtradas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">NENHUM CORRESPONDENTE PARA A CONSULTA.</td></tr>`;
+    return;
+  }
+
+  filtradas.forEach(r => {
+    let tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><small><b>${r.id_rota}</b></small></td>
+      <td><b>${formatarDataBr(r.data)}</b></td>
+      <td><small>1: ${r.tecnico}<br>2: ${r.auxiliar}</small></td>
+      <td><b>${r.veiculo}</b></td>
+      <td>
+        <button class="btn-primary" style="padding:4px 10px; font-size:11px;" onclick="prepararEdicaoRotaMetrika('${r.id_rota}')">📝 CORRIGIR</button>
+        <button class="btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="imprimirEspelhoRotaMetrika('${r.id_rota}')">🖨️ IMPRIMIR</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function prepararEdicaoRotaMetrika(idRota) {
+  appState.idRotaEmEdicao = idRota;
+  const lines = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
+  if(lines.length === 0) return;
+
+  document.getElementById('divRotasMonitor').classList.add('hidden');
+  document.getElementById('divRotasCriar').classList.remove('hidden');
+  document.getElementById('tituloFormJornada').innerText = "ALTERAR PLANEJAMENTO DE JORNADA";
+
+  const cab = lines[0];
+  document.getElementById('rotaTecnico').value = cab.tecnico || cab.TECNICO || '';
+  document.getElementById('rotaTecnico2').value = cab.auxiliar || cab.AUXILIAR || '';
+  document.getElementById('rotaVeiculo').value = cab.veiculo || cab.VEICULO || '';
+  
+  if(cab.data) {
+    try {
+      let dObj = new Date(cab.data);
+      if(!isNaN(dObj.getTime())) document.getElementById('rotaData').value = dObj.toISOString().split('T')[0];
+    } catch(e){}
+  }
+
+  const container = document.getElementById('containerListaParadasMetrika');
+  container.innerHTML = '';
+  contadorParadas = 0;
+
+  const paradasMapeadas = {};
+  lines.forEach(l => {
+    const cName = l.cliente.toUpperCase();
+    if(!paradasMapeadas[cName]) paradasMapeadas[cName] = [];
+    paradasMapeadas[cName].push(l);
+  });
+
+  Object.keys(paradasMapeadas).forEach(cName => {
+    adicionarCardParadaMetrika();
+    document.getElementById(`cli_parada_${contadorParadas}`).value = cName;
+    buscarEnderecoClienteMetrika(contadorParadas);
+
+    const tbody = document.getElementById(`tbody_os_${contadorParadas}`);
+    tbody.innerHTML = '';
+
+    paradasMapeadas[cName].forEach(osLinha => {
+      contadorOS++;
+      const tr = document.createElement('tr');
+      tr.id = `linha_os_${contadorOS}`;
+      
+      let descComposta = osLinha.descricao || '';
+      let tagExtraida = descComposta.split(' / ')[0] || '';
+      let serieExtraida = descComposta.split(' / ')[1] || '';
+      let nomeExtraido = descComposta.split(' / ')[2] || '';
+
+      tr.innerHTML = `
+        <td><input type="text" class="input-padrao" value="${osLinha.os || ''}" style="padding:6px;"></td>
+        <td><input type="text" class="input-padrao" value="${tagExtraida}" onchange="buscaAtivoPorFiltro(${contadorOS}, 'tag')" id="tag_os_${contadorOS}" style="padding:6px;"></td>
+        <td><input type="text" class="input-padrao" value="${serieExtraida}" onchange="buscaAtivoPorFiltro(${contadorOS}, 'serie')" id="ser_os_${contadorOS}" style="padding:6px;"></td>
+        <td><input type="text" class="input-padrao" readonly value="${nomeExtraido}" style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria); padding:6px;" id="desc_os_${contadorOS}"></td>
+        <td><input type="text" class="input-padrao no-uppercase" value="${osLinha.ocorrencia || osLinha.observacao || osLinha.observao || ''}" id="ocorrencia_os_${contadorOS}" style="padding:6px;"></td>
+        <td>
+          <select class="select-padrao" id="log_os_${contadorOS}" style="padding:5px; font-size:11px;">
+            <option value="BASE">BASE</option>
+            <option value="BASE MONTE AZUL">BASE MONTE AZUL</option>
+            <option value="ELBER">ELBER</option>
+            <option value="CONTRATOS">CONTRATOS</option>
+            <option value="CLIENTES">CLIENTES</option>
+            <option value="CONECT MEDICAL">CONECT MEDICAL</option>
+          </select>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      const selLog = tr.querySelector('select');
+      if(selLog) selLog.value = osLinha.status || 'BASE';
+    });
+  });
+}
+
+function imprimirEspelhoRotaMetrika(idRota) {
+  const lines = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
+  if(lines.length === 0) return alert('DADOS DA JORNADA NÃO ENCONTRADOS.');
+
+  const cab = lines[0];
+  let conteudoHtml = `
+    <html>
+    <head>
+      <title>IMPRESSÃO - ROTA ${idRota}</title>
+      <style>
+        body { font-family: sans-serif; padding:25px; color:#1e293b; text-transform:uppercase; }
+        .header-print { border-bottom: 3px double #000; padding-bottom:10px; margin-bottom:20px; }
+        .header-print h2 { margin:0; font-size:22px; color:#1e3a8a; }
+        .meta-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px; font-size:13px; }
+        .table-print { width:100%; border-collapse:collapse; margin-top:15px; }
+        .table-print th, .table-print td { border:1px solid #000; padding:8px; text-align:left; font-size:12px; }
+        .table-print th { background:#f1f5f9; }
+        .footer-print { margin-top:50px; text-align:center; font-size:11px; color:#64748b; }
+      </style>
+    </head>
+    <body>
+      <div class="header-print">
+        <h2>PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2>
+        <p>ID JORNADA CORPORATIVA: <b>${idRota}</b></p>
+      </div>
+      <div class="meta-grid">
+        <div><b>TÉCNICO 1:</b> ${cab.tecnico}</div>
+        <div><b>VEÍCULO ALOCADO:</b> ${cab.veiculo}</div>
+        <div><b>TÉCNICO 2 / AUXILIAR:</b> ${cab.auxiliar}</div>
+        <div><b>DATA AGENDADA:</b> ${formatarDataBr(cab.data)}</div>
+      </div>
+      <table class="table-print">
+        <thead>
+          <tr>
+            <th>CLIENTE / UNIDADE</th>
+            <th>Nº O.S.</th>
+            <th>COMPONENTES (TAG/SÉRIE/NOME)</th>
+            <th>DIRETRIZ LOGÍSTICA</th>
+            <th>VISTO / ASSINATURA</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  lines.forEach(l => {
+    conteudoHtml += `
+      <tr>
+        <td><b>${l.cliente}</b></td>
+        <td>${l.os || '-'}</td>
+        <td>${l.descricao || '-'}</td>
+        <td>${l.status || 'BASE'}</td>
+        <td style="width:150px;"></td>
+      </tr>
+    `;
+  });
+
+  conteudoHtml += `
+        </tbody>
+      </table>
+      <div class="footer-print">
+        <p>METRIKA SMART PLATFORM • DOCUMENTO EMITIDO EM ${new Date().toLocaleString()}</p>
+        <button onclick="window.print()" style="margin-top:20px; padding:8px 15px; font-weight:bold; cursor:pointer;">🖨️ DISPARAR IMPRESSÃO JORNADA</button>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const janelaImpressao = window.open('', '_blank', 'width=900,height=700');
+  janelaImpressao.document.write(conteudoHtml);
+  janelaImpressao.document.close();
+}
+
+window.processarRetornoRotaSheets = function(res) {
+  if(res && res.sucesso) {
+    alert('PROGRAMAÇÃO DE ATENDIMENTO LINEMED SALVA COM SUCESSO NO BANCO DE DADOS!');
+    appState.idRotaEmEdicao = null;
+    document.getElementById('divRotasMonitor').classList.remove('hidden');
+    document.getElementById('divRotasCriar').classList.add('hidden');
+    sincronizarDadosPlanilha();
+  } else {
+    alert('ERRO AO GRAVAR JORNADA: ' + (res.erro || 'FALHA INTERNA'));
+  }
+};
+
+function salvarRotaFinalMetrika() {
+  const tecnico = document.getElementById('rotaTecnico').value;
+  const tecnico2 = document.getElementById('rotaTecnico2').value;
+  const veiculo = document.getElementById('rotaVeiculo').value;
+  const data = document.getElementById('rotaData').value;
+  
+  if(!tecnico || !veiculo || !data) {
+    return alert('POR FAVOR, PREENCHA OS DADOS OBRIGATÓRIOS DO CABEÇALHO DA JORNADA!');
+  }
+
+  const paradasLista = [];
+  const cardsParadas = document.querySelectorAll('.container-parada');
+
+  if(cardsParadas.length === 0) return alert('ADICIONE AO MENOS UMA PARADA OPERACIONAL!');
+  let validacaoOk = true;
+
+  cardsParadas.forEach(card => {
+    const idAtual = card.id.split('_')[1];
+    const cliente = document.getElementById(`cli_parada_${idAtual}`).value;
+    
+    if(!cliente) {
+      alert('POR FAVOR, INDIQUE O CLIENTE DESTINO DE TODAS AS PARADAS!');
+      validacaoOk = false;
+      return;
+    }
+
+    const linhasOS = [];
+    const trs = document.querySelectorAll(`#tbody_os_${idAtual} tr`);
+
+    trs.forEach(tr => {
+      const inputs = tr.querySelectorAll('input');
+      const selectLogistica = tr.querySelector('select');
+      const numeroOS = inputs[0].value.trim() || 'S/N';
+      const tag = inputs[1].value.trim().toUpperCase();
+      const serie = inputs[2].value.trim().toUpperCase();
+      const equipamento = inputs[3].value.trim().toUpperCase();
+      const ocorrencia = inputs[4] ? inputs[4].value.trim() : '';
+
+      linhasOS.push({
+        numeroOS: numeroOS,
+        tag: tag,
+        serie: serie,
+        equipment: equipamento,
+        equipamento: equipamento,
+        ocorrencia: ocorrencia,
+        observacao: ocorrencia,
+        logistica: selectLogistica ? selectLogistica.value : 'BASE'
+      });
+    });
+
+    paradasLista.push({
+      cliente: cliente,
+      linhasOS: linhasOS
+    });
+  });
+
+  if(!validacaoOk) return;
+
+  const pacoteRota = {
+    cabecalho: {
+      tecnico: tecnico,
+      auxiliar: tecnico2 || '-',
+      veiculo: veiculo,
+      data: data
+    },
+    paradas: paradasLista
+  };
+
+  const acao = appState.idRotaEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  if(appState.idRotaEmEdicao) pacoteRota.id_rota = appState.idRotaEmEdicao;
+
+  const urlFinalReal = `${WEB_APP_URL}?acao=salvarRotaLogistica&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}&prefix=processarRetornoRotaSheets`;
+
+  const scriptAntigo = document.getElementById('jsonp_rota_execution_script');
+  if(scriptAntigo) scriptAntigo.remove();
+
+  const scriptElement = document.createElement('script');
+  scriptElement.id = 'jsonp_rota_execution_script';
+  scriptElement.src = urlFinalReal;
+  document.body.appendChild(scriptElement);
+}
+
+function renderInitializeHome() { renderizarHomePainelDinâmico(); }
+function voltarInicio() { abrirTela('inicio'); }
+
+/* ==================== MÓDULO: GERENCIADOR E RELATÓRIO DE DASHBOARDS (UPGRADED) ==================== */
+function renderizarTelaDashboards(container) {
+  const totalClientes = appState.clientes.length;
+  const clientesAtivos = appState.clientes.filter(c => (c.status || 'ATIVO').toUpperCase() === 'ATIVO').length;
+  const totalPatrimonio = appState.patrimonio.length;
+  const patLocados = appState.patrimonio.filter(p => { let st = p.STATUS || p.status || ''; return st.toUpperCase() === 'LOCADO'; }).length;
+
+  const contagemMultasPorCondutor = {};
+  let totalValorMultas = 0;
+  appState.multas.forEach(m => {
+    const cond = (m.condutor || m.CONDUTOR || 'INDEFINIDO').toUpperCase();
+    contagemMultasPorCondutor[cond] = (contagemMultasPorCondutor[cond] || 0) + 1;
+    totalValorMultas += parseFloat(m.valor || m.VALOR || 0);
+  });
+  const rankingMultas = Object.keys(contagemMultasPorCondutor).map(key => {
+    return { nome: key, total: contagemMultasPorCondutor[key] };
+  }).sort((a, b) => b.total - a.total).slice(0, 3);
+
+  const contagemRotasPorVeiculo = {};
+  appState.rotas.forEach(r => {
+    const veic = (r.veiculo || r.veiculo_alocado || 'INDEFINIDO').toUpperCase();
+    contagemRotasPorVeiculo[veic] = (contagemRotasPorVeiculo[veic] || 0) + 1;
+  });
+  const rankingVeiculos = Object.keys(contagemRotasPorVeiculo).map(key => {
+    return { nome: key, total: contagemRotasPorVeiculo[key] };
+  }).sort((a, b) => b.total - a.total).slice(0, 3);
+
+  container.innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+          <h2>📊 DASHBOARDS & INDICADORES OPERACIONAIS</h2>
+          <p style="color:#64748b; font-size:13px; margin-top:2px;">DADOS GERENCIAIS CONSOLIDADOS EM TEMPO REAL COM HISTÓRICO DE LOGÍSTICA E INFRAÇÕES.</p>
+        </div>
+        <button onclick="sincronizarDadosPlanilha(); setTimeout(() => abrirTela('dashboards'), 1200);" class="btn-secondary" style="font-size:12px;">🔄 ATUALIZAR GRÁFICOS</button>
+      </div>
+
+      <div class="dashboard-grid" style="margin-bottom:25px; margin-top: 0;">
+        <div class="card-padrao dash-card-num">
+          <h4>🏥 TOTAL DE CLIENTES</h4>
+          <div class="num">${totalClientes}</div>
+          <small style="color:#64748b; margin-top:5px;"><b>${clientesAtivos}</b> UNIDADES EM ATIVIDADE</small>
+        </div>
+        <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-sucesso);">
+          <h4>📦 ATIVOS EM CAMPO (LOCADOS)</h4>
+          <div class="num" style="color: var(--cor-sucesso);">${patLocados}</div>
+          <small style="color:#64748b; margin-top:5px;">SOMA DE ATIVOS CADASTRADOS: <b>${totalPatrimonio}</b></small>
+        </div>
+        <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-perigo);">
+          <h4>⚠️ INFRAÇÕES DE TRÂNSITO</h4>
+          <div class="num" style="color: var(--cor-perigo);">${appState.multas.length}</div>
+          <small style="color:#64748b; margin-top:5px;">CUSTO TOTAL: <b>R$ ${totalValorMultas.toFixed(2)}</b></small>
+        </div>
+        <div class="card-padrao dash-card-num" style="border-left-color: var(--cor-alerta);">
+          <h4>📍 JORNADAS DE TRANSPORTE</h4>
+          <div class="num" style="color: var(--cor-alerta);">${appState.rotas.length}</div>
+          <small style="color:#64748b; margin-top:5px;">LOG OPERACIONAL DE ROTAS ATIVAS</small>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
+        <div class="card-padrao">
+          <h3 style="color: var(--cor-perigo); font-size:15px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">❌ RANKING: CONDUTORES COM MAIS MULTAS</h3>
+          <div id="dashContainerRankingMultas" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
+        </div>
+        <div class="card-padrao">
+          <h3 style="color: var(--cor-primaria); font-size:15px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">🚗 RANKING: VEÍCULOS COM MAIS VIAGENS (ROTAS)</h3>
+          <div id="dashContainerRankingVeiculos" style="display:flex; flex-direction:column; gap:12px; margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>`;
+
+  const divMlt = document.getElementById('dashContainerRankingMultas');
+  if (rankingMultas.length === 0) {
+    divMlt.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">NENHUMA INFRAÇÃO REGISTRADA NA PLANILHA.</div>`;
+  } else {
+    const maxMlt = rankingMultas[0].total;
+    rankingMultas.forEach((item, index) => {
+      const widthPct = Math.max(20, Math.round((item.total / maxMlt) * 100));
+      divMlt.innerHTML += `
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
+            <span>${index + 1}º - ${item.nome}</span>
+            <span style="background:#fee2e2; color:#dc2626; padding:2px 6px; border-radius:4px; font-size:11px;">${item.total} MULTAS</span>
+          </div>
+          <div style="background:#f1f5f9; height:8px; border-radius:4px; width:100%; overflow:hidden;">
+            <div style="background: linear-gradient(90deg, #f87171, #dc2626); height:100%; width:${widthPct}%;"></div>
+          </div>
+        </div>`;
+    });
+  }
+
+  const divVei = document.getElementById('dashContainerRankingVeiculos');
+  if (rankingVeiculos.length === 0) {
+    divVei.innerHTML = `<div style="text-align:center; padding:15px; color:#64748b; font-size:13px;">NENHUMA ROTA OPERACIONAL DISPARADA AINDA.</div>`;
+  } else {
+    const maxRot = rankingVeiculos[0].total;
+    rankingVeiculos.forEach((item, index) => {
+      const widthPct = Math.max(20, Math.round((item.total / maxRot) * 100));
+      divVei.innerHTML += `
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold;">
+            <span>${index + 1}º - ${item.nome}</span>
+            <span style="background:#e0f2fe; color:#0284c7; padding:2px 6px; border-radius:4px; font-size:11px;">${item.total} JORNADAS</span>
+          </div>
+          <div style="background:#f1f5f9; height:8px; border-radius:4px; width:100%; overflow:hidden;">
+            <div style="background: linear-gradient(90deg, #3b82f6, #2563eb); height:100%; width:${widthPct}%;"></div>
+          </div>
+        </div>`;
+    });
+  }
+}
+
+/* ==================== MÓDULO: GERENCIADOR MASTER DE CLIENTES ==================== */
+function renderizarTelaClientes(container) {
+  container.innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2>🏥 CADASTRO E LISTAGEM DE CLIENTES</h2>
+        <button id="btnSyncClientesPlanilha" class="btn-secondary" style="font-size:12px;">🔄 SINCRONIZAR PLANILHA</button>
+      </div>
+      <div class="card-padrao">
+        <h3 id="tituloFormCliente" style="margin-bottom:15px; color:var(--cor-primaria);">FICHA DE CADASTRO</h3>
+        <div class="form-grid">
+          <div class="form-grupo"><label>TIPO DE PESSOA</label><select id="formTipoPessoa" class="select-padrao"><option value="JURIDICA">PESSOA JURÍDICA (CNPJ)</option><option value="FISICA">PESSOA FÍSICA (CPF)</option></select></div>
+          <div class="form-grupo"><label id="labelDocumento">CNPJ</label><input type="text" id="formCnpj" class="input-padrao" placeholder="00.000.000/0001-00"></div>
+          <div class="form-grupo"><label>CLIENTE / UNIDADE *</label><input type="text" id="formCliente" class="input-padrao"></div>
+          <div class="form-grupo"><label>CONTRATO</label><input type="text" id="formContrato" class="input-padrao"></div>
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>COMPLEMENTO</label><input type="text" id="formComplemento" class="input-padrao"></div>
+          <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>CIDADE</label><input type="text" id="formCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUf" class="input-padrao" value="SP"></div>
+          <div class="form-grupo"><label>REGIÃO</label><input type="text" id="formRegiao" class="input-padrao"></div>
+          <div class="form-grupo"><label>RESPONSÁVEL</label><input type="text" id="formResponsavel" class="input-padrao"></div>
+          <div class="form-grupo"><label>TELEFONE</label><input type="text" id="formTelefone" class="input-padrao"></div>
+          <div class="form-grupo"><label>E-MAIL</label><input type="email" id="formEmail" class="input-padrao"></div>
+          <div class="form-grupo"><label>STATUS</label><select id="formStatus" class="select-padrao"><option value="ATIVO">ATIVO</option><option value="INATIVO">INATIVO</option></select></div>
+        </div>
+        <div style="margin-top:12px;"><div class="form-grupo"><label>OBSERVAÇÕES</label><input type="text" id="formObservacao" class="input-padrao"></div></div>
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;"><button id="btnCancelarEdicao" class="btn-secondary hidden">CANCELAR</button><button id="btnSalvarClientePlanilha" class="btn-success">💾 SALVAR CLIENTE</button></div>
+      </div>
+      
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
+          <h3>CLIENTES NA BASE</h3>
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">CONSULTAR:</label>
+              <input type="text" id="inputBuscaTextoCliente" class="input-padrao" placeholder="NOME, FANTASIA OU CNPJ..." style="width:220px; padding:6px 10px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; font-weight:bold; color:#475569;">VISUALIZAR:</label>
+              <select id="selectFiltroStatusClienteGrid" class="select-padrao" style="width:140px; padding:6px;">
+                <option value="ATIVO">APENAS ATIVOS</option><option value="INATIVO">APENAS INATIVOS</option><option value="TODOS">TODOS OS REGISTROS</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr><th>CLIENTE</th><th>CNPJ/CPF</th><th>CONTRATO</th><th>LOGRADOURO</th><th>BAIRRO</th><th>CIDADE</th><th>RESPONSÁVEL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr>
+            </thead>
+            <tbody id="listaClientesTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('btnSyncClientesPlanilha').addEventListener('click', sincronizarDadosPlanilha);
+  document.getElementById('btnSalvarClientePlanilha').addEventListener('click', enviarClientePlanilha);
+  document.getElementById('btnCancelarEdicao').addEventListener('click', limparFormularioCliente);
+  document.getElementById('formCep').addEventListener('blur', buscarCepAutomatico);
+  document.getElementById('formCnpj').addEventListener('blur', verificarDocumentoEReceita);
+  document.getElementById('formCnpj').addEventListener('input', aplicarMascaraDocumento);
+  document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
+  document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
+  
+  document.getElementById('selectFiltroStatusClienteGrid').value = appState.filtroStatusCliente;
+  document.getElementById('inputBuscaTextoCliente').value = appState.buscaTextoCliente;
+
+  document.getElementById('selectFiltroStatusClienteGrid').addEventListener('change', function() {
+    appState.filtroStatusCliente = this.value;
+    atualizarTabelaClientesLocal();
+  });
+
+  document.getElementById('inputBuscaTextoCliente').addEventListener('input', function() {
+    appState.buscaTextoCliente = this.value.trim().toUpperCase();
+    atualizarTabelaClientesLocal();
+  });
+
+  atualizarTabelaClientesLocal();
+}
+
+/* Mascaras corporativas de Clientes */
+function aplicarMascaraCep() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
+function aplicarMascaraTelefone() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
+function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro.toUpperCase(); document.getElementById('formBairro').value = d.bairro.toUpperCase(); } }); }
+
+function verificarDocumentoEReceita() {
+  const doc = this.value.trim(); if (!doc) return;
+  const isCnpj = document.getElementById('formTipoPessoa').value === 'JURIDICA';
+  const dup = appState.clientes.find(c => c.cnpj === doc && c.id !== appState.idClienteEmEdicao);
+  if (dup) { alert(isCnpj ? 'CNPJ JÁ CADASTRADO!' : 'CPF JÁ CADASTRADO!'); this.value = ''; return; }
+  const clean = doc.replace(/\D/g, '');
+  if (isCnpj && clean.length === 14) {
+    fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`)
+      .then(res => res.json())
+      .then(dados => {
+        document.getElementById('formCliente').value = (dados.razao_social || dados.nome || '').toUpperCase();
+        document.getElementById('formCep').value = dados.cep || '';
+        document.getElementById('formLogradouro').value = (dados.logradouro || '').toUpperCase();
+        document.getElementById('formNumero').value = dados.numero || '';
+        document.getElementById('formBairro').value = (dados.bairro || '').toUpperCase();
+        document.getElementById('formCidade').value = (dados.municipio || 'SÃO PAULO').toUpperCase();
+        document.getElementById('formUf').value = (dados.uf || 'SP').toUpperCase();
+        if(dados.nome_fantasia && dados.nome_fantasia.trim() !== '') { document.getElementById('formObservacao').value = "FANTASIA: " + dados.nome_fantasia.toUpperCase(); }
+      }).catch(() => {});
+  }
+}
+
+function aplicarMascaraDocumento() {
+  let v = this.value.replace(/\D/g, '');
+  if (document.getElementById('formTipoPessoa').value === 'JURIDICA') {
+    v = v.substring(0, 14); v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+  } else {
+    v = v.substring(0, 11); if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3"); else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+  }
+  this.value = v;
+}
+
+function atualizarTabelaClientesLocal() {
+  const tbody = document.getElementById('listaClientesTbody'); if (!tbody) return; tbody.innerHTML = '';
+  if (!appState.clientes || appState.clientes.length === 0) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">NENHUM CLIENTE CADASTRADO...</td></tr>`; return; }
+
+  var filtrados = appState.clientes.filter(c => {
+    return (appState.filtroStatusCliente === 'TODOS' || (c.status || 'ATIVO').toUpperCase() === appState.filtroStatusCliente) &&
+           (appState.buscaTextoCliente === '' || (c.nome || '').toUpperCase().includes(appState.buscaTextoCliente) || (c.cnpj || '').includes(appState.buscaTextoCliente));
+  });
+
+  filtrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+  filtrados.forEach((c) => {
+    const idx = appState.clientes.findIndex(orig => orig.id === c.id);
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td><b>${c.nome.toUpperCase()}</b></td><td>${c.cnpj || '-'}</td><td>${c.contrato || '-'}</td><td>${c.logradouro || '-'}</td><td>${c.bairro || ''}</td><td>${c.cidade || ''} / ${c.uf || ''}</td><td>${c.responsavel || ''}</td><td>${c.status || 'ATIVO'}</td><td style="text-align:center;"><button class="btn-primary" onclick="prepararEdicaoCliente(${idx})">📝</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function prepararEdicaoCliente(i) {
+  const c = appState.clientes[i]; appState.idClienteEmEdicao = c.id;
+  document.getElementById('formCliente').value = c.nome; document.getElementById('formCnpj').value = c.cnpj; document.getElementById('formContrato').value = c.contrato; document.getElementById('formCep').value = c.cep; document.getElementById('formLogradouro').value = c.logradouro; document.getElementById('formNumero').value = c.numero; document.getElementById('formComplemento').value = c.complemento; document.getElementById('formBairro').value = c.bairro; document.getElementById('formCidade').value = c.cidade; document.getElementById('formUf').value = c.uf; document.getElementById('formRegiao').value = c.regiao; document.getElementById('formResponsavel').value = c.responsavel; document.getElementById('formTelefone').value = c.telephone || c.telefone; document.getElementById('formEmail').value = c.email; document.getElementById('formStatus').value = c.status; document.getElementById('formObservacao').value = c.observacao; document.getElementById('btnCancelarEdicao').classList.remove('hidden');
+}
+function limparFormularioCliente() { appState.idClienteEmEdicao = null; abrirTela('clientes'); }
+
+window.processarRetornoClienteSheets = function() { alert('CLIENTE CADASTRADO!'); limparFormularioCliente(); sincronizarDadosPlanilha(); };
+function enviarClientePlanilha() {
+  const nome = document.getElementById('formCliente').value.trim().toUpperCase(); if(!nome) return alert('NOME OBRIGATÓRIO');
+  const d = { id: appState.idClienteEmEdicao || 'cli_'+Date.now(), nome: nome, cnpj: document.getElementById('formCnpj').value, contrato: document.getElementById('formContrato').value.toUpperCase(), cep: document.getElementById('formCep').value, logradouro: document.getElementById('formLogradouro').value.toUpperCase(), numero: document.getElementById('formNumero').value, complemento: document.getElementById('formComplemento').value.toUpperCase(), bairro: document.getElementById('formBairro').value.toUpperCase(), city: document.getElementById('formCidade').value.toUpperCase(), uf: document.getElementById('formUf').value.toUpperCase(), regiao: document.getElementById('formRegiao').value.toUpperCase(), responsavel: document.getElementById('formResponsavel').value.toUpperCase(), telephone: document.getElementById('formTelefone').value, email: document.getElementById('formEmail').value, status: document.getElementById('formStatus').value, observacao: document.getElementById('formObservacao').value.toUpperCase() };
+  const acao = appState.idClienteEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=CLIENTE&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoClienteSheets`;
+  const scriptAntigo = document.getElementById('jsonp_client_execution_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_client_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+}
+
+/* ==================== MÓDULO: GESTÃO DO PATRIMÔNIO (INVENTÁRIO CENTRAL - ATIVOS_GERAL) ==================== */
+function renderizarTelaPatrimonio(container) {
+  const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => { let st = item.status || item.STATUS || 'ATIVO'; return st.toUpperCase() === 'ATIVO'; }).map(item => String(item.equipamento || item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
+  let optEquip = '<option value="">SELECIONE O TIPO DE EQUIPAMENTO...</option>';
+  tiposUnicos.forEach(t => optEquip += `<option value="${t}">${t}</option>`);
+
+  let optClientesBase = '<option value="">SELECIONE O CLIENTE DONO...</option>';
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+    optClientesBase += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`;
+  });
+
+  container.innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2>📦 ESTOQUE E INVENTÁRIO CENTRAL</h2>
+        <button id="btnAbrirFormEquipamento" class="btn-success">➕ NOVO EQUIPAMENTO</button>
+      </div>
+
+      <div id="cardFormEquipamento" class="card-padrao hidden">
+        <h3 id="tituloFormEquipamento" style="margin-bottom:15px; color:var(--cor-sucesso);">FICHA DE CADASTRO DO ATIVO</h3>
+        
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="form-grupo">
+            <label>SITUAÇÃO DO ATIVO *</label>
+            <select id="formEquipSituacao" class="select-padrao">
+              <option value="PROPRIO">PRÓPRIO</option>
+              <option value="CLIENTE">DE CLIENTE / UNIDADE</option>
+              <option value="ALUGADO">ALUGADO DE TERCEIROS</option>
+              <option value="EMPRESTADO">EMPRESTADO DE PARCEIROS</option>
+            </select>
+          </div>
+          <div class="form-grupo">
+            <label>TAG / CÓDIGO IDENTIFICADOR *</label>
+            <input type="text" id="formEquipTag" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria);" placeholder="GERANDO AUTOMÁTICO...">
+          </div>
+          <div class="form-grupo" id="grupoEquipDonoExterno" style="display:none;">
+            <label>PROPRIETÁRIO / LOCADOR *</label>
+            <input type="text" id="formEquipDonoExternoInput" class="input-padrao" placeholder="EX: LOCADORA VISION">
+          </div>
+        </div>
+
+        <div class="form-grid" id="containerAlocacaoDinamica" style="margin-bottom:14px;">
+          <div class="form-grupo" id="grupoLocalizacaoDinamica" style="display:none;">
+            <label>CLIENTE DONO DO EQUIPAMENTO *</label>
+            <select id="formEquipLocalizacao" class="select-padrao">${optClientesBase}</select>
+          </div>
+          <div class="form-grupo">
+            <label>SETOR DE INSTALAÇÃO *</label>
+            <div id="wrapperSetorDinamico">
+              <select id="formEquipSetorSelect" class="select-padrao"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="form-grupo">
+            <label>FAMÍLIA DO EQUIPAMENTO *</label>
+            <select id="formEquipFamilia" class="select-padrao">
+              <option value="MÉDICO">MÉDICO</option>
+              <option value="ODONTOLÓGICO">ODONTOLÓGICO</option>
+              <option value="LABORATORIAL">LABORATORIAL</option>
+              <option value="REFRIGERAÇÃO">REFRIGERAÇÃO</option>
+              <option value="ADMINISTRATIVO">ADMINISTRATIVO</option>
+              <option value="INFRAESTRUTURA">INFRAESTRUTURA</option>
+            </select>
+          </div>
+          <div class="form-grupo"><label>TIPO DE EQUIPAMENTO *</label><select id="formEquipNome" class="select-padrao">${optEquip}</select></div>
+          <div class="form-grupo"><label>MODELO DO ATIVO *</label><select id="formEquipModelo" class="select-padrao" disabled><option value="">AGUARDANDO TIPO...</option></select></div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="form-grupo"><label>FABRICANTE VINCULADO</label><input type="text" id="formEquipFabricante" class="input-padrao" readonly style="background:#f1f5f9; font-weight:bold; color:var(--cor-primaria);" placeholder="AUTOPREENCHÍVEL..."></div>
+          <div class="form-grupo"><label>Nº DE SÉRIE *</label><input type="text" id="formEquipSerie" class="input-padrao" placeholder="EX: SN983742"></div>
+          <div class="form-grupo"><label>Nº DE PATRIMÔNIO</label><input type="text" id="formEquipPatrimonio" class="input-padrao" placeholder="EX: PAT-0449"></div>
+        </div>
+
+        <div style="margin-bottom:14px;"><div class="form-grupo"><label>ACESSÓRIOS INCLUSOS</label><input type="text" id="formEquipAcessorios" class="input-padrao" placeholder="EX: 01 CABO DE FORÇA, 01 SENSOR ADULTO"></div></div>
+        <div style="margin-bottom:14px;"><div class="form-grupo"><label>OBSERVAÇÕES DO ATIVO</label><input type="text" id="formEquipObservation" class="input-padrao" placeholder="EX: EQUIPAMENTO EM EXCELENTE ESTADO"></div></div>
+
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
+          <button id="btnFecharFormEquipamento" class="btn-secondary">CANCELAR</button><button id="btnSalvarEquipamentoPlanilha" class="btn-success">💾 SALVAR ATIVO</button>
+        </div>
+      </div>
+
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
+          <h3>EQUIPAMENTOS REGISTRADOS</h3>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <label style="font-size:12px; font-weight:bold; color:#475569;">CONSULTAR ATIVO:</label>
+            <input type="text" id="inputBuscaTextoPatrimonio" class="input-padrao" placeholder="TAG, SÉRIE, PATRIMÔNIO OU NOME..." style="width:260px; padding:6px 10px;">
+          </div>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr>
+                <th>TAG</th>
+                <th>SITUAÇÃO</th>
+                <th>FAMÍLIA</th>
+                <th>EQUIPAMENTO</th>
+                <th>MODELO</th>
+                <th>FABRICANTE</th>
+                <th>Nº SÉRIE</th>
+                <th>LOCALIZAÇÃO</th>
+                <th>SETOR</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="listaPatrimonioTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('formEquipSituacao').addEventListener('change', gerenciarCamposSituacaoAtivo);
+
+  document.getElementById('inputBuscaTextoPatrimonio').value = appState.buscaTextoPatrimonio;
+  document.getElementById('inputBuscaTextoPatrimonio').addEventListener('input', function() { appState.buscaTextoPatrimonio = this.value.trim().toUpperCase(); atualizarTabelaPatrimonioLocal(); });
+  
+  document.getElementById('btnAbrirFormEquipamento').addEventListener('click', function() { 
+    document.getElementById('cardFormEquipamento').classList.remove('hidden'); 
+    document.getElementById('formEquipSituacao').value = 'PROPRIO';
+    gerenciarCamposSituacaoAtivo();
+    recalcularTagSequencialDinamica();
+  });
+  
+  document.getElementById('btnFecharFormEquipamento').addEventListener('click', limparFormularioEquipamento);
+  document.getElementById('btnSalvarEquipamentoPlanilha').addEventListener('click', enviarEquipamentoPlanilha);
+
+  document.getElementById('formEquipNome').addEventListener('change', function() {
+    const equipSel = this.value; const selectModelo = document.getElementById('formEquipModelo'); const inputFabricante = document.getElementById('formEquipFabricante');
+    selectModelo.innerHTML = '<option value="">SELECIONE O MODELO...</option>'; inputFabricante.value = '';
+    if(!equipSel) { selectModelo.disabled = true; return; }
+    
+    appState.matrizAtivos.filter(item => String(item.equipamento || item.EQUIPAMENTO || '').toUpperCase() === equipSel && String(item.status || item.STATUS || 'ATIVO').toUpperCase() === 'ATIVO').forEach(item => { 
+      const m = item.modelo || item.MODELO;
+      if (m && m.trim() !== '') selectModelo.innerHTML += `<option value="${m.toUpperCase()}">${m.toUpperCase()}</option>`; 
+    });
+    selectModelo.disabled = false;
+  });
+
+  document.getElementById('formEquipModelo').addEventListener('change', function() {
+    const modSel = this.value; const equipSel = document.getElementById('formEquipNome').value; const inputFabricante = document.getElementById('formEquipFabricante');
+    if(!modSel) { inputFabricante.value = ''; return; }
+    const corr = appState.matrizAtivos.find(item => String(item.equipamento || item.EQUIPAMENTO || '').toUpperCase() === equipSel && String(item.modelo || item.MODELO || '').toUpperCase() === modSel);
+    if(corr) {
+      const f = corr.fabricante || corr.FABRICANTE;
+      inputFabricante.value = f ? f.toUpperCase() : '';
+    }
+  });
+
+  atualizarTabelaPatrimonioLocal();
+}
+
+function recalcularTagSequencialDinamica() {
+  let prefixo = (appState.configuracoes.prefixoTag || 'LMD').toUpperCase();
+  let digitos = parseInt(appState.configuracoes.digitosTag || 4);
+  let maiorNumero = 0;
+  
+  if (appState.patrimonio && appState.patrimonio.length > 0) {
+    appState.patrimonio.forEach(p => {
+      let tVal = String(p.TAG || p.tag || '');
+      if(tVal.toUpperCase().startsWith(prefixo)) {
+        let extraido = tVal.replace(/[^0-9]/g, '');
+        if(extraido) {
+          let num = parseInt(extraido);
+          if(num > maiorNumero) maiorNumero = num;
+        }
+      }
+    });
+  }
+  
+  let proximoNum = maiorNumero + 1;
+  let numFormatado = String(proximoNum).padStart(digitos, '0');
+  const campoTag = document.getElementById('formEquipTag');
+  if(campoTag) campoTag.value = `${prefixo}-${numFormatado}`;
+}
+
+function gerenciarCamposSituacaoAtivo() {
+  const sit = document.getElementById('formEquipSituacao').value;
+  const groupDonoExt = document.getElementById('grupoEquipDonoExterno');
+  const grupoLocalizacao = document.getElementById('grupoLocalizacaoDinamica');
+  const wrapperSetor = document.getElementById('wrapperSetorDinamico');
+
+  if (sit === 'PROPRIO') {
+    groupDonoExt.style.display = 'none';
+    grupoLocalizacao.style.display = 'none';
+    
+    let htmlSelect = '<select id="formEquipSetorSelect" class="select-padrao">';
+    let setores = (appState.configuracoes.setoresRaiz || 'ESTOQUE CENTRAL').split(',');
+    setores.forEach(s => {
+      htmlSelect += `<option value="${s.trim().toUpperCase()}">${s.trim().toUpperCase()}</option>`;
+    });
+    htmlSelect += '</select>';
+    wrapperSetor.innerHTML = htmlSelect;
+  } else {
+    grupoLocalizacao.style.display = 'flex';
+    groupDonoExt.style.display = (sit === 'ALUGADO' || sit === 'EMPRESTADO') ? 'flex' : 'none';
+    wrapperSetor.innerHTML = `<input type="text" id="formEquipSetorInput" class="input-padrao" value="SETOR PADRÃO" placeholder="DIGITE O SETOR...">`;
+  }
+}
+
+function atualizarTabelaPatrimonioLocal() {
+  const tbody = document.getElementById('listaPatrimonioTbody'); if (!tbody) return; tbody.innerHTML = '';
+  if(!appState.patrimonio || appState.patrimonio.length === 0) { tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:15px; color:#64748b;">NENHUM ITEM LOCALIZADO NA BASE...</td></tr>`; return; }
+  
+  var filtrados = appState.patrimonio.filter(p => {
+    const txt = appState.buscaTextoPatrimonio || '';
+    let tag = (p.TAG || p.tag || '').toString().toUpperCase();
+    let eq = (p.EQUIPAMENTO || p.equipamento || '').toString().toUpperCase();
+    let ser = (p.SERIE || p.serie || '').toString().toUpperCase();
+    let pat = (p.PATRIMONIO || p.patrimonio || '').toString().toUpperCase();
+    return (txt === '') || tag.includes(txt) || eq.includes(txt) || ser.includes(txt) || pat.includes(txt);
+  });
+
+  filtrados.sort((a,b) => String(a.EQUIPAMENTO || a.equipamento || '').localeCompare(String(b.EQUIPAMENTO || b.equipamento || '')));
+  filtrados.forEach(p => {
+    let tr = document.createElement('tr');
+    let stVal = String(p.STATUS || p.status || 'DISPONÍVEL EM ESTOQUE').toUpperCase();
+    let bg = stVal === 'DISPONÍVEL EM ESTOQUE' ? '#dcfce7; color:#16a34a;' : '#dbeafe; color:#2563eb;';
+    let sitLabel = String(p.SITUAÇÃO || p.situacao || 'PROPRIO').toUpperCase();
+    let labelDono = (p['PROPRIETÁRIO / LOCADOR'] || p.donoExterno) ? ` (${p['PROPRIETÁRIO / LOCADOR'] || p.donoExterno})` : '';
+    
+    // Tratamento estrito de tipo para evitar crashes por campos em branco na aba ATIVOS_GERAL
+    let tagStr = p.TAG ? String(p.TAG).toUpperCase() : '-';
+    let equipStr = p.EQUIPAMENTO ? String(p.EQUIPAMENTO).toUpperCase() : '-';
+    let modStr = p.MODELO ? String(p.MODELO).toUpperCase() : '-';
+    let fabStr = p.FABRICANTE ? String(p.FABRICANTE).toUpperCase() : '-';
+    let serStr = p.SERIE ? String(p.SERIE).toUpperCase() : '-';
+    let locStr = (p.LOCALIZACAO_ATUAL || p.localizacao) ? String(p.LOCALIZACAO_ATUAL || p.localizacao).toUpperCase() : 'SEDE CENTRAL';
+    let setStr = p.SETOR ? String(p.SETOR).toUpperCase() : 'SETOR PADRÃO';
+    let famStr = p['FAMÍLIA DO EQUIPAMENTO'] ? String(p['FAMÍLIA DO EQUIPAMENTO']).toUpperCase() : 'MÉDICO';
+    
+    tr.innerHTML = `
+      <td><b>${tagStr}</b></td>
+      <td><small>${sitLabel}${labelDono.toUpperCase()}</small></td>
+      <td><small>${famStr}</small></td>
+      <td>${equipStr}</td>
+      <td>${modStr}</td>
+      <td>${fabStr}</td>
+      <td>${serStr}</td>
+      <td><b>${locStr}</b></td>
+      <td><span style="color:#475569;">${setStr}</span></td>
+      <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${stVal}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function limparFormularioEquipamento() {
+  document.getElementById('cardFormEquipamento').classList.add('hidden');
+  abrirTela('patrimonio');
+}
+
+window.processarRetornoEquipamentoSheets = function() { alert('ATIVO CADASTRADO COM SUCESSO!'); limparFormularioEquipamento(); sincronizarDadosPlanilha(); };
+function enviarEquipamentoPlanilha() {
+  const sit = document.getElementById('formEquipSituacao').value;
+  const tag = document.getElementById('formEquipTag').value.trim().toUpperCase(); 
+  const equip = document.getElementById('formEquipNome').value.toUpperCase(); 
+  const mod = document.getElementById('formEquipModelo').value.toUpperCase(); 
+  const fab = document.getElementById('formEquipFabricante').value.toUpperCase(); 
+  const ser = document.getElementById('formEquipSerie').value.trim().toUpperCase();
+  
+  if(!tag || !equip || !mod || !ser) return alert('PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS (*)!');
+
+  let localizacaoFinal = "";
+  let setorFinal = "";
+  let statusFinal = "";
+
+  if (sit === 'PROPRIO') {
+    localizacaoFinal = appState.configuracoes.empresaRaiz || "LINEMED ENGENHARIA CLINICA";
+    setorFinal = document.getElementById('formEquipSetorSelect').value;
+    statusFinal = "DISPONÍVEL EM ESTOQUE";
+  } else {
+    localizacaoFinal = document.getElementById('formEquipLocalizacao').value;
+    setorFinal = document.getElementById('formEquipSetorInput').value.trim().toUpperCase();
+    statusFinal = "LOCADO";
+    if(!localizacaoFinal) return alert('POR FAVOR, SELECIONE O CLIENTE DONO/DESTINO!');
+    if(!setorFinal) setorFinal = "SETOR PADRÃO";
+  }
+  
+  const d = { 
+    tag: tag, 
+    equipamento: equip, 
+    serie: ser, 
+    patrimonio: document.getElementById('formEquipPatrimonio').value.trim().toUpperCase(), 
+    modelo: mod, 
+    fabricante: fab, 
+    status: statusFinal, 
+    localizacao: localizacaoFinal,
+    setor: setorFinal, 
+    situacao: sit,
+    donoExterno: sit !== 'PROPRIO' ? document.getElementById('formEquipDonoExternoInput').value.toUpperCase() : '',
+    familia: document.getElementById('formEquipFamilia').value,
+    acessorios: document.getElementById('formEquipAcessorios').value.toUpperCase(),
+    observacao: document.getElementById('formEquipObservation').value.toUpperCase()
+  };
+  
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=PATRIMONIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoEquipamentoSheets`;
+  const scriptAntigo = document.getElementById('jsonp_equip_execution_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_equip_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+}
+
+/* ==================== MÓDULO: REMESSAS, MOVIMENTAÇÕES E AUDITORIA NEOVERO ==================== */
+function renderizarTelaLocacao(container) {
+  container.innerHTML = `
+    <div>
+      <h2>🤝 LOCAÇÃO E AUDITORIA DE ATIVOS</h2>
+      <div class="tabs-gestao" style="margin-top:15px;">
+        <div class="tab-item active" id="tabPainelLocacao">📦 PAINEL DE MOVIMENTAÇÃO</div>
+        <div class="tab-item" id="tabAuditoriaDePara">📋 AUDITORIA & DE-PARA NEOVERO</div>
+      </div>
+      <div id="subConteudoLocacao"></div>
+    </div>`;
+  document.getElementById('tabPainelLocacao').addEventListener('click', () => abrirSubModuloLocacao('movimentacao'));
+  document.getElementById('tabAuditoriaDePara').addEventListener('click', () => abrirSubModuloLocacao('auditoria'));
+  abrirSubModuloLocacao('movimentacao');
+}
+
+function abrirSubModuloLocacao(aba) {
+  document.getElementById('tabPainelLocacao').classList.remove('active');
+  document.getElementById('tabAuditoriaDePara').classList.remove('active');
+  const subContainer = document.getElementById('subConteudoLocacao');
+
+  if (aba === 'movimentacao') {
+    document.getElementById('tabPainelLocacao').classList.add('active');
+    let optCli = '<option value="">ESCOLHA A UNIDADE / CLIENTE</option>';
+    appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => optCli += `<option value="${c.nome.toUpperCase()}">${c.nome.toUpperCase()}</option>`);
+
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <h3>REGISTRAR NOVA MOVIMENTAÇÃO</h3>
+        <div class="form-grid">
+          <div class="form-grupo"><label>TIPO</label><select id="movTipo" class="select-padrao"><option value="ENVIO">ENVIO PARA O CLIENTE</option><option value="RETORNO">RETORNO PARA A SEDE</option></select></div>
+          <div class="form-grupo"><label>EQUIPAMENTO (TAG)</label><input type="text" id="movTagInput" list="listaTagsAutocomplete" class="input-padrao"><datalist id="listaTagsAutocomplete"></datalist></div>
+          <div class="form-grupo"><label>CLIENTE</label><select id="movCliente" class="select-padrao">${optCli}</select></div>
+          <div class="form-grupo"><label>OBSERVAÇÕES</label><input type="text" id="movObs" class="input-padrao"></div>
+        </div>
+        <div style="display:flex; justify-content: flex-end; margin-top:15px;"><button id="btnGravarMovimentacao" class="btn-success">🟢 CONFIRMAR MOVIMENTAÇÃO</button></div>
+      </div>
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3>📋 EQUIPAMENTOS INSTALADOS NO CLIENTE</h3>
+          <select id="selectFiltroClienteLocacao" class="select-padrao" style="width:320px;">${optCli}</select>
+        </div>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>TAG</th><th>EQUIPAMENTO</th><th>Nº SÉRIE</th><th>PATRIMÔNIO</th><th>MODELO</th><th>FABRICANTE</th></tr></thead><tbody id="tbodyItensLocadosCliente"></tbody></table></div>
+      </div>`;
+
+    document.getElementById('selectFiltroClienteLocacao').addEventListener('change', filtrarEquipamentosDoCliente);
+    document.getElementById('btnGravarMovimentacao').addEventListener('click', processarMovimentacaoLocacao);
+    document.getElementById('movTipo').addEventListener('change', atualizarDatalistTags);
+    atualizarDatalistTags();
+  } else if (aba === 'auditoria') {
+    document.getElementById('tabAuditoriaDePara').classList.add('active');
+    subContainer.innerHTML = `<div id="containerModuloAuditoria"></div>`;
+    renderizarModuloAuditoria();
+  }
+}
+
+function renderizarModuloAuditoria() {
+  const container = document.getElementById('containerModuloAuditoria'); if(!container) return;
+  let optCliAuditoria = `<option value="GERAL">[ GERAL ] - TODAS AS UNIDADES</option>`;
+  appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
+    optCliAuditoria += `<option value="${c.nome.toUpperCase}" ${appState.filtroClienteAuditoria === c.nome.toUpperCase() ? 'selected' : ''}>${c.nome.toUpperCase()}</option>`;
+  });
+
+  let itemsAuditoria = appState.patrimonio.filter(p => { let st = p.STATUS || p.status || ''; return st.toUpperCase() === 'LOCADO'; });
+  if(appState.filtroClienteAuditoria !== 'GERAL') {
+    itemsAuditoria = itemsAuditoria.filter(p => { let loc = p.LOCALIZACAO_ATUAL || p.localizacao || ''; return loc.toUpperCase() === appState.filtroClienteAuditoria; });
+  }
+
+  const totaisPorTipo = {};
+  itemsAuditoria.forEach(p => { const tipo = String(p.EQUIPAMENTO || p.equipamento || 'INDEFINIDO').toUpperCase(); totaisPorTipo[tipo] = (totaisPorTipo[tipo] || 0) + 1; });
+
+  let cardsHtml = '';
+  Object.keys(totaisPorTipo).sort().forEach(tipo => {
+    cardsHtml += `<div class="card-padrao dash-card-num" style="border-left-color: var(--cor-primaria);"><h4>${tipo}</h4><div class="num">${totaisPorTipo[tipo]}</div><small style="color:#64748b;">QUANTITATIVO TOTAL</small></div>`;
+  });
+
+  container.innerHTML = `
+    <div class="card-padrao" style="background:#f8fafc; border-style:dashed;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div><h3>CENTRAL DE CONFERÊNCIA NEOVERO</h3><p style="font-size:12px; color:#64748b;">RELAÇÃO COMPARATIVA DE CONTRATOS.</p></div>
+        <div style="width:400px;"><select id="selectFiltroAuditoria" class="select-padrao">${optCliAuditoria}</select></div>
+      </div>
+    </div>
+    <div class="dashboard-grid" style="margin-bottom:25px;">${cardsHtml || '<p style="padding:15px;">SEM ITENS LOCADOS NESTE FILTRO</p>'}</div>
+    <div class="card-padrao">
+      <div class="tabela-container">
+        <table class="tabela-sistema">
+          <thead><tr><th>TAG</th><th>EQUIPAMENTO / MODELO</th><th>LOCALIZAÇÃO</th><th>SETOR</th><th>ANOTAÇÃO DE CONFERÊNCIA</th><th style="text-align:center;">AÇÃO</th></tr></thead>
+          <tbody id="tbodyTabelaAuditoria"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  document.getElementById('selectFiltroAuditoria').addEventListener('change', function() { appState.filtroClienteAuditoria = this.value; renderizarModuloAuditoria(); });
+  const tbody = document.getElementById('tbodyTabelaAuditoria');
+  itemsAuditoria.forEach(p => {
+    const tr = document.createElement('tr');
+    let tag = p.TAG || p.tag || '-';
+    let eqLabel = p.EQUIPAMENTO || p.equipamento || '-';
+    let modLabel = p.MODELO || p.modelo || '-';
+    let locLabel = p.LOCALIZACAO_ATUAL || p.localizacao || '-';
+    let setLabel = p.SETOR || p.setor || '-';
+    tr.innerHTML = `<td><b>${tag}</b></td><td><small>${eqLabel}</small><br><b>${modLabel}</b></td><td>${locLabel}</td><td>${setLabel}</td><td><input type="text" id="note_${tag}" class="input-padrao no-uppercase" style="font-size:12px;"></td><td style="text-align:center;"><button onclick="salvarAuditoriaRapida('${tag}', '${eqLabel}', '${locLabel}', 'OK')" class="btn-success" style="font-size:11px;">🟢 OK</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function atualizarDatalistTags() {
+  const dl = document.getElementById('listaTagsAutocomplete'); if(!dl) return; dl.innerHTML = '';
+  const tipo = document.getElementById('movTipo').value;
+  appState.patrimonio.filter(p => {
+    let st = p.STATUS || p.status || '';
+    return tipo === 'ENVIO' ? st.toUpperCase() === 'DISPONÍVEL EM ESTOQUE' : st.toUpperCase() === 'LOCADO';
+  }).forEach(p => {
+    let tag = p.TAG || p.tag || '';
+    let opt = document.createElement('option'); opt.value = tag.toUpperCase(); dl.appendChild(opt);
+  });
+}
+
+function filtrarEquipamentosDoCliente() {
+  const cli = this.value; const tbody = document.getElementById('tbodyItensLocadosCliente'); tbody.innerHTML = ''; if(!cli) return;
+  appState.patrimonio.filter(p => {
+    let st = p.STATUS || p.status || '';
+    let loc = p.LOCALIZACAO_ATUAL || p.localizacao || '';
+    return st.toUpperCase() === 'LOCADO' && loc.toUpperCase() === cli;
+  }).forEach(p => {
+    tbody.innerHTML += `<tr><td><b>${p.TAG || p.tag}</b></td><td>${p.EQUIPAMENTO || p.equipamento}</td><td>${p.SERIE || p.serie}</td><td>${p.PATRIMONIO || p.patrimonio || '-'}</td><td>${p.MODELO || p.modelo}</td><td>${p.FABRICANTE || p.fabricante}</td></tr>`;
+  });
+}
+
+function processarMovimentacaoLocacao() {
+  const tipo = document.getElementById('movTipo').value; const tag = document.getElementById('movTagInput').value.trim().toUpperCase(); const cli = document.getElementById('movCliente').value;
+  if(!tag || !cli) return alert('PREENCHA OS CAMPOS!');
+  const p = appState.patrimonio.find(x => String(x.TAG || x.tag).toUpperCase() === tag); if(!p) return alert('NÃO ENCONTRADO!');
+  const pacote = { tag: tag, equipment: String(p.EQUIPAMENTO || p.equipamento).toUpperCase(), origins: tipo === 'ENVIO' ? 'SEDE CENTRAL' : cli, destino: tipo === 'ENVIO' ? cli : 'SEDE CENTRAL', tipo: tipo, responsavel: (appState.usuarioLogado?.nome || 'SISTEMA').toUpperCase(), observacao: document.getElementById('movObs').value.toUpperCase() };
+  fetch(`${WEB_APP_URL}?acao=registrarMovimentacao&dados=${encodeURIComponent(JSON.stringify(pacote))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('SUCESSO!'); sincronizarDadosPlanilha(); });
+}
+
+/* ==================== MÓDULO INTEGRAL: CONTROLE DE MULTAS ==================== */
+function renderizarTelaMultas(container) {
+  let optCondutores = '<option value="">SELECIONE O CONDUTOR...</option>';
+  if (appState.usuarios && appState.usuarios.length > 0) {
+    appState.usuarios.forEach(u => optCondutores += `<option value="${u.nome.toUpperCase()}">${u.nome.toUpperCase()}</option>`);
+  } else {
+    appState.tecnicos.forEach(t => optCondutores += `<option value="${t.toUpperCase()}">${t.toUpperCase()}</option>`);
+  }
+
+  let optVeiculos = '<option value="">SELECIONE O VEÍCULO (PLACA)...</option>';
+  appState.veiculos.forEach(v => {
+    optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>`;
+  });
+
+  container.innerHTML = `
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2>📑 CONTROLE DE MULTAS DE TRÂNSITO</h2>
+        <button id="btnSyncMultasPlanilha" class="btn-secondary" style="font-size:12px;">🔄 SINCRONIZAR PLANILHA</button>
+      </div>
+       
+      <div class="card-padrao">
+        <h3 id="tituloFormMulta" style="margin-bottom:15px; color:var(--cor-perigo);">REGISTRO DE NOTIFICAÇÃO DE MULTA</h3>
+        <div class="form-grid">
+          <div class="form-grid">
+            <div class="form-grupo"><label>VEÍCULO / PLACA *</label><select id="formMultaPlaca" class="select-padrao">${optVeiculos}</select></div>
+            <div class="form-grupo"><label>CONDUTOR RESPONSÁVEL *</label><select id="formMultaCondutor" class="select-padrao">${optCondutores}</select></div>
+            <div class="form-grupo"><label>DATA DA INFRAÇÃO *</label><input type="date" id="formMultaData" class="input-padrao"></div>
+            <div class="form-grupo"><label>VALOR (R$) *</label><input type="number" step="0.01" id="formMultaValor" class="input-padrao" placeholder="0.00"></div>
+            <div class="form-grupo"><label>LOCAL DA INFRAÇÃO *</label><input type="text" id="formMultaLocal" class="input-padrao" placeholder="EX: RODOVIA DOS BANDEIRANTES, KM 22"></div>
+            <div class="form-grupo"><label>GRAVIDADE *</label><select id="formMultaGravidade" class="select-padrao"><option value="LEVE">LEVE</option><option value="MÉDIA">MÉDIA</option><option value="GRAVE">GRAVE</option><option value="GRAVÍSSIMA">GRAVÍSSIMA</option></select></div>
+            <div class="form-grupo"><label>SITUAÇÃO DO PAGAMENTO *</label><select id="formIdSituacaoMulta" class="select-padrao"><option value="ABERTO">EM ABERTO</option><option value="PAGO">PAGO</option><option value="RECURSO">EM RECURSO</option></select></div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;">
+          <button id="btnCancelarEdicaoMulta" class="btn-secondary hidden" onclick="appState.idMultaEmEdicao = null; abrirTela('multas');">CANCELAR</button>
+          <button id="btnSalvarMultaPlanilha" class="btn-danger">💾 SALVAR MULTA</button>
+        </div>
+      </div>
+
+      <div class="card-padrao">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
+          <h3>HISTÓRICO DE MULTAS REGISTRADAS</h3>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <label style="font-size:12px; font-weight:bold; color:#475569;">CONSULTAR:</label>
+            <input type="text" id="inputBuscaTextoMulta" class="input-padrao" placeholder="PLACA, CONDUTOR OU LOCAL..." style="width:260px; padding:6px 10px;">
+          </div>
+        </div>
+        <div class="tabela-container">
+          <table class="tabela-sistema">
+            <thead>
+              <tr>
+                <th>ID MULTA</th>
+                <th>PLACA / VEÍCULO</th>
+                <th>CONDUTOR</th>
+                <th>DATA</th>
+                <th>VALOR</th>
+                <th>LOCAL</th>
+                <th>GRAVIDADE</th>
+                <th>SITUAÇÃO</th>
+                <th style="text-align:center;">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody id="listaMultasTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('btnSyncMultasPlanilha').addEventListener('click', sincronizarDadosPlanilha);
+  document.getElementById('btnSalvarMultaPlanilha').addEventListener('click', enviarMultaPlanilha);
+  
+  document.getElementById('inputBuscaTextoMulta').value = appState.buscaTextoMultas;
+  document.getElementById('inputBuscaTextoMulta').addEventListener('input', function() {
+    appState.buscaTextoMultas = this.value.trim().toUpperCase();
+    atualizarTabelaMultasLocal();
+  });
+
+  if (appState.idMultaEmEdicao) {
+    document.getElementById('tituloFormMulta').innerText = "ALTERAR SITUAÇÃO / DADOS DA MULTA";
+    document.getElementById('tituloFormMulta').style.color = "var(--cor-primaria)";
+    document.getElementById('btnCancelarEdicaoMulta').classList.remove('hidden');
+  } else {
+    document.getElementById('formMultaData').valueAsDate = new Date();
+  }
+  
+  atualizarTabelaMultasLocal();
+}
+
+function atualizarTabelaMultasLocal() {
+  const tbody = document.getElementById('listaMultasTbody'); if (!tbody) return; tbody.innerHTML = '';
+
+  if (!appState.multas || appState.multas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">NENHUMA MULTA LOCALIZADA NO BANCO DE DADOS...</td></tr>`;
+    return;
+  }
+
+  const filtrados = appState.multas.filter(m => {
+    const txt = appState.buscaTextoMultas || '';
+    return (txt === '') || 
+           (m.placa || m.PLACA || '').toUpperCase().includes(txt) ||
+           (m.condutor || m.CONDUTOR || '').toUpperCase().includes(txt) ||
+           (m.local || m.LOCAL || '').toUpperCase().includes(txt);
+  });
+
+  if (filtrados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">NENHUM REGISTRO CORRESPONDENTE...</td></tr>`;
+    return;
+  }
+
+  filtrados.forEach(m => {
+    let tr = document.createElement('tr');
+    let id = m.id_multa || m.ID_MULTA || '-';
+    let placa = m.placa || m.PLACA || '-';
+    let condutor = m.condutor || m.CONDUTOR || '-';
+    let data = m.data || m.DATA || '-';
+    let valor = m.valor || m.VALOR || '0.00';
+    let local = m.local || m.LOCAL || '-';
+    let gravidade = m.gravidade || m.GRAVIDADE || '-';
+    let situacao = (m.situacao || m.SITUAÇÃO || 'ABERTO').toUpperCase();
+
+    let idx = appState.multas.findIndex(orig => (orig.id_multa || orig.ID_MULTA) === id);
+    let bg = situacao === 'PAGO' ? '#dcfce7; color:#16a34a;' : situacao === 'RECURSO' ? '#dbeafe; color:#2563eb;' : '#fee2e2; color:#dc2626;';
+
+    tr.innerHTML = `
+      <td><small>${id}</small></td>
+      <td><b>${placa.toUpperCase()}</b></td>
+      <td>${condutor.toUpperCase()}</td>
+      <td><b>${formatarDataBr(data)}</b></td>
+      <td>R$ ${parseFloat(valor).toFixed(2)}</td>
+      <td><span style="font-size:12px; color:#475569;">${local.toUpperCase()}</span></td>
+      <td><small>${gravidade.toUpperCase()}</small></td>
+      <td><span style="padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; background:${bg}">${situacao}</span></td>
+      <td style="text-align:center;"><button class="btn-primary" style="padding: 4px 8px;" onclick="prepararEdicaoMulta(${idx})">📝 CORRIGIR</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function prepararEdicaoMulta(i) {
+  const m = appState.multas[i]; appState.idMultaEmEdicao = m.id_multa || m.ID_MULTA; abrirTela('multas');
+  document.getElementById('formMultaPlaca').value = (m.placa || m.PLACA || '').toUpperCase();
+  document.getElementById('formMultaCondutor').value = (m.condutor || m.CONDUTOR || '').toUpperCase();
+  document.getElementById('formMultaValor').value = m.valor || m.VALOR;
+  document.getElementById('formMultaLocal').value = (m.local || m.LOCAL || '').toUpperCase();
+  document.getElementById('formMultaGravidade').value = (m.gravidade || m.GRAVIDADE || 'LEVE').toUpperCase();
+  document.getElementById('formIdSituacaoMulta').value = (m.situacao || m.SITUAÇÃO || 'ABERTO').toUpperCase();
+  if(m.data || m.DATA) {
+    try {
+      let dObj = new Date(m.data || m.DATA);
+      if(!isNaN(dObj.getTime())) document.getElementById('formMultaData').value = dObj.toISOString().split('T')[0];
+    } catch(e) {}
+  }
+}
+
+window.processarRetornoMultaSheets = function() { alert('DADOS DA INFRAÇÃO ATUALIZADOS!'); appState.idMultaEmEdicao = null; abrirTela('multas'); sincronizarDadosPlanilha(); };
+function enviarMultaPlanilha() {
+  const placa = document.getElementById('formMultaPlaca').value; const condutor = document.getElementById('formMultaCondutor').value; const data = document.getElementById('formMultaData').value; const valor = document.getElementById('formMultaValor').value; const local = document.getElementById('formMultaLocal').value.trim().toUpperCase(); const gravidade = document.getElementById('formMultaGravidade').value; const situacao = document.getElementById('formIdSituacaoMulta').value;
+  if(!placa || !condutor || !data || !valor || !local) return alert('PREENCHA OS OBRIGATÓRIOS!');
+  const idFinal = appState.idMultaEmEdicao ? appState.idMultaEmEdicao : 'MLT_' + Date.now();
+  const d = { id_multa: idFinal, ID_MULTA: idFinal, placa: placa, PLACA: placa, condutor: condutor, CONDUTOR: condutor, data: data, DATA: data, valor: valor, VALOR: valor, local: local, LOCAL: local, gravidade: gravidade, GRAVIDADE: gravidade, situacao: situacao, SITUAÇÃO: situacao };
+  const acao = appState.idMultaEmEdicao ? 'editarCadastro' : 'salvarCadastro';
+  const urlFinal = `${WEB_APP_URL}?acao=${acao}&tipo=MULTAS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoMultaSheets`;
+  const scriptAntigo = document.getElementById('jsonp_multa_execution_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_multa_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+}
+
+/* ==================== MÓDULO GESTÃO DE INFRAESTRUTURA (3 ABAS ORIGINAIS) ==================== */
+function renderizarTelaGestao(container) {
+  container.innerHTML = `
+    <div>
+      <h2>⚙️ PAINEL ADMINISTRATIVO E GESTÃO</h2>
+      <div class="tabs-gestao">
+        <div class="tab-item active" id="tabColaboradores">👤 COLABORADORES / USUÁRIOS</div>
+        <div class="tab-item" id="tabItensInventario">📋 ITENS DE INVENTÁRIO</div>
+        <div class="tab-item" id="tabConfiguracoes">🛠️ PARÂMETROS GERAIS</div>
+      </div>
+      <div id="subConteudoGestao"></div>
+    </div>`;
+  document.getElementById('tabColaboradores').addEventListener('click', () => abrirSubMóduloGestao('colaboradores'));
+  document.getElementById('tabItensInventario').addEventListener('click', () => abrirSubMóduloGestao('itens_inventario'));
+  document.getElementById('tabConfiguracoes').addEventListener('click', () => abrirSubMóduloGestao('configuracoes'));
+  abrirSubMóduloGestao('colaboradores');
+}
+
+function abrirSubMóduloGestao(aba) {
+  document.getElementById('tabColaboradores').classList.remove('active');
+  document.getElementById('tabItensInventario').classList.remove('active');
+  document.getElementById('tabConfiguracoes').classList.remove('active');
+  const subContainer = document.getElementById('subConteudoGestao');
+  
+  if (aba === 'colaboradores') {
+    document.getElementById('tabColaboradores').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <h3 id="tituloFormUsuario">FICHA DO COLABORADOR</h3>
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin:15px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🔑 DADOS DE ACESSO</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>NOME COMPLETO *</label><input type="text" id="formUserNome" class="input-padrao"></div>
+          <div class="form-grupo"><label>USUÁRIO / LOGIN *</label><input type="text" id="formUserLogin" class="input-padrao"></div>
+          <div class="form-grupo"><label>SENHA DE ACESSO *</label><input type="password" id="formUserSenha" class="input-padrao"></div>
+          <div class="form-grupo"><label>PERFIL</label><select id="formUserPerfil" class="select-padrao"><option value="Técnico">TÉCNICO</option><option value="Gestor">GESTOR</option><option value="Admin">ADMIN</option></select></div>
+        </div>
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">🪪 DOCUMENTAÇÃO ADICIONAL</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>CPF</label><input type="text" id="formUserCpf" class="input-padrao" placeholder="000.000.000-00"></div>
+          <div class="form-grupo"><label>RG</label><input type="text" id="formUserRg" class="input-padrao" placeholder="00.000.000-0"></div>
+          <div class="form-grupo"><label>CNH</label><input type="text" id="formUserCnh" class="input-padrao" placeholder="NÚMERO DE REGISTRO"></div>
+          <div class="form-grupo"><label>TELEFONE / CELULAR</label><input type="text" id="formUserTelefone" class="input-padrao" placeholder="(00) 00000-0000"></div>
+        </div>
+        <h4 style="font-size:12px; color:var(--cor-primaria); margin:20px 0 5px 0; border-bottom:1px solid #cbd5e1; padding-bottom:3px;">📍 ENDEREÇO RESIDENCIAL</h4>
+        <div class="form-grid">
+          <div class="form-grupo"><label>CEP</label><input type="text" id="formUserCep" class="input-padrao" placeholder="00000-000"></div>
+          <div class="form-grupo"><label>LOGRADOURO</label><input type="text" id="formUserLogradouro" class="input-padrao"></div>
+          <div class="form-grupo"><label>NÚMERO</label><input type="text" id="formUserNumero" class="input-padrao"></div>
+          <div class="form-grupo"><label>BAIRRO</label><input type="text" id="formUserBairro" class="input-padrao"></div>
+          <div class="form-grupo"><label>CIDADE</label><input type="text" id="formUserCidade" class="input-padrao" value="SÃO PAULO"></div>
+          <div class="form-grupo"><label>UF</label><input type="text" id="formUserUf" class="input-padrao" value="SP"></div>
+        </div>
+        <input type="hidden" id="formUserStatus" value="ATIVO"><input type="hidden" id="formUserAdmissao" value=""><input type="hidden" id="formUserMotivo" value="">
+        <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:20px;"><button id="btnSalvarUsuarioPlanilha" class="btn-success">💾 SALVAR COLABORADOR</button></div>
+      </div>
+      <div class="card-padrao">
+        <h3>COLABORADORES DA BASE</h3>
+        <div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>NOME COMPLETO</th><th>LOGIN</th><th>PERFIL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="listaUsuariosTbody"></tbody></table></div>
+      </div>`;
+    document.getElementById('btnSalvarUsuarioPlanilha').addEventListener('click', enviarUsuarioPlanilha);
+    document.getElementById('formUserCep').addEventListener('blur', buscarCepColaboradorAutomatico);
+    atualizarTabelaUsuariosLocal();
+  } else if (aba === 'itens_inventario') {
+    document.getElementById('tabItensInventario').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao" style="display: flex; gap: 12px; align-items: center; justify-content: space-between;">
+        <button onclick="abrirModalDescricao()" class="btn-success">➕ CADASTRAR DESCRIÇÃO GERAL</button>
+        <button onclick="abrirModalModeloVinculo()" class="btn-primary">➕ HOMOLOGAR MODELO/MARCA</button>
+      </div>
+      <div class="card-padrao"><div class="tabela-container"><table class="tabela-sistema"><thead><tr><th>EQUIPAMENTO / DESCRIÇÃO</th><th>MODELO DE FÁBRICA</th><th>FABRICANTE OFICIAL</th><th>STATUS</th><th style="text-align:center;">AÇÕES</th></tr></thead><tbody id="tbodyMatrizAtivosParam"></tbody></table></div></div>`;
+    desenharTabelaMatrizAtivos();
+  } else {
+    document.getElementById('tabConfiguracoes').classList.add('active');
+    subContainer.innerHTML = `
+      <div class="card-padrao">
+        <h3 style="color: var(--cor-secundaria); margin-bottom: 15px;">🛠️ PARÂMETROS GERAIS DO SISTEMA COMERCIAL</h3>
+        <div class="form-grid">
+          <div class="form-grupo"><label>PREFIXO GLOBAL DAS TAGs *</label><input type="text" id="cfgPrefixoTag" class="input-padrao" value="${appState.configuracoes.prefixoTag || 'LMD'}"></div>
+          <div class="form-grupo"><label>NÚMERO DE DÍGITOS *</label><select id="cfgDigitosTag" class="select-padrao"><option value="4" ${appState.configuracoes.digitosTag == 4 ? 'selected' : ''}>4 DÍGITOS (EX: LMD-0001)</option><option value="5" ${appState.configuracoes.digitosTag == 5 ? 'selected' : ''}>5 DÍGITOS (EX: LMD-00001)</option></select></div>
+        </div>
+        <div class="form-grid" style="margin-top:15px;">
+          <div class="form-grupo"><label>RAZÃO SOCIAL / EMPRESA RAIZ *</label><input type="text" id="cfgEmpresaRaiz" class="input-padrao" value="${appState.configuracoes.empresaRaiz || ''}"></div>
+          <div class="form-grupo"><label>SETORES INTERNOS (SEPARADOS POR VÍRGULA) *</label><input type="text" id="cfgSetoresRaiz" class="input-padrao" value="${appState.configuracoes.setoresRaiz || ''}"></div>
+        </div>
+        <div style="margin-top: 20px;"><button id="btnSalvarParametrosGerais" class="btn-success">💾 SALVAR CONFIGURAÇÕES COMERCIAIS</button></div>
+      </div>`;
+    document.getElementById('btnSalvarParametrosGerais').addEventListener('click', function() {
+      const pref = document.getElementById('cfgPrefixoTag').value.trim().toUpperCase(); const raiz = document.getElementById('cfgEmpresaRaiz').value.trim().toUpperCase(); const sets = document.getElementById('cfgSetoresRaiz').value.trim().toUpperCase();
+      if(!pref || !raiz || !sets) return alert('PREENCHA OS OBRIGATÓRIOS!');
+      appState.configuracoes.prefixoTag = pref; appState.configuracoes.digitosTag = parseInt(document.getElementById('cfgDigitosTag').value); appState.configuracoes.empresaRaiz = raiz; appState.configuracoes.setoresRaiz = sets;
+      fetch(`${WEB_APP_URL}?acao=salvarConfiguracoes&dados=${encodeURIComponent(JSON.stringify(appState.configuracoes))}`, { method: 'POST', mode: 'no-cors' }).then(() => { alert('CONFIGURAÇÕES SINCRONIZADAS!'); sincronizarDadosPlanilha(); });
+    });
+  }
+}
+
+function buscarCepColaboradorAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formUserLogradouro').value = d.logradouro.toUpperCase(); document.getElementById('formUserBairro').value = d.bairro.toUpperCase(); document.getElementById('formUserCidade').value = d.localidade.toUpperCase(); document.getElementById('formUserUf').value = d.uf.toUpperCase(); } }); }
+function normalizarTermoMatriz(str) { if (!str) return ''; return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, '').trim(); }
+function calcularDistanciaLevenshtein(a, b) { const matriz = []; for (let i = 0; i <= b.length; i++) matriz[i] = [i]; for (let j = 0; j <= a.length; j++) matriz[0][j] = j; for (let i = 1; i <= b.length; i++) { for (let j = 1; j <= a.length; j++) { if (b.charAt(i - 1) === a.charAt(j - 1)) { matriz[i][j] = matriz[i - 1][j - 1]; } else { matriz[i][j] = Math.min(matriz[i - 1][j - 1] + 1, Math.min(matriz[i][j - 1] + 1, matriz[i - 1][j] + 1)); } } } return matriz[b.length][a.length]; }
+
+/* ==================== CONFIGURAÇÃO E MANIPULAÇÃO DE MODAIS SUB-GERENCIAIS ==================== */
+window.abrirModalDescricao = function(id = null) {
+  appState.idMatrizEmEdicao = id;
+  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>🏥 NOVA DESCRIÇÃO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>NOME / DESCRIÇÃO GERAL *</label><input type="text" id="modalInputEquip" class="input-padrao" value="" placeholder="EX: VENTILADOR PULMONAR"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR TERMO</button></div></div></div>`;
+  const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
+};
+
+window.abrirModalModeloVinculo = function() {
+  const descricoesUnicas = [...new Set(appState.matrizAtivos.map(item => String(item.equipamento || item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
+  let options = '<option value="">SELECIONE A DESCRIÇÃO...</option>';
+  descricoesUnicas.forEach(d => options += `<option value="${d}">${d}</option>`);
+  const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>📐 HOMOLOGAR MODELO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo" style="margin-bottom:12px;"><label>DESCRIÇÃO MASTER *</label><select id="modalSelectEquip" class="select-padrao">${options}</select></div><div class="form-grupo" style="margin-bottom:12px;"><label>MODELO *</label><input type="text" id="modalInputModelo" class="input-padrao" placeholder="EX: SMART PUMP V5"></div><div class="form-grupo" style="margin-bottom:12px;"><label>FABRICANTE *</label><input type="text" id="modalInputFab" class="input-padrao" placeholder="EX: SAMTRONIC"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalVinculo()" class="btn-primary">💾 SALVAR VÍNCULO</button></div></div></div>`;
+  const container = document.getElementById('modalContainer'); container.innerHTML = html; container.classList.remove('hidden');
+};
+
+window.fecharModal = function() { const container = document.getElementById('modalContainer'); container.innerHTML = ''; container.classList.add('hidden'); appState.idMatrizEmEdicao = null; };
+window.fecharModalProcesso = function() { fecharModal(); sincronizarDadosPlanilha(); };
+
+window.salvarModalDescricao = function() {
+  const equipInput = document.getElementById('modalInputEquip').value.trim().toUpperCase(); if(!equipInput) return alert('INSIRA A DESCRIÇÃO!');
+  const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equipInput, EQUIPAMENTO: equipInput, modelo: '-', MODELO: '-', fabricante: '-', FABRICANTE: '-', anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+};
+
+window.salvarModalVinculo = function() {
+  const equip = document.getElementById('modalSelectEquip').value.toUpperCase(); const modelo = document.getElementById('modalInputModelo').value.trim().toUpperCase(); const fab = document.getElementById('modalInputFab').value.trim().toUpperCase();
+  if(!equip || !modelo || !fab) return alert('PREENCHA OS OBRIGATÓRIOS!');
+  const d = { id_registro: 'mat_' + Date.now(), ID_REGISTRO: 'mat_' + Date.now(), equipamento: equip, EQUIPAMENTO: equip, modelo: modelo, MODELO: modelo, fabricante: fab, FABRICANTE: fab, anvisa: '-', ANVISA: '-', status: 'ATIVO', STATUS: 'ATIVO' };
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+};
+
+window.alternarStatusMatriz = function(id) {
+  const item = appState.matrizAtivos.find(x => String(x.id_registro || x.ID_REGISTRO) === String(id)); if(!item) return;
+  const currentSt = String(item.status || item.STATUS || 'ATIVO').toUpperCase(); const novoStatus = currentSt === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+  if(!confirm(`ALTERAR STATUS PARA ${novoStatus}?`)) return;
+  const d = { id_registro: id, ID_REGISTRO: id, equipamento: item.equipamento || item.EQUIPAMENTO, EQUIPAMENTO: item.equipamento || item.EQUIPAMENTO, modelo: item.modelo || item.MODELO, MODELO: item.modelo || item.MODELO, fabricante: item.fabricante || item.FABRICANTE, FABRICANTE: item.fabricante || item.FABRICANTE, anvisa: '-', ANVISA: '-', status: novoStatus, STATUS: novoStatus };
+  const urlFinal = `${WEB_APP_URL}?acao=editarCadastro&tipo=MATRIZ_ATIVOS&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=fecharModalProcesso`;
+  const scriptElement = document.createElement('script'); scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+};
+
+window.desenharTabelaMatrizAtivos = function() {
+  const tbody = document.getElementById('tbodyMatrizAtivosParam'); if(!tbody) return; tbody.innerHTML = '';
+  if(!appState.matrizAtivos || appState.matrizAtivos.length === 0) return;
+  appState.matrizAtivos.forEach(item => {
+    const id = item.id_registro || item.ID_REGISTRO; const eq = String(item.equipamento || item.EQUIPAMENTO || '').toUpperCase(); const mo = String(item.modelo || item.MODELO || '-').toUpperCase(); const fa = String(item.fabricante || item.FABRICANTE || '-').toUpperCase(); const st = String(item.status || item.STATUS || 'ATIVO').toUpperCase(); const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2'; const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td><b>${eq}</b></td><td>${mo}</td><td>${fa}</td><td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td><td style="text-align:center;"><button class="${st === 'ATIVO' ? 'btn-danger' : 'btn-success'}" style="padding:4px 8px; font-size:11px;" onclick="alternarStatusMatriz('${id}')">${st === 'ATIVO' ? '🚫 INATIVAR' : '⚡ ATIVAR'}</button></td>`;
+    tbody.appendChild(tr);
+  });
+};
+
+/* ==================== FUNÇÕES UTILITÁRIAS AND FORMATADORES DE DADOS ==================== */
+function formatarDataBr(dataUs) { 
+  if(!dataUs) return '-'; 
+  if (String(dataUs).includes('GMT') || String(dataUs).includes(':')) {
+    const d = new Date(dataUs);
+    if (!isNaN(d.getTime())) {
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    }
+  }
+  const partes = String(dataUs).split(' ')[0].split('-'); if(partes.length !== 3) return dataUs; 
+  return `${partes[2]}/${partes[1]}/${partes[0]}`; 
+}
+
+function atualizarTabelaUsuariosLocal() {
+  const tbody = document.getElementById('listaUsuariosTbody'); if (!tbody) return; tbody.innerHTML = '';
+  if(!appState.usuarios || appState.usuarios.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">NENHUM REGISTRO ENCONTRADO</td></tr>`; return; }
+  appState.usuarios.forEach((u) => {
+    const st = (u.status || 'ATIVO').toUpperCase(); const bg = st === 'ATIVO' ? '#dcfce7' : '#fee2e2'; const tx = st === 'ATIVO' ? '#16a34a' : '#dc2626';
+    tbody.innerHTML += `<tr><td><b>${u.nome.toUpperCase()}</b></td><td>${u.login.toUpperCase()}</td><td>${u.perfil.toUpperCase()}</td><td><span style="padding:4px 8px; background:${bg}; color:${tx}; border-radius:6px; font-size:11px; font-weight:bold;">${st}</span></td><td style="text-align:center;"><button class="btn-danger" style="padding:4px 8px; font-size:11px;" onclick="alert('PRODUÇÃO: CONTATE O ADMINISTRADOR DIOGO PARA REGRAS DE INATIVAÇÃO DE LOGIN EXCLUSIVAS')">🚫 SUSPENDER</button></td></tr>`;
+  });
+}
+
+window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); abrirTela('gestao'); sincronizarDadosPlanilha(); };
+function enviarUsuarioPlanilha() {
+  const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
+  if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
+  const d = { id: 'usr_' + Date.now(), nome: nome, login: login, senha: senha, perfil: document.getElementById('formUserPerfil').value, status: 'ATIVO', cpf: document.getElementById('formUserCpf').value, rg: document.getElementById('formUserRg').value, cnh: document.getElementById('formUserCnh').value.toUpperCase(), telephone: document.getElementById('formUserTelefone').value, cep: document.getElementById('formUserCep').value, logradouro: document.getElementById('formUserLogradouro').value.toUpperCase(), numero: document.getElementById('formUserNumero').value, bairro: document.getElementById('formUserBairro').value.toUpperCase(), cidade: document.getElementById('formUserCidade').value.toUpperCase(), uf: document.getElementById('formUserUf').value.toUpperCase(), admissao: '', motivoDesligamento: '' };
+  const urlFinal = `${WEB_APP_URL}?acao=salvarCadastro&tipo=USUARIO&dados=${encodeURIComponent(JSON.stringify(d))}&prefix=processarRetornoGoogleSheets`;
+  const scriptAntigo = document.getElementById('jsonp_execution_script'); if(scriptAntigo) scriptAntigo.remove();
+  const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
+}
+</script>
+</body>
+</html>
