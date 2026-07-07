@@ -453,7 +453,7 @@ function renderizarHomePainelDinâmico() {
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuClientes').click()">
         <h4>🏥 CADASTRO DE CLIENTES</h4>
-        <p class="no-uppercase">Acesse the gerenciador de unidades e contratos.</p>
+        <p class="no-uppercase">Acesse o gerenciador de unidades e contratos.</p>
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuLocacao').click()">
         <h4>🤝 MOVIMENTAR LOCAÇÕES</h4>
@@ -689,7 +689,6 @@ function buscaAtivoPorFiltro(idLinha, tipoCampo) {
   const busca = input.value.trim().toUpperCase();
   if(!busca) return;
   
-  // Mapeamento dinâmico: Aceita tanto chaves em maiúsculo (enviadas pelo novo backend) quanto minúsculo
   const ativo = appState.patrimonio.find(p => {
     let tagAtivo = (p.TAG || p.tag || '').toString().toUpperCase();
     let serieAtivo = (p.SERIE || p.serie || '').toString().toUpperCase();
@@ -851,7 +850,6 @@ function imprimirEspelhoRotaMetrika(idRota) {
 
   const cab = lines[0];
 
-  // 1. Agrupamento estruturado por cliente com busca dinâmica de endereço e contato na memória
   const clientesAgrupados = {};
   lines.forEach(l => {
     const nomeCliente = (l.cliente || '').toUpperCase().trim();
@@ -919,7 +917,6 @@ function imprimirEspelhoRotaMetrika(idRota) {
     `;
   }
 
-  // 2. Montagem do layout operacional compacto e limpo (Padrão Corporativo Word)
   const conteudoHtml = `
     <html>
     <head>
@@ -1470,7 +1467,7 @@ function renderizarTelaPatrimonio(container) {
       </div>
     </div>`;
 
-  document.getElementById('formEquipForm'].addEventListener('change', gerenciarCamposSituacaoAtivo);
+  document.getElementById('formEquipSituacao').addEventListener('change', gerenciarCamposSituacaoAtivo);
 
   document.getElementById('inputBuscaTextoPatrimonio').value = appState.buscaTextoPatrimonio;
   document.getElementById('inputBuscaTextoPatrimonio').addEventListener('input', function() { appState.buscaTextoPatrimonio = this.value.trim().toUpperCase(); atualizarTabelaPatrimonioLocal(); });
@@ -1579,7 +1576,6 @@ function atualizarTabelaPatrimonioLocal() {
     let sitLabel = String(p.SITUAÇÃO || p.situacao || 'PROPRIO').toUpperCase();
     let labelDono = (p['PROPRIETÁRIO / LOCADOR'] || p.donoExterno) ? ` (${p['PROPRIETÁRIO / LOCADOR'] || p.donoExterno})` : '';
     
-    // Tratamento estrito de tipo para evitar crashes por campos em branco na aba ATIVOS_GERAL
     let tagStr = p.TAG ? String(p.TAG).toUpperCase() : '-';
     let equipStr = p.EQUIPAMENTO ? String(p.EQUIPAMENTO).toUpperCase() : '-';
     let modStr = p.MODELO ? String(p.MODELO).toUpperCase() : '-';
@@ -1641,7 +1637,7 @@ function enviarEquipamentoPlanilha() {
     tag: tag, 
     equipamento: equip, 
     serie: ser, 
-    patrimonio: document.getElementById('formEquipPatrimonio').value.trim().toUpperCase(), 
+    patrimonio: document.getElementById('formEquiprosPatrimonio').value.trim().toUpperCase(), 
     modelo: mod, 
     fabricante: fab, 
     status: statusFinal, 
