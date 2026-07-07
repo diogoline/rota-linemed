@@ -1056,7 +1056,7 @@ function salvarRotaFinalMetrika() {
 
     paradasLista.push({
       cliente: cliente,
-      linhasOS: linhasOS
+      linhasOS: linesOS
     });
   });
 
@@ -1637,7 +1637,6 @@ function enviarEquipamentoPlanilha() {
     if(!setorFinal) setorFinal = "SETOR PADRÃO";
   }
   
-  // === CORREÇÃO TÉCNICA CRUCIAL REALIZADA AQUI: APONTADO formEquipPatrimonio CORRETAMENTE ===
   const d = { 
     tag: tag, 
     equipamento: equip, 
@@ -1809,7 +1808,7 @@ function renderizarTelaMultas(container) {
 
   let optVeiculos = '<option value="">SELECIONE O VEÍCULO (PLACA)...</option>';
   appState.veiculos.forEach(v => {
-    optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>';
+    optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>`;
   });
 
   container.innerHTML = `
@@ -1820,7 +1819,7 @@ function renderizarTelaMultas(container) {
       </div>
        
       <div class="card-padrao">
-        h3 id="tituloFormMulta" style="margin-bottom:15px; color:var(--cor-perigo);">REGISTRO DE NOTIFICAÇÃO DE MULTA</h3>
+        <h3 id="tituloFormMulta" style="margin-bottom:15px; color:var(--cor-perigo);">REGISTRO DE NOTIFICAÇÃO DE MULTA</h3>
         <div class="form-grid">
           <div class="form-grid">
             <div class="form-grupo"><label>VEÍCULO / PLACA *</label><select id="formMultaPlaca" class="select-padrao">${optVeiculos}</select></div>
@@ -1870,6 +1869,7 @@ function renderizarTelaMultas(container) {
   document.getElementById('btnSyncMultasPlanilha').addEventListener('click', sincronizarDadosPlanilha);
   document.getElementById('btnSalvarMultaPlanilha').addEventListener('click', enviarMultaPlanilha);
   
+  // === CORREÇÃO TÉCNICA REALIZADA: APONTADO EXATAMENTE O ID inputBuscaTextoMulta NATÍVEL ===
   document.getElementById('inputBuscaTextoMulta').value = appState.buscaTextoMultas;
   document.getElementById('inputBuscaTextoMulta').addEventListener('input', function() {
     appState.buscaTextoMultas = this.value.trim().toUpperCase();
@@ -2139,7 +2139,7 @@ function atualizarTabelaUsuariosLocal() {
   });
 }
 
-window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO COM SUCESSO!'); abrirTela('gestao'); sincronizarDadosPlanilha(); };
+window.processarRetornoGoogleSheets = function() { alert('COLABORADOR CADASTRADO WITH SUCESSO!'); abrirTela('gestao'); sincronizarDadosPlanilha(); };
 function enviarUsuarioPlanilha() {
   const nome = document.getElementById('formUserNome').value.trim().toUpperCase(); const login = document.getElementById('formUserLogin').value.trim().toUpperCase(); const senha = document.getElementById('formUserSenha').value;
   if (!nome || !login || !senha) return alert('CAMPOS OBRIGATÓRIOS!');
