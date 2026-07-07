@@ -453,7 +453,7 @@ function renderizarHomePainelDinâmico() {
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuClientes').click()">
         <h4>🏥 CADASTRO DE CLIENTES</h4>
-        <p class="no-uppercase">Acesse o gerenciador de unidades e contratos.</p>
+        <p class="no-uppercase">Acesse the gerenciador de unidades e contratos.</p>
       </div>
       <div class="card-atalho-home" onclick="document.getElementById('btnMenuLocacao').click()">
         <h4>🤝 MOVIMENTAR LOCAÇÕES</h4>
@@ -847,66 +847,140 @@ function prepararEdicaoRotaMetrika(idRota) {
 
 function imprimirEspelhoRotaMetrika(idRota) {
   const lines = appState.rotas.filter(r => (r.id_rota || r.ID_ROTA) === idRota);
-  if(lines.length === 0) return alert('DADOS DA JORNADA NÃO ENCONTRADOS.');
+  if (lines.length === 0) return alert('DADOS DA JORNADA NÃO ENCONTRADOS.');
 
   const cab = lines[0];
-  let conteudoHtml = `
+
+  // 1. Agrupamento estruturado por cliente com busca dinâmica de endereço e contato na memória
+  const clientesAgrupados = {};
+  lines.forEach(l => {
+    const nomeCliente = (l.cliente || '').toUpperCase().trim();
+    if (!clientesAgrupados[nomeCliente]) {
+      const dadosCliente = appState.clientes.find(c => c.nome.toUpperCase().trim() === nomeCliente) || {};
+      
+      const endereco = dadosCliente.logradouro 
+        ? `${dadosCliente.logradouro}, Nº ${dadosCliente.numero || 'S/N'} - ${dadosCliente.bairro || ''} - ${dadosCliente.cidade || ''}/${dadosCliente.uf || ''}`
+        : 'ENDEREÇO NÃO LOCALIZADO NO CADASTRO';
+
+      const contato = (dadosCliente.responsavel || dadosCliente.telefone || dadosCliente.telephone)
+        ? `${dadosCliente.responsavel || ''} ${dadosCliente.telefone || dadosCliente.telephone || ''}`
+        : 'NÃO INFORMADO';
+
+      clientesAgrupados[nomeCliente] = {
+        nome: nomeCliente,
+        endereco: endereco,
+        contato: contato,
+        itens: []
+      };
+    }
+    clientesAgrupados[nomeCliente].itens.push(l);
+  });
+
+  let blocosHtml = '';
+  let contagemFiltro = 1;
+
+  for (const key in clientesAgrupados) {
+    const itemCli = clientesAgrupados[key];
+    let linhasTabela = '';
+
+    itemCli.itens.forEach(l => {
+      const ocorrenciaTexto = l.ocorrencia || l.observacao || l.observao || '-';
+      linhasTabela += `
+        <tr>
+          <td><b>${l.os || 'S/N'}</b></td>
+          <td><small>${l.descricao || '-'}</small></td>
+          <td style="font-size: 9px; text-transform: none;">${ocorrenciaTexto}</td>
+          <td><b>${l.status || 'BASE'}</b></td>
+        </tr>
+      `;
+    });
+
+    blocosHtml += `
+      <div class="bloco-unidade">
+        <div class="faixa-amarela">${contagemFiltro++}. UNIDADE: ${itemCli.nome}</div>
+        <div class="dados-clientes">
+          <p><b>📍 ENDEREÇO:</b> ${itemCli.endereco}</p>
+          <p><b>🪪 CONTATO:</b> ${itemCli.contato}</p>
+        </div>
+        <table class="tabela-os">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Nº O.S.</th>
+              <th style="width: 40%;">COMPONENTES</th>
+              <th style="width: 30%;">RELATO TÉCNICO / OCORRÊNCIA</th>
+              <th style="width: 15%;">LOGÍSTICA</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${linhasTabela}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // 2. Montagem do layout operacional compacto e limpo (Padrão Corporativo Word)
+  const conteudoHtml = `
     <html>
     <head>
       <title>IMPRESSÃO - ROTA ${idRota}</title>
       <style>
-        body { font-family: sans-serif; padding:25px; color:#1e293b; text-transform:uppercase; }
-        .header-print { border-bottom: 3px double #000; padding-bottom:10px; margin-bottom:20px; }
-        .header-print h2 { margin:0; font-size:22px; color:#1e3a8a; }
-        .meta-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px; font-size:13px; }
-        .table-print { width:100%; border-collapse:collapse; margin-top:15px; }
-        .table-print th, .table-print td { border:1px solid #000; padding:8px; text-align:left; font-size:12px; }
-        .table-print th { background:#f1f5f9; }
-        .footer-print { margin-top:50px; text-align:center; font-size:11px; color:#64748b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; text-transform: uppercase; font-family: Arial, sans-serif; }
+        body { padding: 20px; color: #000; font-size: 11px; line-height: 1.3; }
+        .header-print { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
+        .header-print h2 { font-size: 16px; font-weight: bold; }
+        .grid-frota { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .card-frota { border: 1px solid #000; padding: 6px; }
+        .alerta-combustivel { background: #ffffcc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; text-align: center; border: 2px dashed #000; display: flex; flex-direction: column; justify-content: center; }
+        .avisos-vermelhos { border: 1px solid #ff0000; color: #ff0000; background: #fff0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 6px; margin-bottom: 12px; font-weight: bold; font-size: 10px; }
+        .bloco-unidade { margin-bottom: 10px; border: 1px solid #000; page-break-inside: avoid; }
+        .faixa-amarela { background: #ffff00 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 4px 8px; font-weight: bold; font-size: 11px; border-bottom: 1px solid #000; }
+        .dados-clientes { padding: 4px 8px; background: #f9f9f9; border-bottom: 1px dashed #000; font-size: 10px; }
+        .tabela-os { width: 100%; border-collapse: collapse; }
+        .tabela-os th { background: #eaeaea !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-align: left; padding: 4px; font-size: 10px; border-bottom: 1px solid #000; }
+        .tabela-os td { padding: 4px; font-size: 10px; border-bottom: 1px solid #eaeaea; vertical-align: top; }
+        .grid-assinaturas { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 30px; page-break-inside: avoid; }
+        .linha-assinatura { text-align: center; border-top: 1px solid #000; padding-top: 3px; font-size: 10px; font-weight: bold; }
+        @media print { body { padding: 0; } .no-print { display: none !important; } }
       </style>
     </head>
     <body>
+      <div class="no-print" style="background: #f1f5f9; padding: 10px; text-align: center; margin-bottom: 15px;">
+        <button onclick="window.print()" style="padding: 6px 15px; font-weight: bold; background: #2563eb; color: #fff; border: none; cursor: pointer;">🖨️ DISPARAR IMPRESSÃO OPERACIONAL</button>
+      </div>
       <div class="header-print">
-        <h2>PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2>
-        <p>ID JORNADA CORPORATIVA: <b>${idRota}</b></p>
+        <div>
+          <h2>PROGRAMAÇÃO DE ATENDIMENTO LINEMED</h2>
+          <p style="font-size: 9px; color: #555;">METRIKA OPERATIONS PLATFORM</p>
+        </div>
+        <div style="text-align: right; font-weight: bold;">
+          ROTA: ${idRota || 'S/R'}<br>
+          DATA: ${formatarDataBr(cab.data)}
+        </div>
       </div>
-      <div class="meta-grid">
-        <div><b>TÉCNICO 1:</b> ${cab.tecnico}</div>
-        <div><b>VEÍCULO ALOCADO:</b> ${cab.veiculo}</div>
-        <div><b>TÉCNICO 2 / AUXILIAR:</b> ${cab.auxiliar}</div>
-        <div><b>DATA AGENDADA:</b> ${formatarDataBr(cab.data)}</div>
+      <div class="grid-frota">
+        <div class="card-frota">
+          <p><b>CONDUTOR 1:</b> ${cab.tecnico || '-'}</p>
+          <p><b>CONDUTOR 2:</b> ${cab.auxiliar || '-'}</p>
+          <p><b>VEÍCULO ALOCADO:</b> ${cab.veiculo || '-'}</p>
+        </div>
+        <div class="card-frota alerta-combustivel">
+          <p style="font-size: 12px; margin-top: 4px;">⚠️ ATENÇÃO FROTA</p>
+          <p>NÃO DEIXAR DE ABASTECER</p>
+        </div>
       </div>
-      <table class="table-print">
-        <thead>
-          <tr>
-            <th>CLIENTE / UNIDADE</th>
-            <th>Nº O.S.</th>
-            <th>COMPONENTES (TAG/SÉRIE/NOME)</th>
-            <th>DIRETRIZ LOGÍSTICA</th>
-            <th>VISTO / ASSINATURA</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
+      <div class="avisos-vermelhos">
+        ⚠️ AVISOS OPERACIONAIS:<br>
+        1. COLETAR ASSINATURA E CARIMBO EM TODAS AS ORDENS DE SERVIÇO DE CAMPO.<br>
+        2. RETIRADA DE ATIVOS (CÂMARA DE VACINA, BOMBAS, ETC) DEVE SER REPORTADA IMEDIATAMENTE À BASE.<br>
+        3. EVITAR DUPLICIDADE DE O.S. VERIFICANDO O HISTÓRICO LOCAL ANTES DO ATENDIMENTO.
+      </div>
+      
+      ${blocosHtml}
 
-  lines.forEach(l => {
-    conteudoHtml += `
-      <tr>
-        <td><b>${l.cliente}</b></td>
-        <td>${l.os || '-'}</td>
-        <td>${l.descricao || '-'}</td>
-        <td>${l.status || 'BASE'}</td>
-        <td style="width:150px;"></td>
-      </tr>
-    `;
-  });
-
-  conteudoHtml += `
-        </tbody>
-      </table>
-      <div class="footer-print">
-        <p>METRIKA SMART PLATFORM • DOCUMENTO EMITIDO EM ${new Date().toLocaleString()}</p>
-        <button onclick="window.print()" style="margin-top:20px; padding:8px 15px; font-weight:bold; cursor:pointer;">🖨️ DISPARAR IMPRESSÃO JORNADA</button>
+      <div class="grid-assinaturas">
+        <div class="linha-assinatura" style="margin-top: 15px;">${cab.tecnico || 'TÉCNICO RESPONSÁVEL'}</div>
+        <div class="linha-assinatura" style="margin-top: 15px;">COORDENAÇÃO OPERACIONAL LINEMED</div>
       </div>
     </body>
     </html>
@@ -1158,7 +1232,7 @@ function renderizarTelaClientes(container) {
         <div style="margin-top:12px;"><div class="form-grupo"><label>OBSERVAÇÕES</label><input type="text" id="formObservacao" class="input-padrao"></div></div>
         <div style="display:flex; justify-content: flex-end; gap:10px; margin-top:15px;"><button id="btnCancelarEdicao" class="btn-secondary hidden">CANCELAR</button><button id="btnSalvarClientePlanilha" class="btn-success">💾 SALVAR CLIENTE</button></div>
       </div>
-      
+       
       <div class="card-padrao">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:15px;">
           <h3>CLIENTES NA BASE</h3>
@@ -1194,7 +1268,7 @@ function renderizarTelaClientes(container) {
   document.getElementById('formCnpj').addEventListener('input', aplicarMascaraDocumento);
   document.getElementById('formCep').addEventListener('input', aplicarMascaraCep);
   document.getElementById('formTelefone').addEventListener('input', aplicarMascaraTelefone);
-  
+   
   document.getElementById('selectFiltroStatusClienteGrid').value = appState.filtroStatusCliente;
   document.getElementById('inputBuscaTextoCliente').value = appState.buscaTextoCliente;
 
@@ -1396,7 +1470,7 @@ function renderizarTelaPatrimonio(container) {
       </div>
     </div>`;
 
-  document.getElementById('formEquipSituacao').addEventListener('change', gerenciarCamposSituacaoAtivo);
+  document.getElementById('formEquipForm'].addEventListener('change', gerenciarCamposSituacaoAtivo);
 
   document.getElementById('inputBuscaTextoPatrimonio').value = appState.buscaTextoPatrimonio;
   document.getElementById('inputBuscaTextoPatrimonio').addEventListener('input', function() { appState.buscaTextoPatrimonio = this.value.trim().toUpperCase(); atualizarTabelaPatrimonioLocal(); });
@@ -1734,7 +1808,7 @@ function renderizarTelaMultas(container) {
 
   let optVeiculos = '<option value="">SELECIONE O VEÍCULO (PLACA)...</option>';
   appState.veiculos.forEach(v => {
-    optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>`;
+    optVeiculos += `<option value="${v.toUpperCase()}">${v.toUpperCase()}</option>';
   });
 
   container.innerHTML = `
