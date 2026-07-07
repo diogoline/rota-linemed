@@ -656,6 +656,10 @@ function removerCardParadaMetrika(idParada) {
   });
 }
 
+function abrirModuloChamados(container) {
+  container.innerHTML = `<h2>🚧 MÓDULO CHAMADOS DE MAINT</h2><p style="color:#64748b; margin-top:10px;">HISTÓRICO E ABERTURA DIRETAMENTE VIA BANCO DE DADOS EM IMPLEMENTAÇÃO.</p>`;
+}
+
 function adicionarLinhaOSMetrika(idParada) {
   contadorOS++;
   const tbody = document.getElementById(`tbody_os_${idParada}`);
@@ -750,7 +754,7 @@ function atualizarTabelaRotasNativa() {
   });
 
   if(filtradas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">NENHUM CORRESPONDENTE PARA A CONSULTA.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">NENHUM RECORRESPONDENTE PARA A CONSULTA.</td></tr>`;
     return;
   }
 
@@ -879,11 +883,11 @@ function imprimirEspelhoRotaMetrika(idRota) {
 
   for (const key in clientesAgrupados) {
     const itemCli = clientesAgrupados[key];
-    let linhasTabela = '';
+    let linesTabela = '';
 
     itemCli.itens.forEach(l => {
       const ocorrenciaTexto = l.ocorrencia || l.observacao || l.observao || '-';
-      linhasTabela += `
+      linesTabela += `
         <tr>
           <td><b>${l.os || 'S/N'}</b></td>
           <td><small>${l.descricao || '-'}</small></td>
@@ -910,7 +914,7 @@ function imprimirEspelhoRotaMetrika(idRota) {
             </tr>
           </thead>
           <tbody>
-            ${linhasTabela}
+            ${linesTabela}
           </tbody>
         </table>
       </div>
@@ -1633,11 +1637,12 @@ function enviarEquipamentoPlanilha() {
     if(!setorFinal) setorFinal = "SETOR PADRÃO";
   }
   
+  // === CORREÇÃO TÉCNICA CRUCIAL REALIZADA AQUI: APONTADO formEquipPatrimonio CORRETAMENTE ===
   const d = { 
     tag: tag, 
     equipamento: equip, 
     serie: ser, 
-    patrimonio: document.getElementById('formEquiprosPatrimonio').value.trim().toUpperCase(), 
+    patrimonio: document.getElementById('formEquipPatrimonio').value.trim().toUpperCase(), 
     modelo: mod, 
     fabricante: fab, 
     status: statusFinal, 
@@ -1715,7 +1720,7 @@ function renderizarModuloAuditoria() {
   const container = document.getElementById('containerModuloAuditoria'); if(!container) return;
   let optCliAuditoria = `<option value="GERAL">[ GERAL ] - TODAS AS UNIDADES</option>`;
   appState.clientes.filter(c => c.status === 'ATIVO').forEach(c => {
-    optCliAuditoria += `<option value="${c.nome.toUpperCase}" ${appState.filtroClienteAuditoria === c.nome.toUpperCase() ? 'selected' : ''}>${c.nome.toUpperCase()}</option>`;
+    optCliAuditoria += `<option value="${c.nome.toUpperCase()}" ${appState.filtroClienteAuditoria === c.nome.toUpperCase() ? 'selected' : ''}>${c.nome.toUpperCase()}</option>`;
   });
 
   let itemsAuditoria = appState.patrimonio.filter(p => { let st = p.STATUS || p.status || ''; return st.toUpperCase() === 'LOCADO'; });
@@ -1815,7 +1820,7 @@ function renderizarTelaMultas(container) {
       </div>
        
       <div class="card-padrao">
-        <h3 id="tituloFormMulta" style="margin-bottom:15px; color:var(--cor-perigo);">REGISTRO DE NOTIFICAÇÃO DE MULTA</h3>
+        h3 id="tituloFormMulta" style="margin-bottom:15px; color:var(--cor-perigo);">REGISTRO DE NOTIFICAÇÃO DE MULTA</h3>
         <div class="form-grid">
           <div class="form-grid">
             <div class="form-grupo"><label>VEÍCULO / PLACA *</label><select id="formMultaPlaca" class="select-padrao">${optVeiculos}</select></div>
