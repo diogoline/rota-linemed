@@ -466,7 +466,7 @@ function renderizarHomePainelDinâmico() {
     </div>`;
 }
 
-/* ==================== BLOCO 5: MÓDULO EXCLUSIVO DE ROTAS DIÁRIAS (COMPLETAMENTE INTEGRADO) ==================== */
+/* ==================== MÓDULO EXCLUSIVO DE ROTAS DIÁRIAS ==================== */
 function abrirTela(menu) {
   const principal = document.getElementById('conteudoPrincipal');
   if (menu === 'inicio') {
@@ -654,10 +654,6 @@ function removerCardParadaMetrika(idParada) {
     const spanNum = p.querySelector('[id^="txt_num_parada_"]');
     if(spanNum) spanNum.innerText = `📍 PARADA OPERACIONAL N° ${idx + 1}`;
   });
-}
-
-function abrirModuloChamados(container) {
-  container.innerHTML = `<h2>🚧 MÓDULO CHAMADOS DE MAINT</h2><p style="color:#64748b; margin-top:10px;">HISTÓRICO E ABERTURA DIRETAMENTE VIA BANCO DE DADOS EM IMPLEMENTAÇÃO.</p>`;
 }
 
 function adicionarLinhaOSMetrika(idParada) {
@@ -893,7 +889,6 @@ function imprimirEspelhoRotaMetrika(idRota) {
           <td><small>${l.descricao || '-'}</small></td>
           <td style="font-size: 9px; text-transform: none;">${ocorrenciaTexto}</td>
           <td><b>${l.status || 'BASE'}</b></td>
-          <!-- CAIXAS DE SELEÇÃO MANUAIS ADICIONADAS AQUI -->
           <td style="white-space: nowrap; font-size: 9px; font-weight: bold; padding: 6px;">
             [ &nbsp; ] SIM &nbsp;&nbsp;&nbsp; [ &nbsp; ] NÃO
           </td>
@@ -966,7 +961,6 @@ function imprimirEspelhoRotaMetrika(idRota) {
       </div>
       <div class="grid-frota">
         <div class="card-frota">
-          <!-- CAMPOS DE HORÁRIOS EM BRANCO PARA PREENCHIMENTO MANUAL DE CONDUÇÃO -->
           <p><b>CONDUTOR 1:</b> ${cab.tecnico || '-'} &nbsp;&nbsp;&nbsp;&nbsp; PERÍODO: _________ ÀS _________</p>
           <p><b>CONDUTOR 2:</b> ${cab.auxiliar || '-'} &nbsp;&nbsp;&nbsp;&nbsp; PERÍODO: _________ ÀS _________</p>
           <p><b>VEÍCULO ALOCADO:</b> ${cab.veiculo || '-'}</p>
@@ -1010,6 +1004,7 @@ window.processarRetornoRotaSheets = function(res) {
   }
 };
 
+/* ==================== CORREÇÃO E REESTRUTURAÇÃO DO SALVAMENTO (FLAT FORMAT) ==================== */
 function salvarRotaFinalMetrika() {
   const tecnico = document.getElementById('rotaTecnico').value;
   const tecnico2 = document.getElementById('rotaTecnico2').value;
@@ -1020,11 +1015,12 @@ function salvarRotaFinalMetrika() {
     return alert('POR FAVOR, PREENCHA OS DADOS OBRIGATÓRIOS DO CABEÇALHO DA JORNADA!');
   }
 
-  const paradasLista = [];
   const cardsParadas = document.querySelectorAll('.container-parada');
-
   if(cardsParadas.length === 0) return alert('ADICIONE AO MENOS UMA PARADA OPERACIONAL!');
+
+  const dadosPlanilhaLista = [];
   let validacaoOk = true;
+  const idRotaConstruida = appState.idRotaEmEdicao ? appState.idRotaEmEdicao : 'ROT_' + Date.now();
 
   cardsParadas.forEach(card => {
     const idAtual = card.id.split('_')[1];
@@ -1036,53 +1032,42 @@ function salvarRotaFinalMetrika() {
       return;
     }
 
-    const linhasOS = [];
     const trs = document.querySelectorAll(`#tbody_os_${idAtual} tr`);
 
     trs.forEach(tr => {
       const inputs = tr.querySelectorAll('input');
       const selectLogistica = tr.querySelector('select');
+      
       const numeroOS = inputs[0].value.trim() || 'S/N';
       const tag = inputs[1].value.trim().toUpperCase();
       const serie = inputs[2].value.trim().toUpperCase();
       const equipamento = inputs[3].value.trim().toUpperCase();
       const ocorrencia = inputs[4] ? inputs[4].value.trim() : '';
+      const logistica = selectLogistica ? selectLogistica.value : 'BASE';
 
-      linhasOS.push({
-        numeroOS: numeroOS,
-        tag: tag,
-        serie: serie,
-        equipment: equipamento,
-        equipamento: equipamento,
+      // Criando a linha estruturada no formato plano (Flat) que a API da planilha espera receber
+      dadosPlanilhaLista.push({
+        id_rota: idRotaConstruida,
+        data: data,
+        tecnico: tecnico,
+        auxiliar: tecnico2 || '-',
+        veiculo: veiculo,
+        cliente: cliente,
+        os: numeroOS,
+        descricao: `${tag} / ${serie} / ${equipamento}`,
         ocorrencia: ocorrencia,
-        observacao: ocorrencia,
-        logistica: selectLogistica ? selectLogistica.value : 'BASE'
+        status: logistica
       });
-    });
-
-    // CORREÇÃO EXECUTADA DA VARIÁVEL LOCADA DE ENVIO DE DADOS
-    paradasLista.push({
-      cliente: cliente,
-      linhasOS: linhasOS
     });
   });
 
   if(!validacaoOk) return;
-
-  const pacoteRota = {
-    cabecalho: {
-      tecnico: tecnico,
-      auxiliar: tecnico2 || '-',
-      veiculo: veiculo,
-      data: data
-    },
-    paradas: paradasLista
-  };
+  if(dadosPlanilhaLista.length === 0) return alert('ADICIONE E PREENCHA AO MENOS UMA ORDEM DE SERVIÇO!');
 
   const acao = appState.idRotaEmEdicao ? 'editarCadastro' : 'salvarCadastro';
-  if(appState.idRotaEmEdicao) pacoteRota.id_rota = appState.idRotaEmEdicao;
-
-  const urlFinalReal = `${WEB_APP_URL}?acao=salvarRotaLogistica&dados=${encodeURIComponent(JSON.stringify(pacoteRota))}&prefix=processarRetornoRotaSheets`;
+  
+  // Formatando o payload correto de acordo com a chamada padrão do sistema
+  const urlFinalReal = `${WEB_APP_URL}?acao=${acao}&tipo=ROTAS&dados=${encodeURIComponent(JSON.stringify(dadosPlanilhaLista))}&prefix=processarRetornoRotaSheets`;
 
   const scriptAntigo = document.getElementById('jsonp_rota_execution_script');
   if(scriptAntigo) scriptAntigo.remove();
@@ -1096,7 +1081,7 @@ function salvarRotaFinalMetrika() {
 function renderInitializeHome() { renderizarHomePainelDinâmico(); }
 function voltarInicio() { abrirTela('inicio'); }
 
-/* ==================== MÓDULO: GERENCIADOR E RELATÓRIO DE DASHBOARDS (UPGRADED) ==================== */
+/* ==================== MÓDULO: GERENCIADOR E RELATÓRIO DE DASHBOARDS ==================== */
 function renderizarTelaDashboards(container) {
   const totalClientes = appState.clientes.length;
   const clientesAtivos = appState.clientes.filter(c => (c.status || 'ATIVO').toUpperCase() === 'ATIVO').length;
@@ -1293,7 +1278,6 @@ function renderizarTelaClientes(container) {
   atualizarTabelaClientesLocal();
 }
 
-/* Mascaras corporativas de Clientes */
 function aplicarMascaraCep() { let v = this.value.replace(/\D/g, '').substring(0, 8); this.value = v.replace(/^(\d{5})(\d)/, "$1-$2"); }
 function aplicarMascaraTelefone() { let v = this.value.replace(/\D/g, '').substring(0, 11); v = v.replace(/^(\d{2})(\d)/, "($1) $2"); if (v.length > 9) v = v.replace(/(\d{5})(\d)/, "$1-$2"); else v = v.replace(/(\d{4})(\d)/, "$1-$2"); this.value = v; }
 function buscarCepAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formLogradouro').value = d.logradouro.toUpperCase(); document.getElementById('formBairro').value = d.bairro.toUpperCase(); } }); }
@@ -1364,7 +1348,7 @@ function enviarClientePlanilha() {
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_client_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
-/* ==================== MÓDULO: GESTÃO DO PATRIMÔNIO (INVENTÁRIO CENTRAL - ATIVOS_GERAL) ==================== */
+/* ==================== MÓDULO: GESTÃO DO PATRIMÔNIO ==================== */
 function renderizarTelaPatrimonio(container) {
   const tiposUnicos = [...new Set(appState.matrizAtivos.filter(item => { let st = item.status || item.STATUS || 'ATIVO'; return st.toUpperCase() === 'ATIVO'; }).map(item => String(item.equipamento || item.EQUIPAMENTO || '').toUpperCase()))].filter(Boolean).sort();
   let optEquip = '<option value="">SELECIONE O TIPO DE EQUIPAMENTO...</option>';
@@ -1594,12 +1578,12 @@ function atualizarTabelaPatrimonioLocal() {
     let serStr = p.SERIE ? String(p.SERIE).toUpperCase() : '-';
     let locStr = (p.LOCALIZACAO_ATUAL || p.localizacao) ? String(p.LOCALIZACAO_ATUAL || p.localizacao).toUpperCase() : 'SEDE CENTRAL';
     let setStr = p.SETOR ? String(p.SETOR).toUpperCase() : 'SETOR PADRÃO';
-    let famStr = p['FAMÍLIA DO EQUIPAMENTO'] ? String(p['FAMÍLIA DO EQUIPAMENTO']).toUpperCase() : 'MÉDICO';
+    let tamStr = p['FAMÍLIA DO EQUIPAMENTO'] ? String(p['FAMÍLIA DO EQUIPAMENTO']).toUpperCase() : 'MÉDICO';
     
     tr.innerHTML = `
       <td><b>${tagStr}</b></td>
       <td><small>${sitLabel}${labelDono.toUpperCase()}</small></td>
-      <td><small>${famStr}</small></td>
+      <td><small>${tamStr}</small></td>
       <td>${equipStr}</td>
       <td>${modStr}</td>
       <td>${fabStr}</td>
@@ -1648,7 +1632,7 @@ function enviarEquipamentoPlanilha() {
     tag: tag, 
     equipamento: equip, 
     serie: ser, 
-    patrimonio: document.getElementById('formEquipPatrimonio').value.trim().toUpperCase(), 
+    patrimonio: document.getElementById('formEquipPATRIMONIO').value.trim().toUpperCase(), 
     modelo: mod, 
     fabricante: fab, 
     status: statusFinal, 
@@ -1666,7 +1650,7 @@ function enviarEquipamentoPlanilha() {
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_equip_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
-/* ==================== MÓDULO: REMESSAS, MOVIMENTAÇÕES E AUDITORIA NEOVERO ==================== */
+/* ==================== MÓDULO: REMESSAS E AUDITORIA ==================== */
 function renderizarTelaLocacao(container) {
   container.innerHTML = `
     <div>
@@ -1971,7 +1955,7 @@ function enviarMultaPlanilha() {
   const scriptElement = document.createElement('script'); scriptElement.id = 'jsonp_multa_execution_script'; scriptElement.src = urlFinal; document.body.appendChild(scriptElement);
 }
 
-/* ==================== MÓDULO GESTÃO DE INFRAESTRUTURA (3 ABAS ORIGINAIS) ==================== */
+/* ==================== MÓDULO GESTÃO DE INFRAESTRUTURA ==================== */
 function renderizarTelaGestao(container) {
   container.innerHTML = `
     <div>
@@ -2067,10 +2051,8 @@ function abrirSubMóduloGestao(aba) {
 }
 
 function buscarCepColaboradorAutomatico() { const cep = this.value.replace(/\D/g, ''); if (cep.length !== 8) return; fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(d => { if (!d.erro) { document.getElementById('formUserLogradouro').value = d.logradouro.toUpperCase(); document.getElementById('formUserBairro').value = d.bairro.toUpperCase(); document.getElementById('formUserCidade').value = d.localidade.toUpperCase(); document.getElementById('formUserUf').value = d.uf.toUpperCase(); } }); }
-function normalizarTermoMatriz(str) { if (!str) return ''; return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, '').trim(); }
-function calcularDistanciaLevenshtein(a, b) { const matriz = []; for (let i = 0; i <= b.length; i++) matriz[i] = [i]; for (let j = 0; j <= a.length; j++) matriz[0][j] = j; for (let i = 1; i <= b.length; i++) { for (let j = 1; j <= a.length; j++) { if (b.charAt(i - 1) === a.charAt(j - 1)) { matriz[i][j] = matriz[i - 1][j - 1]; } else { matriz[i][j] = Math.min(matriz[i - 1][j - 1] + 1, Math.min(matriz[i][j - 1] + 1, matriz[i - 1][j] + 1)); } } } return matriz[b.length][a.length]; }
 
-/* ==================== CONFIGURAÇÃO E MANIPULAÇÃO DE MODAIS SUB-GERENCIAIS ==================== */
+/* ==================== CONFIGURAÇÃO DE MODAIS SUB-GERENCIAIS ==================== */
 window.abrirModalDescricao = function(id = null) {
   appState.idMatrizEmEdicao = id;
   const html = `<div class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>🏥 NOVA DESCRIÇÃO</h3><button onclick="fecharModal()" class="modal-close">✕</button></div><div class="form-grupo"><label>NOME / DESCRIÇÃO GERAL *</label><input type="text" id="modalInputEquip" class="input-padrao" value="" placeholder="EX: VENTILADOR PULMONAR"></div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;"><button onclick="fecharModal()" class="btn-secondary">CANCELAR</button><button onclick="salvarModalDescricao()" class="btn-success">💾 SALVAR TERMO</button></div></div></div>`;
@@ -2123,7 +2105,7 @@ window.desenharTabelaMatrizAtivos = function() {
   });
 };
 
-/* ==================== FUNÇÕES UTILITÁRIAS AND FORMATADORES DE DADOS ==================== */
+/* ==================== FUNÇÕES UTILITÁRIAS E FORMATADORES ==================== */
 function formatarDataBr(dataUs) { 
   if(!dataUs) return '-'; 
   if (String(dataUs).includes('GMT') || String(dataUs).includes(':')) {
